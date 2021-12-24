@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class AddAssetTrackingTables extends Migration
+class AddTables extends Migration
 {
     public function up()
     {
@@ -19,6 +19,21 @@ class AddAssetTrackingTables extends Migration
             $table->bigInteger("corporation_id")->unsigned();
             $table->bigIncrements("id");
         });
+
+        Schema::create('recursive_tree_seat_terminusinv_fitting_stock', function (Blueprint $table) {
+            $table->bigIncrements("id");
+            $table->bigInteger("location_id");
+            $table->bigInteger("ship_type_id");
+            $table->string("name");
+            $table->bigInteger("fitting_plugin_fitting_id");
+            $table->integer("amount");
+        });
+
+        Schema::create('recursive_tree_seat_terminusinv_fit_items', function (Blueprint $table) {
+            $table->bigIncrements("id");
+            $table->bigInteger("fitting_id");
+            $table->bigInteger("type_id");
+        });
     }
 
     /**
@@ -30,6 +45,8 @@ class AddAssetTrackingTables extends Migration
     {
         Schema::drop('recursive_tree_seat_terminusinv_tracked_locations');
         Schema::drop('recursive_tree_seat_terminusinv_tracked_corporations');
+        Schema::drop('recursive_tree_seat_terminusinv_fitting_stock');
+        Schema::drop('recursive_tree_seat_terminusinv_fit_items');
     }
 }
 

@@ -136,7 +136,7 @@
     <script>
         $('.basicAutoComplete').autoComplete({
             resolverSettings: {
-                requestThrottling: 100
+                requestThrottling: 250
             },
             minLength:0,
         });

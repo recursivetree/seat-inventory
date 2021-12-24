@@ -2,6 +2,7 @@
 
 namespace RecursiveTree\Seat\TerminusInventory\Http\Controllers;
 
+use RecursiveTree\Seat\TerminusInventory\Models\FittingStock;
 use RecursiveTree\Seat\TerminusInventory\Models\TrackedLocations;
 use RecursiveTree\Seat\TerminusInventory\Models\TrackedCorporations;
 
@@ -159,6 +160,96 @@ class TerminusInventoryController extends Controller
         }
 
         return response()->json($suggestions);
+    }
+
+    public function fittingStockLocationSuggestions(Request $request){
+        $query = $request->q;
+
+        $locations = TrackedLocations::all();
+
+        $suggestions = [];
+        foreach ($locations as $location){
+            if($location->is_structure){
+                $stastruct = $location->structure;
+            } else if ($location->is_station){
+                $stastruct = $location->station;
+            } else {
+                continue;
+            }
+
+            if($query!=null && strpos($stastruct->name,$query)===false){
+                continue;
+            }
+
+            $suggestions[] = [
+                "text" => "$stastruct->name",
+                "value" => $location->id,
+            ];
+        }
+
+        return response()->json($suggestions);
+    }
+
+    public function fittingPluginFittingsSuggestions(Request $request){
+        if(!class_exists("Denngarr\Seat\Fitting\Models\Fitting")){
+            return response()->json([],400);
+        }
+        $class = "Denngarr\Seat\Fitting\Models\Fitting";
+
+        $query = $request->q;
+        if($query==null){
+            $fittings = $class::all();
+        } else {
+            $fittings = $class::where("fitname","like","%$query%")::get();
+        }
+
+        $suggestions = [];
+        foreach ($fittings as $fit){
+
+            $suggestions[] = [
+                "text" => "[$fit->shiptype] $fit->fitname",
+                "value" => $fit->id,
+            ];
+        }
+
+        return response()->json($suggestions);
+    }
+
+    public function addFittingPos(Request $request){
+        $fit_plugin_id = $request->fit_plugin_id;
+        $fit_text = $request->fit_text;
+        $amount = $request->amount;
+        $location = $request->location_id;
+
+        if($location==null || $amount==null){
+            return $this->redirectWithStatus($request,'terminusinv.fittings',"Not all required data is provided!", 'error');
+        }
+
+        if($amount<1){
+            return $this->redirectWithStatus($request,'terminusinv.fittings',"The minimum stock is 1!", 'error');
+        }
+
+        $fitting_stock = new FittingStock();
+
+        $fitting_stock->location_id = $location;
+        $fitting_stock->amount = $amount;
+        $fitting_stock->ship_type_id = 587;
+        $fitting_stock->name = "dummy";
+        if($fit_plugin_id!=null){
+            $fitting_stock->fitting_plugin_fitting_id = $fit_plugin_id;
+        }
+
+        $fitting_stock->save();
+
+        return $this->redirectWithStatus($request,'terminusinv.fittings',"Added fitting stock definition!", 'success');
+    }
+
+    public function fittings(Request $request){
+        $fittings = FittingStock::all();
+
+        $has_fitting_plugin = class_exists("Denngarr\Seat\Fitting\Models\Fitting");
+
+        return view("terminusinv::fittings",compact("fittings", "has_fitting_plugin"));
     }
 
     public function about(){

@@ -11,6 +11,11 @@ return [
                 'route' => 'terminusinv.tracking',
             ],
             [
+                'name'  => 'Fittings',
+                'icon'  => 'fas fa-space-shuttle',
+                'route' => 'terminusinv.fittings',
+            ],
+            [
                 'name'  => 'About',
                 'icon'  => 'fas fa-info',
                 'route' => 'terminusinv.about',

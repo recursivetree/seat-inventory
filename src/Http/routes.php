@@ -52,4 +52,28 @@ Route::group([
         'uses' => 'TerminusInventoryController@trackingCorporationSuggestions'
     ]);
 
+    Route::get('/tracking/corporations/suggestions', [
+        'as'   => 'terminusinv.trackingCorporationSuggestions',
+        'uses' => 'TerminusInventoryController@trackingCorporationSuggestions'
+    ]);
+
+    Route::get('/fittings/locations/suggestions', [
+        'as'   => 'terminusinv.fittingStockLocationSuggestions',
+        'uses' => 'TerminusInventoryController@fittingStockLocationSuggestions'
+    ]);
+
+    Route::get('/fittings/plugin/fittings/suggestions', [
+        'as'   => 'terminusinv.fittingPluginFittingsSuggestions',
+        'uses' => 'TerminusInventoryController@fittingPluginFittingsSuggestions'
+    ]);
+
+    Route::get('/fittings', [
+        'as'   => 'terminusinv.fittings',
+        'uses' => 'TerminusInventoryController@fittings'
+    ]);
+
+    Route::post('/fittings/add', [
+        'as'   => 'terminusinv.addFitting',
+        'uses' => 'TerminusInventoryController@addFittingPos'
+    ]);
 });
