@@ -1,8 +1,9 @@
 <?php
 
-namespace RecursiveTree\Seat\TerminusInventory\Parser;
+namespace RecursiveTree\Seat\TerminusInventory\Helpers;
 
 use Exception;
+use RecursiveTree\Seat\TerminusInventory\Models\StockItem;
 use Seat\Eveapi\Models\Sde\InvType;
 
 class Parser
@@ -17,7 +18,7 @@ class Parser
 
 
         $matches=[];
-        preg_match_all('/(?<item>[[:alpha:] ]+)(?:, [[:alpha:] ]+)?(?: x(?<amount>\d+))?$/mu', $fit, $matches, PREG_SET_ORDER, 0);
+        preg_match_all('/^(?<item>[[:alnum:]\' -]+?)(?:, [[:alnum:]\' -]+?)?(?: x(?<amount>\d+))?$/mu', $fit, $matches, PREG_SET_ORDER, 0);
         foreach ($matches as $match){
             $items['item_names'][] = $match['item'];
             if(array_key_exists('amount',$match)){
@@ -85,10 +86,11 @@ class Parser
             $result = InvType::where('typeName', $item)->first();
             if($result == null) continue;
 
-            $type_list[] = [
-                'typeID'=>$result->typeID,
-                'amount'=>$amount
-            ];
+            $stock_item = new StockItem();
+            $stock_item->type_id = $result->typeID;
+            $stock_item->amount = $amount;
+
+            $type_list[] = $stock_item;
         }
         return $type_list;
     }

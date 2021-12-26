@@ -6,8 +6,9 @@ use Exception;
 use RecursiveTree\Seat\TerminusInventory\Models\Stock;
 use RecursiveTree\Seat\TerminusInventory\Models\StockItem;
 use RecursiveTree\Seat\TerminusInventory\Models\TrackedCorporation;
+use RecursiveTree\Seat\TerminusInventory\Helpers\ItemHelper;
+use RecursiveTree\Seat\TerminusInventory\Helpers\Parser;
 
-use RecursiveTree\Seat\TerminusInventory\Parser\Parser;
 use Seat\Web\Http\Controllers\Controller;
 use Seat\Eveapi\Models\Assets\CorporationAsset;
 use Seat\Eveapi\Models\Assets\CharacterAsset;
@@ -15,6 +16,7 @@ use Seat\Eveapi\Models\Universe\UniverseStation;
 use Seat\Eveapi\Models\Universe\UniverseStructure;
 use Seat\Eveapi\Models\Corporation\CorporationInfo;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class TerminusInventoryController extends Controller
 {
@@ -160,8 +162,21 @@ class TerminusInventoryController extends Controller
             return $this->redirectWithStatus($request,'terminusinv.stocks',"The minimum stock is 1!", 'error');
         }
 
+        //check if the location is in a valid format
+        $location_regexp = [];
+        if (!preg_match("/^(?:station\|(?<station_id>\d+))|(?:structure\|(?<structure_id>\d+))$/",$location, $location_regexp)){
+            return $this->redirectWithStatus($request,'terminusinv.stocks',"Invalid location!", 'error');
+        }
+
         //new stock entry to fill
         $stock = new Stock();
+
+        //add location
+        if(strlen($location_regexp["station_id"])>1){
+            $stock->station_id = $location_regexp["station_id"];
+        } else if(strlen($location_regexp["structure_id"])>1){
+            $stock->structure_id = $location_regexp["structure_id"];
+        }
 
         //items required for the stock
         $required_items = [];
@@ -201,7 +216,18 @@ class TerminusInventoryController extends Controller
             $stock->name = "unnamed stock";
         }
 
-        $stock->save();
+        $required_items = ItemHelper::simplifyItemList($required_items);
+
+        DB::transaction(function () use ($required_items, $stock) {
+            $stock->save();
+
+            $id=$stock->id;
+
+            foreach ($required_items as $item){
+                $item->stock_id = $id;
+                $item->save();
+            }
+        });
 
         return $this->redirectWithStatus($request,'terminusinv.stocks',"Added stock definition!", 'success');
     }
@@ -212,6 +238,26 @@ class TerminusInventoryController extends Controller
         $has_fitting_plugin = class_exists("Denngarr\Seat\Fitting\Models\Fitting");
 
         return view("terminusinv::stocks",compact("fittings", "has_fitting_plugin"));
+    }
+
+    public function editStock(Request $request,$id){
+        $stock = Stock::find($id);
+
+        if($stock==null){
+            return $this->redirectWithStatus($request,'terminusinv.stocks',"Could not find stock definition!", 'error');
+        }
+
+        $multibuy = ItemHelper::itemListToMultiBuy($stock->items);
+
+        return view("terminusinv::editStock", compact("stock","multibuy"));
+    }
+
+    public function deleteStockPost(Request $request,$id){
+        if($id!=null) {
+            Stock::destroy($id);
+        }
+
+        return $this->redirectWithStatus($request,'terminusinv.stocks',"Deleted stock definition!", 'success');
     }
 
     public function about(){

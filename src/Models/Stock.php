@@ -18,12 +18,11 @@ class Stock extends Model
                 'name' => trans('web::seat.unknown'),
             ]);
         }
-        if ($this->station_id !== null){
-            return $this->hasOne(UniverseStation::class, 'station_id', 'station_id')->withDefault([
-                'name' => trans('web::seat.unknown'),
-            ]);
-        }
-        return null;
+
+        return $this->hasOne(UniverseStation::class, 'station_id', 'station_id')->withDefault([
+            'name' => trans('web::seat.unknown'),
+        ]);
+
     }
 
     public function items()

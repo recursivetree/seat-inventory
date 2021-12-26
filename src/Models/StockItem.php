@@ -5,6 +5,7 @@ namespace RecursiveTree\Seat\TerminusInventory\Models;
 use Illuminate\Database\Eloquent\Model;
 use Seat\Eveapi\Models\Universe\UniverseStation;
 use Seat\Eveapi\Models\Universe\UniverseStructure;
+use Seat\Eveapi\Models\Sde\InvType;
 
 class StockItem extends Model
 {

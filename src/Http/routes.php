@@ -56,4 +56,14 @@ Route::group([
         'as'   => 'terminusinv.addStock',
         'uses' => 'TerminusInventoryController@addStockPost'
     ]);
+
+    Route::get('/stocks/edit/{id}', [
+        'as'   => 'terminusinv.editStock',
+        'uses' => 'TerminusInventoryController@editStock'
+    ]);
+
+    Route::post('/stocks/delete/{id}', [
+        'as'   => 'terminusinv.deleteStock',
+        'uses' => 'TerminusInventoryController@deleteStockPost'
+    ]);
 });

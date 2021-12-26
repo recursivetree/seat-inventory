@@ -23,8 +23,8 @@
                 </div>
             @else
                 <div class="list-group">
-                    @foreach($fittings as $fit)
-                        <a href="#" class="list-group-item list-group-item-action">{{ $fit->name }}</a>
+                    @foreach($fittings as $stock)
+                        <a href="{{ route("terminusinv.editStock",$stock->id) }}" class="list-group-item list-group-item-action"><b>{{ $stock->name }}</b> {{ $stock->location->name }}</a>
                     @endforeach
                 </div>
             @endif
