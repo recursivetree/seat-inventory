@@ -2,10 +2,12 @@
 
 namespace RecursiveTree\Seat\TerminusInventory\Http\Controllers;
 
-use RecursiveTree\Seat\TerminusInventory\Models\FittingStock;
-use RecursiveTree\Seat\TerminusInventory\Models\TrackedLocations;
-use RecursiveTree\Seat\TerminusInventory\Models\TrackedCorporations;
+use Exception;
+use RecursiveTree\Seat\TerminusInventory\Models\Stock;
+use RecursiveTree\Seat\TerminusInventory\Models\StockItem;
+use RecursiveTree\Seat\TerminusInventory\Models\TrackedCorporation;
 
+use RecursiveTree\Seat\TerminusInventory\Parser\Parser;
 use Seat\Web\Http\Controllers\Controller;
 use Seat\Eveapi\Models\Assets\CorporationAsset;
 use Seat\Eveapi\Models\Assets\CharacterAsset;
@@ -35,49 +37,9 @@ class TerminusInventoryController extends Controller
     }
 
     public function tracking(){
-        $tracked_locations = TrackedLocations::all();
-        $tracked_corporations = TrackedCorporations::all();
+        $tracked_corporations = TrackedCorporation::all();
 
-        return view("terminusinv::tracking", compact('tracked_corporations','tracked_locations'));
-    }
-
-    public function addTrackingLocation(Request $request){
-        $request_string = $request->location;
-
-        if($request_string==null){
-            return $this->redirectWithStatus($request,'terminusinv.tracking',"No location specified!", 'error');
-        } else {
-            $parts = explode("|",$request_string);
-            if (count($parts)!=2){
-                return $this->redirectWithStatus($request,'terminusinv.tracking',"Invalid location!", 'error');
-            }
-
-            if ($parts[0]=="station"){
-                $station = UniverseStation::where("station_id",$parts[1])->first();
-                if($station==null){
-                    return $this->redirectWithStatus($request,'terminusinv.tracking',"Could not find location!", 'error');
-                }
-                $tracked_location = new TrackedLocations();
-                $tracked_location->location_id = $parts[1];
-                $tracked_location->is_station = true;
-                $tracked_location->is_structure = false;
-                $tracked_location->save();
-            } elseif ($parts[0]=="structure") {
-                $structure = UniverseStructure::where("structure_id",$parts[1])->first();
-                if($structure==null){
-                    return $this->redirectWithStatus($request,'terminusinv.tracking',"Could not find location!", 'error');
-                }
-                $tracked_location = new TrackedLocations();
-                $tracked_location->location_id = $parts[1];
-                $tracked_location->is_station = false;
-                $tracked_location->is_structure = true;
-                $tracked_location->save();
-            } else {
-                return $this->redirectWithStatus($request,'terminusinv.tracking',"Invalid location!", 'error');
-            }
-        }
-
-        return $this->redirectWithStatus($request,'terminusinv.tracking',"Added location!", 'success');
+        return view("terminusinv::tracking", compact('tracked_corporations'));
     }
 
     public function addTrackingCorporation(Request $request){
@@ -88,20 +50,11 @@ class TerminusInventoryController extends Controller
         if(!CorporationInfo::where("corporation_id",$id)->exists()){
             return $this->redirectWithStatus($request,'terminusinv.tracking',"Corporation not found!", 'error');
         }
-        $db_entry = new TrackedCorporations();
+        $db_entry = new TrackedCorporation();
         $db_entry->corporation_id = $id;
         $db_entry->save();
 
         return $this->redirectWithStatus($request,'terminusinv.tracking',"Added corporation!", 'success');
-    }
-
-    public function deleteTrackingLocation(Request $request){
-        $id = $request->id;
-        if($id==null){
-            return $this->redirectWithStatus($request,'terminusinv.tracking',"No location provided!", 'error');
-        }
-        TrackedLocations::destroy($id);
-        return $this->redirectWithStatus($request,'terminusinv.tracking',"Hey", 'success');
     }
 
     public function deleteTrackingCorporation(Request $request){
@@ -109,11 +62,11 @@ class TerminusInventoryController extends Controller
         if($id==null){
             return $this->redirectWithStatus($request,'terminusinv.tracking',"No corporation provided!", 'error');
         }
-        TrackedCorporations::destroy($id);
+        TrackedCorporation::destroy($id);
         return $this->redirectWithStatus($request,'terminusinv.tracking',"Sucessfully removed inventory tracking.", 'success');
     }
 
-    public function trackingLocationSuggestions(Request $request){
+    public function stockLocationSuggestions(Request $request){
         $query = $request->q;
         $suggestions = [];
 
@@ -151,39 +104,13 @@ class TerminusInventoryController extends Controller
             $corporations = CorporationInfo::where("name","like","%$query%")->orWhere("ticker","like","%$query%")->get();
         }
 
+        dd($corporations);
+
         $suggestions = [];
         foreach ($corporations as $corporation){
             $suggestions[] = [
                 "text" => "[$corporation->ticker] $corporation->name",
                 "value" => $corporation->corporation_id,
-            ];
-        }
-
-        return response()->json($suggestions);
-    }
-
-    public function fittingStockLocationSuggestions(Request $request){
-        $query = $request->q;
-
-        $locations = TrackedLocations::all();
-
-        $suggestions = [];
-        foreach ($locations as $location){
-            if($location->is_structure){
-                $stastruct = $location->structure;
-            } else if ($location->is_station){
-                $stastruct = $location->station;
-            } else {
-                continue;
-            }
-
-            if($query!=null && strpos($stastruct->name,$query)===false){
-                continue;
-            }
-
-            $suggestions[] = [
-                "text" => "$stastruct->name",
-                "value" => $location->id,
             ];
         }
 
@@ -215,41 +142,76 @@ class TerminusInventoryController extends Controller
         return response()->json($suggestions);
     }
 
-    public function addFittingPos(Request $request){
+    public function addStockPost(Request $request){
         $fit_plugin_id = $request->fit_plugin_id;
         $fit_text = $request->fit_text;
+        $multibuy_text = $request->multibuy_text;
         $amount = $request->amount;
         $location = $request->location_id;
+        $name = $request->name;
 
+        //check if always required data is there
         if($location==null || $amount==null){
-            return $this->redirectWithStatus($request,'terminusinv.fittings',"Not all required data is provided!", 'error');
+            return $this->redirectWithStatus($request,'terminusinv.stocks',"Not all required data is provided!", 'error');
         }
 
+        //check if the amount is in a valid range
         if($amount<1){
-            return $this->redirectWithStatus($request,'terminusinv.fittings',"The minimum stock is 1!", 'error');
+            return $this->redirectWithStatus($request,'terminusinv.stocks',"The minimum stock is 1!", 'error');
         }
 
-        $fitting_stock = new FittingStock();
+        //new stock entry to fill
+        $stock = new Stock();
 
-        $fitting_stock->location_id = $location;
-        $fitting_stock->amount = $amount;
-        $fitting_stock->ship_type_id = 587;
-        $fitting_stock->name = "dummy";
+        //items required for the stock
+        $required_items = [];
+
+        //check if multibuy data was submitted
+        if($multibuy_text!=null){
+            $type_ids = Parser::parseMultiBuy($multibuy_text);
+            $required_items = array_merge($required_items, $type_ids);
+        }
+
+        //check if a eft fit was submitted
+        if($fit_text!=null){
+            try {
+                $fit = Parser::parseFit($fit_text);
+            } catch (Exception $e){
+                $m = $e->getMessage();
+                return $this->redirectWithStatus($request,'terminusinv.stocks',"Could not parse fit: $m", 'error');
+            }
+            $required_items = array_merge($required_items, $fit["items"]);
+            $name = $fit["name"];
+        }
+
+        //fill data
+        $stock->amount = $amount;
+        $stock->check_contracts = true;
+        $stock->check_corporation_hangars = true;
+
+        //if there is a link to the fitting plugin, save it
         if($fit_plugin_id!=null){
-            $fitting_stock->fitting_plugin_fitting_id = $fit_plugin_id;
+            $stock->fitting_plugin_fitting_id = $fit_plugin_id;
         }
 
-        $fitting_stock->save();
+        //make sure we always have a name
+        if($name!=null){
+            $stock->name = $name;
+        } else {
+            $stock->name = "unnamed stock";
+        }
 
-        return $this->redirectWithStatus($request,'terminusinv.fittings',"Added fitting stock definition!", 'success');
+        $stock->save();
+
+        return $this->redirectWithStatus($request,'terminusinv.stocks',"Added stock definition!", 'success');
     }
 
-    public function fittings(Request $request){
-        $fittings = FittingStock::all();
+    public function stocks(Request $request){
+        $fittings = Stock::all();
 
         $has_fitting_plugin = class_exists("Denngarr\Seat\Fitting\Models\Fitting");
 
-        return view("terminusinv::fittings",compact("fittings", "has_fitting_plugin"));
+        return view("terminusinv::stocks",compact("fittings", "has_fitting_plugin"));
     }
 
     public function about(){

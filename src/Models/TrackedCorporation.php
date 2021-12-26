@@ -5,7 +5,7 @@ namespace RecursiveTree\Seat\TerminusInventory\Models;
 use Illuminate\Database\Eloquent\Model;
 use Seat\Eveapi\Models\Corporation\CorporationInfo;
 
-class TrackedCorporations extends Model
+class TrackedCorporation extends Model
 {
     public $timestamps = false;
 

@@ -8,7 +8,15 @@ use Illuminate\Support\Facades\Blade;
 class TerminusInventoryServiceProvider extends AbstractSeatPlugin
 {
     public function boot(){
-        if (! $this->app->routesAreCached()) {
+        $version = $this->getVersion();
+        //always reload the cache in dev builds
+        $is_release = true;
+        if($version=="missing"){
+            $version=rand();
+            $is_release = false;
+        }
+
+        if (!$this->app->routesAreCached() || !$is_release) {
             include __DIR__ . '/Http/routes.php';
         }
 
@@ -20,11 +28,6 @@ class TerminusInventoryServiceProvider extends AbstractSeatPlugin
             __DIR__ . '/resources/js' => public_path('terminusinventory/js')
         ]);
 
-        $version = $this->getVersion();
-        //always reload the cache in dev builds
-        if($version=="missing"){
-            $version=rand();
-        }
 
         Blade::directive('versionedAsset', function($path) use ($version) {
             return "<?php echo asset({$path}) . '?v=$version'; ?>";

@@ -11,9 +11,9 @@ return [
                 'route' => 'terminusinv.tracking',
             ],
             [
-                'name'  => 'Fittings',
+                'name'  => 'Fits&Stocks',
                 'icon'  => 'fas fa-space-shuttle',
-                'route' => 'terminusinv.fittings',
+                'route' => 'terminusinv.stocks',
             ],
             [
                 'name'  => 'About',

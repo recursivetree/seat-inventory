@@ -22,19 +22,9 @@ Route::group([
         'uses' => 'TerminusInventoryController@tracking'
     ]);
 
-    Route::post('/tracking/locations/add', [
-        'as'   => 'terminusinv.addTrackingLocation',
-        'uses' => 'TerminusInventoryController@addTrackingLocation'
-    ]);
-
     Route::post('/tracking/corporations/add', [
         'as'   => 'terminusinv.addTrackingCorporation',
         'uses' => 'TerminusInventoryController@addTrackingCorporation'
-    ]);
-
-    Route::post('/tracking/locations/delete', [
-        'as'   => 'terminusinv.deleteTrackingLocation',
-        'uses' => 'TerminusInventoryController@deleteTrackingLocation'
     ]);
 
     Route::post('/tracking/corporations/delete', [
@@ -42,38 +32,28 @@ Route::group([
         'uses' => 'TerminusInventoryController@deleteTrackingCorporation'
     ]);
 
-    Route::get('/tracking/locations/suggestions', [
-        'as'   => 'terminusinv.trackingLocationSuggestions',
-        'uses' => 'TerminusInventoryController@trackingLocationSuggestions'
-    ]);
-
     Route::get('/tracking/corporations/suggestions', [
         'as'   => 'terminusinv.trackingCorporationSuggestions',
         'uses' => 'TerminusInventoryController@trackingCorporationSuggestions'
     ]);
 
-    Route::get('/tracking/corporations/suggestions', [
-        'as'   => 'terminusinv.trackingCorporationSuggestions',
-        'uses' => 'TerminusInventoryController@trackingCorporationSuggestions'
+    Route::get('/stocks/locations/suggestions', [
+        'as'   => 'terminusinv.stockLocationSuggestions',
+        'uses' => 'TerminusInventoryController@stockLocationSuggestions'
     ]);
 
-    Route::get('/fittings/locations/suggestions', [
-        'as'   => 'terminusinv.fittingStockLocationSuggestions',
-        'uses' => 'TerminusInventoryController@fittingStockLocationSuggestions'
-    ]);
-
-    Route::get('/fittings/plugin/fittings/suggestions', [
+    Route::get('/stocks/plugin/fittings/suggestions', [
         'as'   => 'terminusinv.fittingPluginFittingsSuggestions',
         'uses' => 'TerminusInventoryController@fittingPluginFittingsSuggestions'
     ]);
 
-    Route::get('/fittings', [
-        'as'   => 'terminusinv.fittings',
-        'uses' => 'TerminusInventoryController@fittings'
+    Route::get('/stocks', [
+        'as'   => 'terminusinv.stocks',
+        'uses' => 'TerminusInventoryController@stocks'
     ]);
 
-    Route::post('/fittings/add', [
-        'as'   => 'terminusinv.addFitting',
-        'uses' => 'TerminusInventoryController@addFittingPos'
+    Route::post('/stocks/add', [
+        'as'   => 'terminusinv.addStock',
+        'uses' => 'TerminusInventoryController@addStockPost'
     ]);
 });

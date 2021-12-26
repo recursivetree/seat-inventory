@@ -14,39 +14,54 @@
             </h5>
 
             <h6>
-                Fittings
+                Stocks
             </h6>
 
-            @foreach($fittings as $fit)
-                <p>{{ $fit->name }}</p>
-            @endforeach
             @if($fittings->isEmpty())
                 <div class="alert alert-primary">
                     You haven't added any fits to monitor yet.
                 </div>
+            @else
+                <div class="list-group">
+                    @foreach($fittings as $fit)
+                        <a href="#" class="list-group-item list-group-item-action">{{ $fit->name }}</a>
+                    @endforeach
+                </div>
             @endif
 
-            <h6>Add Fit</h6>
+            <h6 class="mt-4">Add Fit</h6>
 
             <ul class="nav nav-tabs" id="fitTypeTab" data-tabs="tabs">
                 <li class="nav-item">
-                    <button class="nav-link active" data-toggle="tab" href="#fit-text-tab-content" type="button">Copy&Paste</button>
+                    <button class="nav-link active" data-toggle="tab" href="#fit-text-tab-content" type="button">Fits
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" data-toggle="tab" href="#multibuy-text-tab-content" type="button">
+                        Multibuy
+                    </button>
                 </li>
                 @if($has_fitting_plugin)
                     <li class="nav-item">
-                        <button class="nav-link" id="fit-plugin-tab" data-toggle="tab" href="#fit-plugin-tab-content" type="button">Fitting Plugin</button>
+                        <button class="nav-link" id="fit-plugin-tab" data-toggle="tab" href="#fit-plugin-tab-content"
+                                type="button">Fitting Plugin
+                        </button>
                     </li>
                 @endif
             </ul>
 
             <div class="tab-content mt-4" id="fitTypeTabContent">
+
+                {{-- EFT Fits --}}
                 <div class="tab-pane show active" id="fit-text-tab-content">
-                    <form action="{{ route("terminusinv.addFitting") }}" method="POST">
+                    <form action="{{ route("terminusinv.addStock") }}" method="POST">
                         @csrf
 
                         <div class="form-group">
                             <label for="fit-text">Fit</label>
-                            <textarea id="fit-text" class="form-control monospace-font text-sm" rows="10" name="fit_text" placeholder="{{ "[Pacifier, 2022 Scanner]\n\nCo-Processor II\nCo-Processor II\nType-D Restrained Inertial Stabilizers\nInertial Stabilizers II" }}"></textarea>
+                            <textarea id="fit-text" class="form-control monospace-font text-sm" rows="10"
+                                      name="fit_text"
+                                      placeholder="{{ "[Pacifier, 2022 Scanner]\n\nCo-Processor II\nCo-Processor II\nType-D Restrained Inertial Stabilizers\nInertial Stabilizers II" }}"></textarea>
                         </div>
 
                         <div class="form-group">
@@ -61,7 +76,7 @@
                                     class="form-control basicAutoComplete" type="text"
                                     autocomplete="off"
                                     id="fit-location"
-                                    data-url="{{ route("terminusinv.fittingStockLocationSuggestions") }}"
+                                    data-url="{{ route("terminusinv.stockLocationSuggestions") }}"
                                     name="location_id">
                             </select>
                         </div>
@@ -70,9 +85,50 @@
 
                     </form>
                 </div>
+
+                {{-- Multibuy --}}
+                <div class="tab-pane" id="multibuy-text-tab-content">
+                    <form action="{{ route("terminusinv.addStock") }}" method="POST">
+                        @csrf
+
+                        <div class="form-group">
+                            <label for="stock-name">Name</label>
+                            <input type="text" id="stock-name" class="form-control" name="name"
+                                   placeholder="Enter a name...">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="multibuy-text">Multibuy</label>
+                            <textarea id="multibuy-text" class="form-control monospace-font text-sm" rows="10"
+                                      name="multibuy_text" placeholder=""></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="stock-amount">Amount</label>
+                            <input type="number" id="stock-amount" class="form-control" name="amount" value="1">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="fit-location">Location</label>
+                            <select
+                                    placeholder="enter the name of a location"
+                                    class="form-control basicAutoComplete" type="text"
+                                    autocomplete="off"
+                                    id="fit-location"
+                                    data-url="{{ route("terminusinv.stockLocationSuggestions") }}"
+                                    name="location_id">
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Submit</button>
+
+                    </form>
+                </div>
+
+                {{-- Plugin --}}
                 @if($has_fitting_plugin)
                     <div class="tab-pane" id="fit-plugin-tab-content">
-                        <form action="{{ route("terminusinv.addFitting") }}" method="POST">
+                        <form action="{{ route("terminusinv.addStock") }}" method="POST">
                             @csrf
 
                             <div class="form-group">
@@ -99,7 +155,7 @@
                                         class="form-control basicAutoComplete" type="text"
                                         autocomplete="off"
                                         id="fit-location"
-                                        data-url="{{ route("terminusinv.fittingStockLocationSuggestions") }}"
+                                        data-url="{{ route("terminusinv.stockLocationSuggestions") }}"
                                         name="location_id">
                                 </select>
                             </div>
@@ -109,8 +165,9 @@
                         </form>
                     </div>
                 @endif
-            </div>
 
+
+            </div>
         </div>
     </div>
 @stop
@@ -123,7 +180,7 @@
             resolverSettings: {
                 requestThrottling: 250
             },
-            minLength:0,
+            minLength: 0,
         });
     </script>
 @endpush
