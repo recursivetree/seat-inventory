@@ -31,6 +31,9 @@
         <div class="card-body">
             <h5>
                 {{ $stock->name }}
+                @if($stock->fitting_plugin_fitting_id != null)
+                    <span class="badge badge-primary">Fitting Plugin</span>
+                @endif
             </h5>
 
             <p>{{ $stock->location->name }}</p>

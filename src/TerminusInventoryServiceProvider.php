@@ -2,6 +2,8 @@
 
 namespace RecursiveTree\Seat\TerminusInventory;
 
+use RecursiveTree\Seat\TerminusInventory\Observers\FittingPluginFittingObserver;
+use RecursiveTree\Seat\TerminusInventory\Helpers\FittingPluginHelper;
 use Seat\Services\AbstractSeatPlugin;
 use Illuminate\Support\Facades\Blade;
 
@@ -32,6 +34,10 @@ class TerminusInventoryServiceProvider extends AbstractSeatPlugin
         Blade::directive('versionedAsset', function($path) use ($version) {
             return "<?php echo asset({$path}) . '?v=$version'; ?>";
         });
+
+        if(FittingPluginHelper::pluginIsAvailable()) {
+            FittingPluginHelper::$FITTING_PLUGIN_FITTING_MODEL::observe(FittingPluginFittingObserver::class);
+        }
     }
 
     public function register(){

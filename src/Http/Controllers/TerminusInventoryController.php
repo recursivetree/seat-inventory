@@ -3,6 +3,7 @@
 namespace RecursiveTree\Seat\TerminusInventory\Http\Controllers;
 
 use Exception;
+use RecursiveTree\Seat\TerminusInventory\Helpers\FittingPluginHelper;
 use RecursiveTree\Seat\TerminusInventory\Models\Stock;
 use RecursiveTree\Seat\TerminusInventory\Models\StockItem;
 use RecursiveTree\Seat\TerminusInventory\Models\TrackedCorporation;
@@ -120,16 +121,15 @@ class TerminusInventoryController extends Controller
     }
 
     public function fittingPluginFittingsSuggestions(Request $request){
-        if(!class_exists("Denngarr\Seat\Fitting\Models\Fitting")){
+        if(!FittingPluginHelper::pluginIsAvailable()){
             return response()->json([],400);
         }
-        $class = "Denngarr\Seat\Fitting\Models\Fitting";
 
         $query = $request->q;
         if($query==null){
-            $fittings = $class::all();
+            $fittings = FittingPluginHelper::$FITTING_PLUGIN_FITTING_MODEL::all();
         } else {
-            $fittings = $class::where("fitname","like","%$query%")::get();
+            $fittings = FittingPluginHelper::$FITTING_PLUGIN_FITTING_MODEL::where("fitname","like","%$query%")->get();
         }
 
         $suggestions = [];
@@ -191,6 +191,21 @@ class TerminusInventoryController extends Controller
         if($fit_text!=null){
             try {
                 $fit = Parser::parseFit($fit_text);
+            } catch (Exception $e){
+                $m = $e->getMessage();
+                return $this->redirectWithStatus($request,'terminusinv.stocks',"Could not parse fit: $m", 'error');
+            }
+            $required_items = array_merge($required_items, $fit["items"]);
+            $name = $fit["name"];
+        }
+
+        if($fit_plugin_id != null && FittingPluginHelper::pluginIsAvailable()){
+            $model = FittingPluginHelper::$FITTING_PLUGIN_FITTING_MODEL::find($fit_plugin_id);
+            if($model == null){
+                return $this->redirectWithStatus($request,'terminusinv.stocks',"The fit could not be retrieved from the fitting plugin!", 'error');
+            }
+            try {
+                $fit = Parser::parseFit($model->eftfitting);
             } catch (Exception $e){
                 $m = $e->getMessage();
                 return $this->redirectWithStatus($request,'terminusinv.stocks',"Could not parse fit: $m", 'error');
