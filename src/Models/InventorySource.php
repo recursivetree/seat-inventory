@@ -6,11 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 use Seat\Eveapi\Models\Universe\UniverseStation;
 use Seat\Eveapi\Models\Universe\UniverseStructure;
 
-class Stock extends Model
+class InventorySource extends Model
 {
     public $timestamps = false;
 
-    protected $table = 'recursive_tree_seat_terminusinv_stock_definitions';
+    protected $table = 'recursive_tree_seat_terminusinv_inventory_source';
 
     public function location(){
         if ($this->structure_id !== null){
@@ -27,16 +27,6 @@ class Stock extends Model
 
     public function items()
     {
-        return $this->hasMany(StockItem::class,"stock_id","id");
-    }
-
-    protected static function booted()
-    {
-        static::deleted(function ($model) {
-            $items = StockItem::where("stock_id",$model->id)->get();
-            foreach ($items as $item){
-                $item->destroy($item->id);
-            }
-        });
+        return $this->hasMany(InventoryItem::class,"source_id","id");
     }
 }

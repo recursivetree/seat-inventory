@@ -45,7 +45,8 @@ class FittingPluginFittingObserver
                 StockItem::where("stock_id",$id)->delete();
 
                 //inset new items
-                foreach ($items as $item){
+                foreach ($items as $item_helper){
+                    $item = $item_helper->asStockItem();
                     $item->stock_id = $id;
                     $item->save();
                 }

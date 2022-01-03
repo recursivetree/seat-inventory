@@ -4,6 +4,9 @@ namespace RecursiveTree\Seat\TerminusInventory\Http\Controllers;
 
 use Exception;
 use RecursiveTree\Seat\TerminusInventory\Helpers\FittingPluginHelper;
+use RecursiveTree\Seat\TerminusInventory\Helpers\LocationHelper;
+use RecursiveTree\Seat\TerminusInventory\Models\InventoryItem;
+use RecursiveTree\Seat\TerminusInventory\Models\InventorySource;
 use RecursiveTree\Seat\TerminusInventory\Models\Stock;
 use RecursiveTree\Seat\TerminusInventory\Models\StockItem;
 use RecursiveTree\Seat\TerminusInventory\Models\TrackedCorporation;
@@ -18,6 +21,7 @@ use Seat\Eveapi\Models\Universe\UniverseStructure;
 use Seat\Eveapi\Models\Corporation\CorporationInfo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Seat\Eveapi\Models\Sde\InvType;
 
 class TerminusInventoryController extends Controller
 {
@@ -107,8 +111,6 @@ class TerminusInventoryController extends Controller
             $corporations = CorporationInfo::where("name","like","%$query%")->orWhere("ticker","like","%$query%")->get();
         }
 
-        dd($corporations);
-
         $suggestions = [];
         foreach ($corporations as $corporation){
             $suggestions[] = [
@@ -144,6 +146,26 @@ class TerminusInventoryController extends Controller
         return response()->json($suggestions);
     }
 
+    public function itemTypeSuggestions(Request $request){
+        $query = $request->q;
+        if($query==null){
+            $types = InvType::where("marketGroupID", "!=", null)->get();
+        } else {
+            $types = InvType::where("marketGroupID", "!=", null)->where("typeName","like","$query%")->limit(100)->get();
+        }
+
+        $suggestions = [];
+        foreach ($types as $type){
+
+            $suggestions[] = [
+                "text" => "$type->typeName",
+                "value" => $type->typeID,
+            ];
+        }
+
+        return response()->json($suggestions);
+    }
+
     public function addStockPost(Request $request){
         $fit_plugin_id = $request->fit_plugin_id;
         $fit_text = $request->fit_text;
@@ -168,15 +190,14 @@ class TerminusInventoryController extends Controller
             return $this->redirectWithStatus($request,'terminusinv.stocks',"Invalid location!", 'error');
         }
 
+        //check if the location is valid
+        $location_data = LocationHelper::parseLocationSuggestion($location);
+        if (!$location_data->valid){
+            return $this->redirectWithStatus($request,'terminusinv.stocks',"Invalid location!", 'error');
+        }
+
         //new stock entry to fill
         $stock = new Stock();
-
-        //add location
-        if(strlen($location_regexp["station_id"])>1){
-            $stock->station_id = $location_regexp["station_id"];
-        } else if(strlen($location_regexp["structure_id"])>1){
-            $stock->structure_id = $location_regexp["structure_id"];
-        }
 
         //items required for the stock
         $required_items = [];
@@ -219,6 +240,13 @@ class TerminusInventoryController extends Controller
         $stock->check_contracts = true;
         $stock->check_corporation_hangars = true;
 
+        //add location
+        if($location_data->station_id!=null){
+            $stock->station_id = $location_data->station_id;
+        } else if($location_data->structure_id!=null){
+            $stock->structure_id = $location_data->structure_id;
+        }
+
         //if there is a link to the fitting plugin, save it
         if($fit_plugin_id!=null){
             $stock->fitting_plugin_fitting_id = $fit_plugin_id;
@@ -238,7 +266,8 @@ class TerminusInventoryController extends Controller
 
             $id=$stock->id;
 
-            foreach ($required_items as $item){
+            foreach ($required_items as $item_helper){
+                $item = $item_helper->asStockItem();
                 $item->stock_id = $id;
                 $item->save();
             }
@@ -272,7 +301,45 @@ class TerminusInventoryController extends Controller
             Stock::destroy($id);
         }
 
+        $items = StockItem::where("stock_id",$id)->get();
+        foreach ($items as $item){
+            $item->destroy($item->id);
+        }
+
         return $this->redirectWithStatus($request,'terminusinv.stocks',"Deleted stock definition!", 'success');
+    }
+
+    public function itemBrowser(Request $request){
+        $location = LocationHelper::parseLocationSuggestion($request->location_id);
+        $filter_type = $request->item_id;
+        $allowed_types = [];
+        if($request->checkbox_corporation_hangar!=null || $request->filter == null){
+            $allowed_types[] = "corporation_hangar";
+        }
+        if($request->checkbox_contracts!=null || $request->filter == null){
+            $allowed_types[] = "contract";
+        }
+
+
+        $query = InventorySource::whereIn("source_type", $allowed_types);
+
+        //filter location
+        if ($location->valid && $location->station_id != null){
+            $query = $query->where("station_id", $location->station_id);
+        } elseif ($location->valid && $location->structure_id != null){
+            $query = $query->where("structure_id", $location->structure_id);
+        }
+        $inventory_sources = $query->get();
+
+        //item filter
+        if($filter_type!=null) {
+            $inventory_sources = $inventory_sources->filter(function ($source) use ($filter_type) {
+                return $source->items->where("type_id", $filter_type)->count() > 0;
+            });
+        }
+
+
+        return view("terminusinv::itembrowser", compact("inventory_sources","request", "filter_type"));
     }
 
     public function about(){

@@ -30,6 +30,21 @@ class AddTables extends Migration
             $table->bigInteger("type_id");
             $table->bigInteger("amount")->unsigned();
         });
+
+        Schema::create('recursive_tree_seat_terminusinv_inventory_source', function (Blueprint $table) {
+            $table->bigIncrements("id");
+            $table->bigInteger("structure_id")->nullable();                 //citadel where the item is stored
+            $table->bigInteger("station_id")->nullable();                   //npc station of the item
+            $table->string("source_name");                                  //the name of this inventory source, e.g. a corporation hangar or contract
+            $table->enum('source_type', ['corporation_hangar', 'contract']);//type of source
+        });
+
+        Schema::create('recursive_tree_seat_terminusinv_inventory_item', function (Blueprint $table) {
+            $table->bigIncrements("id");
+            $table->bigInteger("source_id");
+            $table->bigInteger("type_id");
+            $table->bigInteger("amount")->unsigned();
+        });
     }
 
     /**
@@ -39,9 +54,11 @@ class AddTables extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('recursive_tree_seat_terminusinv_tracked_corporations');
-        Schema::dropIfExists('recursive_tree_seat_terminusinv_stock');
-        Schema::dropIfExists('recursive_tree_seat_terminusinv_stock_items');
+        Schema::drop('recursive_tree_seat_terminusinv_tracked_corporations');
+        Schema::drop('recursive_tree_seat_terminusinv_stock');
+        Schema::drop('recursive_tree_seat_terminusinv_stock_items');
+        Schema::drop('recursive_tree_seat_terminusinv_inventory_source');
+        Schema::drop('recursive_tree_seat_terminusinv_inventory_item');
     }
 }
 

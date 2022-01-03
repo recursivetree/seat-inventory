@@ -2,10 +2,16 @@
 
 namespace RecursiveTree\Seat\TerminusInventory;
 
+use Exception;
+use RecursiveTree\Seat\TerminusInventory\Jobs\UpdateTerminusInv;
 use RecursiveTree\Seat\TerminusInventory\Observers\FittingPluginFittingObserver;
 use RecursiveTree\Seat\TerminusInventory\Helpers\FittingPluginHelper;
 use Seat\Services\AbstractSeatPlugin;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Queue\Events\JobProcessed;
 
 class TerminusInventoryServiceProvider extends AbstractSeatPlugin
 {
@@ -38,6 +44,11 @@ class TerminusInventoryServiceProvider extends AbstractSeatPlugin
         if(FittingPluginHelper::pluginIsAvailable()) {
             FittingPluginHelper::$FITTING_PLUGIN_FITTING_MODEL::observe(FittingPluginFittingObserver::class);
         }
+
+        Artisan::command('terminusinv:update', function () {
+            $this->info("Sending email to:!");
+            UpdateTerminusInv::dispatchNow();//->onQueue('default');
+        });
     }
 
     public function register(){
