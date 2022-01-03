@@ -45,9 +45,14 @@ class TerminusInventoryServiceProvider extends AbstractSeatPlugin
             FittingPluginHelper::$FITTING_PLUGIN_FITTING_MODEL::observe(FittingPluginFittingObserver::class);
         }
 
-        Artisan::command('terminusinv:update', function () {
-            $this->info("Sending email to:!");
-            UpdateTerminusInv::dispatchNow();//->onQueue('default');
+        Artisan::command('terminusinv:update {--sync}', function () {
+            if ($this->option("sync")){
+                UpdateTerminusInv::dispatchNow();
+                $this->info("Synchronously processed inventory updates!");
+            } else {
+                UpdateTerminusInv::dispatch()->onQueue('default');
+                $this->info("Scheduled an inventory update!");
+            }
         });
     }
 
