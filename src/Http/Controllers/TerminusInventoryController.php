@@ -329,7 +329,7 @@ class TerminusInventoryController extends Controller
         } elseif ($location->valid && $location->structure_id != null){
             $query = $query->where("structure_id", $location->structure_id);
         }
-        $inventory_sources = $query->get();
+        $inventory_sources = $query->orderBy("station_id","ASC")->orderBy("structure_id","ASC")->get();
 
         //item filter
         if($filter_type!=null) {

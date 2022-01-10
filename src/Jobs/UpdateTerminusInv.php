@@ -42,16 +42,14 @@ class UpdateTerminusInv implements ShouldQueue
     }
 
     private function handleContracts(){
-        $contracts = CorporationContract::all();
+        $contracts = CorporationContract::with("detail")->get();
 
         foreach ($contracts as $contract){
             $details = $contract->detail;
             if($details->type != "item_exchange"){
-                //throw new Exception(json_encode($details));
                 continue;
             }
             if($details->status != "outstanding"){
-                //throw new Exception(json_encode($details));
                 continue;
             }
 
@@ -64,10 +62,6 @@ class UpdateTerminusInv implements ShouldQueue
             $station_id = $details->end_location->station_id;
             $structure_id = $details->end_location->structure_id;
 
-//            if($flag) {
-//                throw new Exception(json_encode($details->end_location));
-//            }
-//            $flag = true;
 
             $source = new InventorySource();
             if($station_id!=null){
@@ -77,7 +71,8 @@ class UpdateTerminusInv implements ShouldQueue
             } else {
                 continue; // contract has no location?
             }
-            $source->source_name = "Contract $details->title";
+
+            $source->source_name = "$details->title";
             $source->source_type = "contract";
             $source->save();
 
@@ -147,7 +142,6 @@ class UpdateTerminusInv implements ShouldQueue
         while (true) {
             $parent = CorporationAsset::where("item_id",$current_parent->location_id)->first();
 
-            //there is a default returned, so we have to check different
             if ($parent == null) {
                 break;
             }

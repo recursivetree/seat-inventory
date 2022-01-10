@@ -81,6 +81,15 @@
                 <ol class="breadcrumb mb-0 mt-1" data-toggle="collapse"
                     data-target="#{{ "inventorysourceid$source->id" }}">
                     <li class="breadcrumb-item">{{ $source->location->name }}</li>
+                    <li class="breadcrumb-item">
+                        @if($source->source_type == "corporation_hangar")
+                            Corporation Hangar
+                        @elseif($source->source_type == "contract")
+                            Contract
+                        @else
+                            $source->source_type
+                        @endif
+                    </li>
                     <li class="breadcrumb-item">{{ $source->source_name }}</li>
                 </ol>
 
