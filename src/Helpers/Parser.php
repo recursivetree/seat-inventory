@@ -53,13 +53,6 @@ class Parser
 
     public static function parseMultiBuy($multibuy): array
     {
-//        Ibis	2	-	-
-//        Civilian Miner	2	-	-
-//        1MN Civilian Afterburner	2	-	-
-//        Small Armor Repairer I	1	-	-
-//        'Basic' EM Energized Membrane	1	-	-
-//        5MN Microwarpdrive I	1	-	-
-//        Total:			0
 
         $matches = [];
 
@@ -86,7 +79,7 @@ class Parser
             $result = InvType::where('typeName', $item)->first();
             if($result == null) continue;
 
-            $stock_item = new StockItem();
+            $stock_item = new ItemHelper();
             $stock_item->type_id = $result->typeID;
             $stock_item->amount = $amount;
 

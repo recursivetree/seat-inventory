@@ -44,8 +44,6 @@ class UpdateTerminusInv implements ShouldQueue
     private function handleContracts(){
         $contracts = CorporationContract::all();
 
-        $flag = false;
-
         foreach ($contracts as $contract){
             $details = $contract->detail;
             if($details->type != "item_exchange"){
@@ -157,18 +155,17 @@ class UpdateTerminusInv implements ShouldQueue
             $current_parent = $parent;
         }
 
-        $station = $current_parent->station->station_id;
-        $structure = $current_parent->structure->strucutre_id;
-
         $item_data = new ItemHelper($item->type_id, $item->quantity);
 
-        if($station != null){
+        if($current_parent->station()->exists()){
+            $station = $current_parent->station->station_id;
             if (!array_key_exists($station,$this->station_items)){
                 $this->station_items[$station] = [];
             }
             $this->station_items[$station][] = $item_data;
         }
-        if($structure != null){
+        if($current_parent->structure()->exists()){
+            $structure = $current_parent->structure->structure_id;
             if (!array_key_exists($structure,$this->structure_items)){
                 $this->structure_items[$structure] = [];
             }
