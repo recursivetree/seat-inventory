@@ -5,6 +5,7 @@ namespace RecursiveTree\Seat\TerminusInventory\Http\Controllers;
 use Exception;
 use RecursiveTree\Seat\TerminusInventory\Helpers\FittingPluginHelper;
 use RecursiveTree\Seat\TerminusInventory\Helpers\LocationHelper;
+use RecursiveTree\Seat\TerminusInventory\Helpers\StockHelper;
 use RecursiveTree\Seat\TerminusInventory\Models\InventoryItem;
 use RecursiveTree\Seat\TerminusInventory\Models\InventorySource;
 use RecursiveTree\Seat\TerminusInventory\Models\Stock;
@@ -160,6 +161,26 @@ class TerminusInventoryController extends Controller
             $suggestions[] = [
                 "text" => "$type->typeName",
                 "value" => $type->typeID,
+            ];
+        }
+
+        return response()->json($suggestions);
+    }
+
+    public function stockSuggestions(Request $request){
+        $query = $request->q;
+        if($query==null){
+            $stocks = Stock::all();
+        } else {
+            $stocks = Stock::where("name", "like", "$query%")->limit(100)->get();
+        }
+
+        $suggestions = [];
+        foreach ($stocks as $stock){
+
+            $suggestions[] = [
+                "text" => "$stock->name",
+                "value" => $stock->id,
             ];
         }
 
@@ -340,6 +361,33 @@ class TerminusInventoryController extends Controller
 
 
         return view("terminusinv::itembrowser", compact("inventory_sources","request", "filter_type"));
+    }
+
+    public function stockAvailability(Request $request){
+        $location = null;
+
+        if($request->location_id){
+            $location = LocationHelper::parseLocationSuggestion($request->location_id);
+        }
+
+        if($request->stock_id){
+            $stock = Stock::find($request->stock_id);
+            if ($stock != null){
+                $location = LocationHelper::fromModel($stock);
+            }
+        }
+
+        if($location == null){
+            return view("terminusinv::availability", compact("request",));
+        }
+
+        if($location->valid == false){
+            return $this->redirectWithStatus($request,'terminusinv.stockAvailability',"Location not found!", 'error');
+        }
+
+        $stocks = StockHelper::getStocksFromLocation($location);
+
+        return view("terminusinv::availability", compact("request",));
     }
 
     public function about(){

@@ -38,4 +38,8 @@ class LocationHelper
 
         return $location_helper;
     }
+
+    public static function fromModel($model){
+        return new LocationHelper(true, $model->station_id, $model->structure_id);
+    }
 }

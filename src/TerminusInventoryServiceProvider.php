@@ -37,7 +37,7 @@ class TerminusInventoryServiceProvider extends AbstractSeatPlugin
         ]);
 
 
-        Blade::directive('versionedAsset', function($path) use ($version) {
+        Blade::directive('terminusinvVersionedAsset', function($path) use ($version) {
             return "<?php echo asset({$path}) . '?v=$version'; ?>";
         });
 

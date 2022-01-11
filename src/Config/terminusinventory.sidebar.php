@@ -16,6 +16,11 @@ return [
                 'route' => 'terminusinv.stocks',
             ],
             [
+                'name'  => 'Fits&Stocks Availability',
+                'icon'  => 'fas fa-clipboard',
+                'route' => 'terminusinv.stockAvailability',
+            ],
+            [
                 'name'  => 'Item Browser',
                 'icon'  => 'fas fa-list',
                 'route' => 'terminusinv.itemBrowser',

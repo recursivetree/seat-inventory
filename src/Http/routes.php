@@ -67,6 +67,16 @@ Route::group([
         'uses' => 'TerminusInventoryController@deleteStockPost'
     ]);
 
+    Route::get('/stocks/availability', [
+        'as'   => 'terminusinv.stockAvailability',
+        'uses' => 'TerminusInventoryController@stockAvailability'
+    ]);
+
+    Route::get('/stocks/suggestions', [
+        'as'   => 'terminusinv.stockSuggestions',
+        'uses' => 'TerminusInventoryController@stockSuggestions'
+    ]);
+
     Route::get('/itembrowser', [
         'as'   => 'terminusinv.itemBrowser',
         'uses' => 'TerminusInventoryController@itemBrowser'
