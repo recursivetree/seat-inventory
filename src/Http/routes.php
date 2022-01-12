@@ -6,12 +6,6 @@ Route::group([
     'prefix' => 'terminusinventory',
 ], function () {
 
-    // Your route definitions go here.
-    Route::get('/', [
-        'as'   => 'terminusinv.home',
-        'uses' => 'TerminusInventoryController@home'
-    ]);
-
     Route::get('/about', [
         'as'   => 'terminusinv.about',
         'uses' => 'TerminusInventoryController@about'
@@ -37,9 +31,9 @@ Route::group([
         'uses' => 'TerminusInventoryController@trackingCorporationSuggestions'
     ]);
 
-    Route::get('/stocks/locations/suggestions', [
-        'as'   => 'terminusinv.stockLocationSuggestions',
-        'uses' => 'TerminusInventoryController@stockLocationSuggestions'
+    Route::get('/locations/suggestions', [
+        'as'   => 'terminusinv.locationSuggestions',
+        'uses' => 'TerminusInventoryController@locationSuggestions'
     ]);
 
     Route::get('/stocks/plugin/fittings/suggestions', [

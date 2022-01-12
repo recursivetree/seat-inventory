@@ -50,7 +50,7 @@
                             class="form-control basicAutoComplete"
                             autocomplete="off"
                             id="stock-location"
-                            data-url="{{ route("terminusinv.stockLocationSuggestions") }}"
+                            data-url="{{ route("terminusinv.locationSuggestions") }}"
                             name="location_id">
                     </select>
                 </div>
@@ -94,7 +94,7 @@
                 </ol>
 
                 <ul class="list-group collapse" id="{{ "inventorysourceid$source->id" }}">
-                    @foreach( ($filter_type==null)? $source->items : $source->items->where("type_id",$filter_type) as $item)
+                    @foreach( ($filter_item_type==null)? $source->items : $source->items->where("type_id",$filter_item_type) as $item)
                         <li class="list-group-item">
                             <img src="https://images.evetech.net/types/{{ $item->type_id }}/icon" height="24">
                             <span>
@@ -110,7 +110,7 @@
 @stop
 
 @push('javascript')
-    <script src="@versionedAsset('terminusinventory/js/bootstrap-autocomplete.js')"></script>
+    <script src="@terminusinvVersionedAsset('terminusinventory/js/bootstrap-autocomplete.js')"></script>
 
     <script>
         $('.basicAutoComplete').autoComplete({

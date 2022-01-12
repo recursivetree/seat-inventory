@@ -68,7 +68,7 @@
 @stop
 
 @push('javascript')
-    <script src="@versionedAsset('terminusinventory/js/bootstrap-autocomplete.js')"></script>
+    <script src="@terminusinvVersionedAsset('terminusinventory/js/bootstrap-autocomplete.js')"></script>
 
     <script>
         $('.basicAutoComplete').autoComplete({

@@ -13,16 +13,7 @@ class InventorySource extends Model
     protected $table = 'recursive_tree_seat_terminusinv_inventory_source';
 
     public function location(){
-        if ($this->structure_id !== null){
-            return $this->hasOne(UniverseStructure::class, 'structure_id', 'structure_id')->withDefault([
-                'name' => trans('web::seat.unknown'),
-            ]);
-        }
-
-        return $this->hasOne(UniverseStation::class, 'station_id', 'station_id')->withDefault([
-            'name' => trans('web::seat.unknown'),
-        ]);
-
+        return $this->hasOne(Location::class, 'id', 'location_id');
     }
 
     public function items()

@@ -79,9 +79,7 @@ class Parser
             $result = InvType::where('typeName', $item)->first();
             if($result == null) continue;
 
-            $stock_item = new ItemHelper();
-            $stock_item->type_id = $result->typeID;
-            $stock_item->amount = $amount;
+            $stock_item = new ItemHelper($result->typeID,$amount);
 
             $type_list[] = $stock_item;
         }

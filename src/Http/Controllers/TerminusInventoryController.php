@@ -6,8 +6,8 @@ use Exception;
 use RecursiveTree\Seat\TerminusInventory\Helpers\FittingPluginHelper;
 use RecursiveTree\Seat\TerminusInventory\Helpers\LocationHelper;
 use RecursiveTree\Seat\TerminusInventory\Helpers\StockHelper;
-use RecursiveTree\Seat\TerminusInventory\Models\InventoryItem;
 use RecursiveTree\Seat\TerminusInventory\Models\InventorySource;
+use RecursiveTree\Seat\TerminusInventory\Models\Location;
 use RecursiveTree\Seat\TerminusInventory\Models\Stock;
 use RecursiveTree\Seat\TerminusInventory\Models\StockItem;
 use RecursiveTree\Seat\TerminusInventory\Models\TrackedCorporation;
@@ -32,16 +32,6 @@ class TerminusInventoryController extends Controller
             'type' => $type
         ]);
         return redirect()->route($redirect);
-    }
-
-    public function home(){
-        $data = CorporationAsset::all();
-        $lst = [];
-        foreach ($data as $e){
-            $lst[] = $e->type->typeName;
-        }
-        dd($lst);
-        //return view("terminusinv::datasources");
     }
 
     public function tracking(){
@@ -74,29 +64,20 @@ class TerminusInventoryController extends Controller
         return $this->redirectWithStatus($request,'terminusinv.tracking',"Sucessfully removed inventory tracking.", 'success');
     }
 
-    public function stockLocationSuggestions(Request $request){
+    public function locationSuggestions(Request $request){
         $query = $request->q;
         $suggestions = [];
 
         if($query==null){
-            $structures = UniverseStructure::all();
-            $stations = UniverseStation::all();
+            $locations = Location::all();
         } else {
-            $structures = UniverseStructure::where("name","like","%$query%")->get();
-            $stations = UniverseStation::where("name","like","%$query%")->get();
+            $locations = Location::where("name","like","%$query%")->get();
         }
 
-        foreach ($structures as $structure){
+        foreach ($locations as $location){
             $suggestions[] = [
-                "text" => $structure->name,
-                "value" => "structure|$structure->structure_id",
-            ];
-        }
-
-        foreach ($stations as $station){
-            $suggestions[] = [
-                "text" => $station->name,
-                "value" => "station|$station->station_id",
+                "text" => $location->name,
+                "value" => $location->id,
             ];
         }
 
@@ -192,38 +173,29 @@ class TerminusInventoryController extends Controller
         $fit_text = $request->fit_text;
         $multibuy_text = $request->multibuy_text;
         $amount = $request->amount;
-        $location = $request->location_id;
+        $location_id = $request->location_id;
         $name = $request->name;
 
         //check if always required data is there
-        if($location==null || $amount==null){
+        if($location_id==null || $amount==null){
             return $this->redirectWithStatus($request,'terminusinv.stocks',"Not all required data is provided!", 'error');
         }
 
         //check if the amount is in a valid range
         if($amount<1){
-            return $this->redirectWithStatus($request,'terminusinv.stocks',"The minimum stock is 1!", 'error');
+            return $this->redirectWithStatus($request,'terminusinv.stocks',"The minimum amount is 1!", 'error');
         }
 
-        //check if the location is in a valid format
-        $location_regexp = [];
-        if (!preg_match("/^(?:station\|(?<station_id>\d+))|(?:structure\|(?<structure_id>\d+))$/",$location, $location_regexp)){
-            return $this->redirectWithStatus($request,'terminusinv.stocks',"Invalid location!", 'error');
+        //check location
+        $location = Location::find($location_id);
+        if($location == null){
+            return $this->redirectWithStatus($request,'terminusinv.stocks',"Location not found!", 'error');
         }
-
-        //check if the location is valid
-        $location_data = LocationHelper::parseLocationSuggestion($location);
-        if (!$location_data->valid){
-            return $this->redirectWithStatus($request,'terminusinv.stocks',"Invalid location!", 'error');
-        }
-
-        //new stock entry to fill
-        $stock = new Stock();
 
         //items required for the stock
         $required_items = [];
 
-        //check if multibuy data was submitted
+        //check if multi-buy data was submitted
         if($multibuy_text!=null){
             $type_ids = Parser::parseMultiBuy($multibuy_text);
             $required_items = array_merge($required_items, $type_ids);
@@ -256,17 +228,14 @@ class TerminusInventoryController extends Controller
             $name = $fit["name"];
         }
 
+        //new stock entry to fill
+        $stock = new Stock();
+
         //fill data
         $stock->amount = $amount;
         $stock->check_contracts = true;
         $stock->check_corporation_hangars = true;
-
-        //add location
-        if($location_data->station_id!=null){
-            $stock->station_id = $location_data->station_id;
-        } else if($location_data->structure_id!=null){
-            $stock->structure_id = $location_data->structure_id;
-        }
+        $stock->location_id = $location->id;
 
         //if there is a link to the fitting plugin, save it
         if($fit_plugin_id!=null){
@@ -299,8 +268,7 @@ class TerminusInventoryController extends Controller
 
     public function stocks(Request $request){
         $fittings = Stock::all();
-
-        $has_fitting_plugin = class_exists("Denngarr\Seat\Fitting\Models\Fitting");
+        $has_fitting_plugin = FittingPluginHelper::pluginIsAvailable();
 
         return view("terminusinv::stocks",compact("fittings", "has_fitting_plugin"));
     }
@@ -331,9 +299,14 @@ class TerminusInventoryController extends Controller
     }
 
     public function itemBrowser(Request $request){
-        $location = LocationHelper::parseLocationSuggestion($request->location_id);
-        $filter_type = $request->item_id;
+        $location_id = $request->location_id;
+        $filter_item_type = $request->item_id;
         $allowed_types = [];
+
+        if($location_id != null && Location::find($location_id) == null){
+            return $this->redirectWithStatus($request,'terminusinv.itemBrowser',"Location not found!", 'error');
+        }
+
         if($request->checkbox_corporation_hangar!=null || $request->filter == null){
             $allowed_types[] = "corporation_hangar";
         }
@@ -341,51 +314,44 @@ class TerminusInventoryController extends Controller
             $allowed_types[] = "contract";
         }
 
-
         $query = InventorySource::whereIn("source_type", $allowed_types);
 
         //filter location
-        if ($location->valid && $location->station_id != null){
-            $query = $query->where("station_id", $location->station_id);
-        } elseif ($location->valid && $location->structure_id != null){
-            $query = $query->where("structure_id", $location->structure_id);
+        if($location_id!=null){
+            $query = $query->where("location_id",$location_id);
         }
-        $inventory_sources = $query->orderBy("station_id","ASC")->orderBy("structure_id","ASC")->get();
+
+        $inventory_sources = $query->orderBy("location_id","ASC")->get();
 
         //item filter
-        if($filter_type!=null) {
-            $inventory_sources = $inventory_sources->filter(function ($source) use ($filter_type) {
-                return $source->items->where("type_id", $filter_type)->count() > 0;
+        if($filter_item_type!=null) {
+            $inventory_sources = $inventory_sources->filter(function ($source) use ($filter_item_type) {
+                return $source->items->where("type_id", $filter_item_type)->count() > 0;
             });
         }
 
-
-        return view("terminusinv::itembrowser", compact("inventory_sources","request", "filter_type"));
+        return view("terminusinv::itembrowser", compact("inventory_sources","request", "filter_item_type"));
     }
 
     public function stockAvailability(Request $request){
         $location = null;
 
-        if($request->location_id){
-            $location = LocationHelper::parseLocationSuggestion($request->location_id);
+        if($request->location_id==null){
+            $location = Location::find($request->location_id);
         }
 
         if($request->stock_id){
             $stock = Stock::find($request->stock_id);
             if ($stock != null){
-                $location = LocationHelper::fromModel($stock);
+                $location = $stock->location;
             }
         }
 
         if($location == null){
-            return view("terminusinv::availability", compact("request",));
+            return view("terminusinv::availability", compact("request"));
         }
 
-        if($location->valid == false){
-            return $this->redirectWithStatus($request,'terminusinv.stockAvailability',"Location not found!", 'error');
-        }
-
-        $stocks = StockHelper::getStocksFromLocation($location);
+        //$stocks = StockHelper::getStocksFromLocation($location);
 
         return view("terminusinv::availability", compact("request",));
     }

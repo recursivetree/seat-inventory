@@ -12,17 +12,15 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use RecursiveTree\Seat\TerminusInventory\Helpers\ItemHelper;
 use RecursiveTree\Seat\TerminusInventory\Models\InventoryItem;
 use RecursiveTree\Seat\TerminusInventory\Models\InventorySource;
+use RecursiveTree\Seat\TerminusInventory\Models\Location;
 use Seat\Eveapi\Models\Assets\CorporationAsset;
 use Seat\Eveapi\Models\Contracts\CorporationContract;
 
 use Illuminate\Support\Facades\DB;
 
-class UpdateTerminusInv implements ShouldQueue
+class UpdateInventory implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-
-    private array $station_items = [];
-    private array $structure_items = [];
 
     private static array $ITEM_BLACKLIST = [
         27 //Corporation Hangar Office
@@ -62,16 +60,10 @@ class UpdateTerminusInv implements ShouldQueue
             $station_id = $details->end_location->station_id;
             $structure_id = $details->end_location->structure_id;
 
+            $location = $this->getOrCreateLocation($station_id, $structure_id);
 
             $source = new InventorySource();
-            if($station_id!=null){
-                $source->station_id = $station_id;
-            } elseif ($structure_id!=null){
-                $source->structure_id = $structure_id;
-            } else {
-                continue; // contract has no location?
-            }
-
+            $source->location_id = $location->id;
             $source->source_name = "$details->title";
             $source->source_type = "contract";
             $source->save();
@@ -90,41 +82,29 @@ class UpdateTerminusInv implements ShouldQueue
 
     private function handleCorporationAssets(){
         $items = CorporationAsset::all(); //TODO check tracked corporations
+        $item_dict = [];
 
         foreach ($items as $item){
-            $this->handleAssetItem($item);
+            $this->handleAssetItem($item, $item_dict);
         }
 
-        foreach ($this->structure_items as $id => $items){
+        foreach ($item_dict as $id => $items){
             $simplified = ItemHelper::simplifyItemList($items);
 
+            $location = $this->getOrCreateLocation($id, $id);
+
             $source = new InventorySource();
-            $source->source_name = "Structure Hangar";
-            $source->source_type = "corporation_hangar";
-            $source->structure_id = $id;
-
-            $source->save();
-
-            $source_id = $source->id;
-            foreach ($simplified as $item_helper){
-                $item = $item_helper->asSourceItem();
-                $item->source_id = $source_id;
-                $item->save();
+            if($location->structure_id != null) {
+                $source->source_name = "Structure Hangar";
+            } else {
+                $source->source_name = "Station Hangar";
             }
-        }
-
-        foreach ($this->station_items as $id => $items){
-            $simplified = ItemHelper::simplifyItemList($items);
-
-            $source = new InventorySource();
-            $source->source_name = "Station Hangar";
             $source->source_type = "corporation_hangar";
-            $source->station_id = $id;
+            $source->location_id = $location->id;
 
             $source->save();
 
             $source_id = $source->id;
-
             foreach ($simplified as $item_helper){
                 $item = $item_helper->asSourceItem();
                 $item->source_id = $source_id;
@@ -133,7 +113,7 @@ class UpdateTerminusInv implements ShouldQueue
         }
     }
 
-    private function handleAssetItem($item){
+    private function handleAssetItem($item, &$item_dict){
         if(in_array($item->type_id,self::$ITEM_BLACKLIST)){
             return;
         }
@@ -153,17 +133,46 @@ class UpdateTerminusInv implements ShouldQueue
 
         if($current_parent->station()->exists()){
             $station = $current_parent->station->station_id;
-            if (!array_key_exists($station,$this->station_items)){
-                $this->station_items[$station] = [];
+            if (!array_key_exists($station,$item_dict)){
+                $item_dict[$station] = [];
             }
-            $this->station_items[$station][] = $item_data;
+            $item_dict[$station][] = $item_data;
         }
         if($current_parent->structure()->exists()){
             $structure = $current_parent->structure->structure_id;
-            if (!array_key_exists($structure,$this->structure_items)){
-                $this->structure_items[$structure] = [];
+            if (!array_key_exists($structure,$item_dict)){
+                $item_dict[$structure] = [];
             }
-            $this->structure_items[$structure][] = $item_data;
+            $item_dict[$structure][] = $item_data;
         }
+    }
+
+    private function getOrCreateLocation($station_id, $structure_id){
+        $location = null;
+
+        //search location
+        if($station_id!=null){
+            $t = Location::where("station_id",$station_id)->first();
+            if($t!=null){
+                $location = $t;
+            }
+        }
+
+        if ($structure_id!=null){
+            $t = Location::where("structure_id",$structure_id)->first();
+            if($t!=null){
+                $location = $t;
+            }
+        }
+
+        //for some reason, the destination is not in the database
+        if($location == null){
+            $location = new Location();
+            $location->station_id = $station_id;
+            $location->structure_id = $structure_id;
+            $location->name = "Unknown contract destination";
+            $location->save();
+        }
+        return $location;
     }
 }

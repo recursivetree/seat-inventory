@@ -3,15 +3,20 @@
 namespace RecursiveTree\Seat\TerminusInventory;
 
 use Exception;
-use RecursiveTree\Seat\TerminusInventory\Jobs\UpdateTerminusInv;
+use RecursiveTree\Seat\TerminusInventory\Jobs\UpdateInventory;
+use RecursiveTree\Seat\TerminusInventory\Jobs\UpdateLocations;
 use RecursiveTree\Seat\TerminusInventory\Observers\FittingPluginFittingObserver;
 use RecursiveTree\Seat\TerminusInventory\Helpers\FittingPluginHelper;
+use RecursiveTree\Seat\TerminusInventory\Observers\UniverseStationObserver;
+use RecursiveTree\Seat\TerminusInventory\Observers\UniverseStructureObserver;
 use Seat\Services\AbstractSeatPlugin;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Queue\Events\JobProcessed;
+use Seat\Eveapi\Models\Universe\UniverseStation;
+use Seat\Eveapi\Models\Universe\UniverseStructure;
 
 class TerminusInventoryServiceProvider extends AbstractSeatPlugin
 {
@@ -45,12 +50,15 @@ class TerminusInventoryServiceProvider extends AbstractSeatPlugin
             FittingPluginHelper::$FITTING_PLUGIN_FITTING_MODEL::observe(FittingPluginFittingObserver::class);
         }
 
-        Artisan::command('terminusinv:update {--sync}', function () {
+        UniverseStructure::observe(UniverseStructureObserver::class);
+        UniverseStation::observe(UniverseStationObserver::class);
+
+        Artisan::command('terminusinv:assets {--sync}', function () {
             if ($this->option("sync")){
-                UpdateTerminusInv::dispatchNow();
+                UpdateInventory::dispatchNow();
                 $this->info("Synchronously processed inventory updates!");
             } else {
-                UpdateTerminusInv::dispatch()->onQueue('default');
+                UpdateInventory::dispatch()->onQueue('default');
                 $this->info("Scheduled an inventory update!");
             }
         });

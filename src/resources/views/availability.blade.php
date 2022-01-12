@@ -26,7 +26,7 @@
                             class="form-control basicAutoComplete"
                             autocomplete="off"
                             id="stock-location"
-                            data-url="{{ route("terminusinv.stockLocationSuggestions") }}"
+                            data-url="{{ route("terminusinv.locationSuggestions") }}"
                             name="location_id">
                     </select>
                 </div>

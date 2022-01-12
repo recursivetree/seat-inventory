@@ -82,7 +82,7 @@
                                     class="form-control basicAutoComplete" type="text"
                                     autocomplete="off"
                                     id="fit-location"
-                                    data-url="{{ route("terminusinv.stockLocationSuggestions") }}"
+                                    data-url="{{ route("terminusinv.locationSuggestions") }}"
                                     name="location_id">
                             </select>
                         </div>
@@ -121,7 +121,7 @@
                                     class="form-control basicAutoComplete" type="text"
                                     autocomplete="off"
                                     id="fit-location"
-                                    data-url="{{ route("terminusinv.stockLocationSuggestions") }}"
+                                    data-url="{{ route("terminusinv.locationSuggestions") }}"
                                     name="location_id">
                             </select>
                         </div>
@@ -161,7 +161,7 @@
                                         class="form-control basicAutoComplete" type="text"
                                         autocomplete="off"
                                         id="fit-location"
-                                        data-url="{{ route("terminusinv.stockLocationSuggestions") }}"
+                                        data-url="{{ route("terminusinv.locationSuggestions") }}"
                                         name="location_id">
                                 </select>
                             </div>
@@ -179,7 +179,7 @@
 @stop
 
 @push('javascript')
-    <script src="@versionedAsset('terminusinventory/js/bootstrap-autocomplete.js')"></script>
+    <script src="@terminusinvVersionedAsset('terminusinventory/js/bootstrap-autocomplete.js')"></script>
 
     <script>
         $('.basicAutoComplete').autoComplete({
