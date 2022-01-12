@@ -17,6 +17,9 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Queue\Events\JobProcessed;
 use Seat\Eveapi\Models\Universe\UniverseStation;
 use Seat\Eveapi\Models\Universe\UniverseStructure;
+use Seat\Eveapi\Jobs\Assets\Corporation\Assets;
+
+use  Seat\Eveapi\Jobs\Status\Status;
 
 class TerminusInventoryServiceProvider extends AbstractSeatPlugin
 {
@@ -60,6 +63,13 @@ class TerminusInventoryServiceProvider extends AbstractSeatPlugin
             } else {
                 UpdateInventory::dispatch()->onQueue('default');
                 $this->info("Scheduled an inventory update!");
+            }
+        });
+
+        Queue::after(function (JobProcessed $event) {
+            $class = $event->job->resolveName();
+            if ($class == Assets::class){
+                UpdateInventory::dispatch()->onQueue('default');
             }
         });
     }
