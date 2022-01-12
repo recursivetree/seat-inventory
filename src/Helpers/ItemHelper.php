@@ -33,23 +33,8 @@ class ItemHelper
 
     public static function simplifyItemList($item_list)
     {
-        $item_2_amount = [];
-
-        foreach ($item_list as $item){
-            if(array_key_exists($item->type_id, $item_2_amount)){
-                $item_2_amount[$item->type_id] += $item->amount;
-            } else {
-                $item_2_amount[$item->type_id] = $item->amount;
-            }
-        }
-
-        $optimized = [];
-        foreach($item_2_amount as $type => $amount) {
-            $item = new ItemHelper($type, $amount);
-            $optimized[] = $item;
-        }
-
-        return $optimized;
+        $item_2_amount = self::itemListToTypeIDMap($item_list);
+        return self::typeIDMapToItemList($item_2_amount);
     }
 
     public static function itemListToMultiBuy($item_list): string
@@ -66,5 +51,34 @@ class ItemHelper
         }
 
         return implode("\n",$lines);
+    }
+
+    public static function itemListFromQuery($items){
+        return $items->map(function ($entry){
+            return new ItemHelper($entry->type_id, $entry->amount);
+        })->toArray();
+    }
+
+    public static function itemListToTypeIDMap($item_list): array {
+        $item_2_amount = [];
+
+        foreach ($item_list as $item){
+            if(array_key_exists($item->type_id, $item_2_amount)){
+                $item_2_amount[$item->type_id] += $item->amount;
+            } else {
+                $item_2_amount[$item->type_id] = $item->amount;
+            }
+        }
+        return $item_2_amount;
+    }
+
+    public static function typeIDMapToItemList($type_map){
+        $optimized = [];
+        foreach($type_map as $type => $amount) {
+            $item = new ItemHelper($type, $amount);
+            $optimized[] = $item;
+        }
+
+        return $optimized;
     }
 }

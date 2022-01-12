@@ -335,6 +335,7 @@ class TerminusInventoryController extends Controller
 
     public function stockAvailability(Request $request){
         $location = null;
+        $stock = null;
 
         if($request->location_id==null){
             $location = Location::find($request->location_id);
@@ -351,7 +352,7 @@ class TerminusInventoryController extends Controller
             return view("terminusinv::availability", compact("request"));
         }
 
-        //$stocks = StockHelper::getStocksFromLocation($location);
+        StockHelper::computeStockLevels($location, $stock);
 
         return view("terminusinv::availability", compact("request",));
     }
