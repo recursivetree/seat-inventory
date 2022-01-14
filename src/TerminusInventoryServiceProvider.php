@@ -76,6 +76,7 @@ class TerminusInventoryServiceProvider extends AbstractSeatPlugin
 
     public function register(){
         $this->mergeConfigFrom(__DIR__ . '/Config/terminusinventory.sidebar.php','package.sidebar');
+        $this->registerPermissions(__DIR__ . '/Config/terminusinv.permissions.php', 'terminusinv');
     }
 
     public function getName(): string
