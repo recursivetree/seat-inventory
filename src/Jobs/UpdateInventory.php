@@ -13,6 +13,7 @@ use RecursiveTree\Seat\TerminusInventory\Helpers\ItemHelper;
 use RecursiveTree\Seat\TerminusInventory\Models\InventoryItem;
 use RecursiveTree\Seat\TerminusInventory\Models\InventorySource;
 use RecursiveTree\Seat\TerminusInventory\Models\Location;
+use RecursiveTree\Seat\TerminusInventory\Models\TrackedCorporation;
 use Seat\Eveapi\Models\Assets\CorporationAsset;
 use Seat\Eveapi\Models\Contracts\CorporationContract;
 
@@ -34,13 +35,17 @@ class UpdateInventory implements ShouldQueue
                 InventoryItem::where("source_id", $source->id)->delete();
             }
 
-            $this->handleCorporationAssets();
-            $this->handleContracts();
+            $corporations = TrackedCorporation::all()->pluck("corporation_id");
+
+            $this->handleCorporationAssets($corporations);
+            $this->handleContracts($corporations);
         });
     }
 
-    private function handleContracts(){
-        $contracts = CorporationContract::with("detail")->get();
+    private function handleContracts($corporations){
+        $contracts = CorporationContract::whereIn("corporation_id",$corporations)->with("detail")->get();
+
+        //error_log(json_encode($contracts));
 
         foreach ($contracts as $contract){
             $details = $contract->detail;
@@ -80,8 +85,8 @@ class UpdateInventory implements ShouldQueue
         //throw new Exception(json_encode(InventoryItem::all()));
     }
 
-    private function handleCorporationAssets(){
-        $items = CorporationAsset::all(); //TODO check tracked corporations
+    private function handleCorporationAssets($corporations){
+        $items = CorporationAsset::whereIn("corporation_id",$corporations)->get(); //TODO check tracked corporations
         $item_dict = [];
 
         foreach ($items as $item){

@@ -74,7 +74,9 @@
             </form>
 
             <h6>Items</h6>
-
+            @if($inventory_sources->isEmpty())
+                <p>There were no items found!</p>
+            @endif
 
             @foreach($inventory_sources as $source)
 

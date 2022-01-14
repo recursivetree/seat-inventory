@@ -48,6 +48,10 @@ class TerminusInventoryController extends Controller
         if(!CorporationInfo::where("corporation_id",$id)->exists()){
             return $this->redirectWithStatus($request,'terminusinv.tracking',"Corporation not found!", 'error');
         }
+        if(TrackedCorporation::where("corporation_id",$id)->exists()){
+            return $this->redirectWithStatus($request,'terminusinv.tracking',"Corporation is already added to the list of tracked corporations!", 'warning');
+        }
+        
         $db_entry = new TrackedCorporation();
         $db_entry->corporation_id = $id;
         $db_entry->save();
