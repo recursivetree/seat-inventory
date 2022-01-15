@@ -1,6 +1,6 @@
 <?php
 
-namespace RecursiveTree\Seat\TerminusInventory\Models;
+namespace RecursiveTree\Seat\Inventory\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Seat\Eveapi\Models\Universe\UniverseStation;
@@ -11,7 +11,7 @@ class InventoryItem extends Model
 {
     public $timestamps = false;
 
-    protected $table = 'recursive_tree_seat_terminusinv_inventory_item';
+    protected $table = 'recursive_tree_seat_inventory_inventory_item';
 
     public function source(){
         return $this->hasOne(InventorySource::class, "id", "source_id");

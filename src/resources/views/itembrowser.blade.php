@@ -5,7 +5,7 @@
 
 
 @section('full')
-    @include("terminusinv::includes.status")
+    @include("inventory::includes.status")
 
     <div class="card">
         <div class="card-body">
@@ -15,7 +15,7 @@
 
             <h6>Filter</h6>
 
-            <form action="{{ route("terminusinv.itemBrowser") }}" method="GET">
+            <form action="{{ route("inventory.itemBrowser") }}" method="GET">
 
                 <input type="hidden" name="filter" value="true">
 
@@ -50,7 +50,7 @@
                             class="form-control basicAutoComplete"
                             autocomplete="off"
                             id="stock-location"
-                            data-url="{{ route("terminusinv.locationSuggestions") }}"
+                            data-url="{{ route("inventory.locationSuggestions") }}"
                             name="location_id">
                     </select>
                 </div>
@@ -62,14 +62,14 @@
                             class="form-control basicAutoComplete"
                             autocomplete="off"
                             id="stock-item"
-                            data-url="{{ route("terminusinv.itemTypeSuggestions") }}"
+                            data-url="{{ route("inventory.itemTypeSuggestions") }}"
                             name="item_id">
                     </select>
                 </div>
 
                 <div class="form-group">
                     <button type="submit" class="btn btn-primary">Filter</button>
-                    <a href="{{ route("terminusinv.itemBrowser") }}" class="btn btn-secondary" role="button">Clear Filters</a>
+                    <a href="{{ route("inventory.itemBrowser") }}" class="btn btn-secondary" role="button">Clear Filters</a>
                 </div>
             </form>
 
@@ -112,7 +112,7 @@
 @stop
 
 @push('javascript')
-    <script src="@terminusinvVersionedAsset('terminusinventory/js/bootstrap-autocomplete.js')"></script>
+    <script src="@inventoryVersionedAsset('inventory/js/bootstrap-autocomplete.js')"></script>
 
     <script>
         $('.basicAutoComplete').autoComplete({

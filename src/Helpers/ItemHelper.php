@@ -1,9 +1,9 @@
 <?php
 
-namespace RecursiveTree\Seat\TerminusInventory\Helpers;
+namespace RecursiveTree\Seat\Inventory\Helpers;
 
-use RecursiveTree\Seat\TerminusInventory\Models\InventoryItem;
-use RecursiveTree\Seat\TerminusInventory\Models\StockItem;
+use RecursiveTree\Seat\Inventory\Models\InventoryItem;
+use RecursiveTree\Seat\Inventory\Models\StockItem;
 use Seat\Eveapi\Models\Sde\InvType;
 
 class ItemHelper

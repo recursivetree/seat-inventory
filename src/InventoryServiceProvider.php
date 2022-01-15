@@ -1,14 +1,14 @@
 <?php
 
-namespace RecursiveTree\Seat\TerminusInventory;
+namespace RecursiveTree\Seat\Inventory;
 
 use Exception;
-use RecursiveTree\Seat\TerminusInventory\Jobs\UpdateInventory;
-use RecursiveTree\Seat\TerminusInventory\Jobs\UpdateLocations;
-use RecursiveTree\Seat\TerminusInventory\Observers\FittingPluginFittingObserver;
-use RecursiveTree\Seat\TerminusInventory\Helpers\FittingPluginHelper;
-use RecursiveTree\Seat\TerminusInventory\Observers\UniverseStationObserver;
-use RecursiveTree\Seat\TerminusInventory\Observers\UniverseStructureObserver;
+use RecursiveTree\Seat\Inventory\Jobs\UpdateInventory;
+use RecursiveTree\Seat\Inventory\Jobs\UpdateLocations;
+use RecursiveTree\Seat\Inventory\Observers\FittingPluginFittingObserver;
+use RecursiveTree\Seat\Inventory\Helpers\FittingPluginHelper;
+use RecursiveTree\Seat\Inventory\Observers\UniverseStationObserver;
+use RecursiveTree\Seat\Inventory\Observers\UniverseStructureObserver;
 use Seat\Services\AbstractSeatPlugin;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Artisan;
@@ -21,7 +21,7 @@ use Seat\Eveapi\Jobs\Assets\Corporation\Assets;
 
 use  Seat\Eveapi\Jobs\Status\Status;
 
-class TerminusInventoryServiceProvider extends AbstractSeatPlugin
+class InventoryServiceProvider extends AbstractSeatPlugin
 {
     public function boot(){
         $version = $this->getVersion();
@@ -36,16 +36,16 @@ class TerminusInventoryServiceProvider extends AbstractSeatPlugin
             include __DIR__ . '/Http/routes.php';
         }
 
-        $this->loadTranslationsFrom(__DIR__ . '/resources/lang/', 'terminusinv');
-        $this->loadViewsFrom(__DIR__ . '/resources/views/', 'terminusinv');
+        $this->loadTranslationsFrom(__DIR__ . '/resources/lang/', 'inventory');
+        $this->loadViewsFrom(__DIR__ . '/resources/views/', 'inventory');
         $this->loadMigrationsFrom(__DIR__ . '/database/migrations/');
 
         $this->publishes([
-            __DIR__ . '/resources/js' => public_path('terminusinventory/js')
+            __DIR__ . '/resources/js' => public_path('inventory/js')
         ]);
 
 
-        Blade::directive('terminusinvVersionedAsset', function($path) use ($version) {
+        Blade::directive('inventoryVersionedAsset', function($path) use ($version) {
             return "<?php echo asset({$path}) . '?v=$version'; ?>";
         });
 
@@ -56,7 +56,7 @@ class TerminusInventoryServiceProvider extends AbstractSeatPlugin
         UniverseStructure::observe(UniverseStructureObserver::class);
         UniverseStation::observe(UniverseStationObserver::class);
 
-        Artisan::command('terminusinv:assets {--sync}', function () {
+        Artisan::command('inventory:assets {--sync}', function () {
             if ($this->option("sync")){
                 UpdateInventory::dispatchNow();
                 $this->info("Synchronously processed inventory updates!");
@@ -75,13 +75,13 @@ class TerminusInventoryServiceProvider extends AbstractSeatPlugin
     }
 
     public function register(){
-        $this->mergeConfigFrom(__DIR__ . '/Config/terminusinventory.sidebar.php','package.sidebar');
-        $this->registerPermissions(__DIR__ . '/Config/terminusinv.permissions.php', 'terminusinv');
+        $this->mergeConfigFrom(__DIR__ . '/Config/inventory.sidebar.php','package.sidebar');
+        $this->registerPermissions(__DIR__ . '/Config/inventory.permissions.php', 'inventory');
     }
 
     public function getName(): string
     {
-        return 'SeAT Terminus Inventory Manager';
+        return 'SeAT Inventory Manager';
     }
 
     public function getPackageRepositoryUrl(): string
@@ -91,7 +91,7 @@ class TerminusInventoryServiceProvider extends AbstractSeatPlugin
 
     public function getPackagistPackageName(): string
     {
-        return 'seat-terminus-inventory';
+        return 'seat-inventory';
     }
 
     public function getPackagistVendorName(): string

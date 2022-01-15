@@ -1,34 +1,40 @@
 <?php
 return [
-    'terminusinv' => [
+    'inventory' => [
         'name'          => 'Inventory Managment',
         'icon'          => 'fas fa-box-open',
-        'route_segment' => 'info',
+        'route_segment' => 'inventory',
+        'permission' => 'inventory.view_inventory',
         'entries'       => [
             [
                 'name'  => 'Tracking',
                 'icon'  => 'fas fa-cog',
-                'route' => 'terminusinv.tracking',
+                'route' => 'inventory.tracking',
+                'permission' => 'inventory.view_inventory',
             ],
             [
                 'name'  => 'Fits&Stocks',
                 'icon'  => 'fas fa-space-shuttle',
-                'route' => 'terminusinv.stocks',
+                'route' => 'inventory.stocks',
+                'permission' => 'inventory.view_inventory',
             ],
             [
                 'name'  => 'Fits&Stocks Availability',
                 'icon'  => 'fas fa-clipboard',
-                'route' => 'terminusinv.stockAvailability',
+                'route' => 'inventory.stockAvailability',
+                'permission' => 'inventory.view_inventory',
             ],
             [
                 'name'  => 'Item Browser',
                 'icon'  => 'fas fa-list',
-                'route' => 'terminusinv.itemBrowser',
+                'route' => 'inventory.itemBrowser',
+                'permission' => 'inventory.view_inventory',
             ],
             [
                 'name'  => 'About',
                 'icon'  => 'fas fa-info',
-                'route' => 'terminusinv.about',
+                'route' => 'inventory.about',
+                'permission' => 'inventory.view_inventory',
             ],
         ]
     ]

@@ -1,11 +1,11 @@
 <?php
 
-namespace RecursiveTree\Seat\TerminusInventory\Helpers;
+namespace RecursiveTree\Seat\Inventory\Helpers;
 
-use RecursiveTree\Seat\TerminusInventory\Models\InventoryItem;
-use RecursiveTree\Seat\TerminusInventory\Models\InventorySource;
-use RecursiveTree\Seat\TerminusInventory\Models\Stock;
-use RecursiveTree\Seat\TerminusInventory\Models\StockItem;
+use RecursiveTree\Seat\Inventory\Models\InventoryItem;
+use RecursiveTree\Seat\Inventory\Models\InventorySource;
+use RecursiveTree\Seat\Inventory\Models\Stock;
+use RecursiveTree\Seat\Inventory\Models\StockItem;
 
 class StockHelper
 {

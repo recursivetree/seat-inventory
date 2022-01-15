@@ -5,7 +5,7 @@
 
 
 @section('full')
-    @include("terminusinv::includes.status")
+    @include("inventory::includes.status")
 
     <div class="card">
         <div class="card-body">
@@ -40,21 +40,21 @@
             @endif
 
             <div class="d-flex">
-                <a href="{{ route("terminusinv.stocks") }}" class="btn btn-primary">Back</a>
+                <a href="{{ route("inventory.stocks") }}" class="btn btn-primary">Back</a>
 
-                <form action="{{ route("terminusinv.deleteStock", $stock->id) }}" method="POST">
+                <form action="{{ route("inventory.deleteStock", $stock->id) }}" method="POST">
                     @csrf
                     <button type="submit" class="btn btn-danger">Delete</button>
                 </form>
 
-                @include("terminusinv::includes.multibuy",["multibuy" => $multibuy])
+                @include("inventory::includes.multibuy",["multibuy" => $multibuy])
             </div>
         </div>
     </div>
 @stop
 
 @push('javascript')
-    <script src="@terminusinvVersionedAsset('terminusinventory/js/bootstrap-autocomplete.js')"></script>
+    <script src="@inventoryVersionedAsset('inventory/js/bootstrap-autocomplete.js')"></script>
 
     <script>
         $('.basicAutoComplete').autoComplete({

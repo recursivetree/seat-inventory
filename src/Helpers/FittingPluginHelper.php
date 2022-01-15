@@ -1,6 +1,6 @@
 <?php
 
-namespace RecursiveTree\Seat\TerminusInventory\Helpers;
+namespace RecursiveTree\Seat\Inventory\Helpers;
 
 class FittingPluginHelper
 {

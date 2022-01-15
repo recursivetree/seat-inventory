@@ -1,6 +1,6 @@
 <?php
 
-namespace RecursiveTree\Seat\TerminusInventory\Models;
+namespace RecursiveTree\Seat\Inventory\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Seat\Eveapi\Models\Corporation\CorporationInfo;
@@ -13,5 +13,5 @@ class TrackedCorporation extends Model
         return $this->hasOne(CorporationInfo::class, "corporation_id", "corporation_id");
     }
 
-    protected $table = 'recursive_tree_seat_terminusinv_tracked_corporations';
+    protected $table = 'recursive_tree_seat_inventory_tracked_corporations';
 }

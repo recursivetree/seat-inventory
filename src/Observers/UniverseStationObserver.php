@@ -1,15 +1,15 @@
 <?php
 
-namespace RecursiveTree\Seat\TerminusInventory\Observers;
+namespace RecursiveTree\Seat\Inventory\Observers;
 
 use Exception;
 use Illuminate\Support\Facades\DB;
-use RecursiveTree\Seat\TerminusInventory\Helpers\ItemHelper;
-use RecursiveTree\Seat\TerminusInventory\Helpers\LocationHelper;
-use RecursiveTree\Seat\TerminusInventory\Helpers\Parser;
-use RecursiveTree\Seat\TerminusInventory\Models\Location;
-use RecursiveTree\Seat\TerminusInventory\Models\Stock;
-use RecursiveTree\Seat\TerminusInventory\Models\StockItem;
+use RecursiveTree\Seat\Inventory\Helpers\ItemHelper;
+use RecursiveTree\Seat\Inventory\Helpers\LocationHelper;
+use RecursiveTree\Seat\Inventory\Helpers\Parser;
+use RecursiveTree\Seat\Inventory\Models\Location;
+use RecursiveTree\Seat\Inventory\Models\Stock;
+use RecursiveTree\Seat\Inventory\Models\StockItem;
 
 class UniverseStationObserver
 {

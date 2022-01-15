@@ -1,6 +1,6 @@
 <?php
 
-namespace RecursiveTree\Seat\TerminusInventory\Jobs;
+namespace RecursiveTree\Seat\Inventory\Jobs;
 
 use Exception;
 use Illuminate\Bus\Queueable;
@@ -9,11 +9,11 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 
-use RecursiveTree\Seat\TerminusInventory\Helpers\ItemHelper;
-use RecursiveTree\Seat\TerminusInventory\Models\InventoryItem;
-use RecursiveTree\Seat\TerminusInventory\Models\InventorySource;
-use RecursiveTree\Seat\TerminusInventory\Models\Location;
-use RecursiveTree\Seat\TerminusInventory\Models\TrackedCorporation;
+use RecursiveTree\Seat\Inventory\Helpers\ItemHelper;
+use RecursiveTree\Seat\Inventory\Models\InventoryItem;
+use RecursiveTree\Seat\Inventory\Models\InventorySource;
+use RecursiveTree\Seat\Inventory\Models\Location;
+use RecursiveTree\Seat\Inventory\Models\TrackedCorporation;
 use Seat\Eveapi\Models\Assets\CorporationAsset;
 use Seat\Eveapi\Models\Contracts\CorporationContract;
 

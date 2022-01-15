@@ -1,6 +1,6 @@
 <?php
 
-namespace RecursiveTree\Seat\TerminusInventory\Models;
+namespace RecursiveTree\Seat\Inventory\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Seat\Eveapi\Models\Universe\UniverseStation;
@@ -10,7 +10,7 @@ class Location extends Model
 {
     public $timestamps = false;
 
-    protected $table = 'recursive_tree_seat_terminusinv_locations';
+    protected $table = 'recursive_tree_seat_inventory_locations';
 
     public function station(){
         return $this->hasOne(UniverseStation::class, 'station_id', 'station_id')->withDefault([

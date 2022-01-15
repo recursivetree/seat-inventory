@@ -5,7 +5,7 @@
 
 
 @section('full')
-    @include("terminusinv::includes.status")
+    @include("inventory::includes.status")
 
     <div class="card">
         <div class="card-body">
@@ -15,7 +15,7 @@
 
             <h6>Filter</h6>
 
-            <form action="{{ route("terminusinv.stockAvailability") }}" method="GET">
+            <form action="{{ route("inventory.stockAvailability") }}" method="GET">
 
                 <input type="hidden" name="filter" value="true">
 
@@ -26,7 +26,7 @@
                             class="form-control basicAutoComplete"
                             autocomplete="off"
                             id="stock-location"
-                            data-url="{{ route("terminusinv.locationSuggestions") }}"
+                            data-url="{{ route("inventory.locationSuggestions") }}"
                             name="location_id">
                     </select>
                 </div>
@@ -38,14 +38,14 @@
                             class="form-control basicAutoComplete"
                             autocomplete="off"
                             id="stock-id"
-                            data-url="{{ route("terminusinv.stockSuggestions") }}"
+                            data-url="{{ route("inventory.stockSuggestions") }}"
                             name="stock_id">
                     </select>
                 </div>
 
                 <div class="form-group">
                     <button type="submit" class="btn btn-primary">Filter</button>
-                    <a href="{{ route("terminusinv.stockAvailability") }}" class="btn btn-secondary" role="button">Clear Filters</a>
+                    <a href="{{ route("inventory.stockAvailability") }}" class="btn btn-secondary" role="button">Clear Filters</a>
                 </div>
             </form>
 
@@ -59,7 +59,7 @@
                         <small class="text-muted">This is the max number you can get, including items from other fits</small>
                     </p>
 
-                    <h6>Missing for the specified stock @include("terminusinv::includes.multibuy",["multibuy" => \RecursiveTree\Seat\TerminusInventory\Helpers\ItemHelper::itemListToMultiBuy($stock_levels["target_missing"])])</h6>
+                    <h6>Missing for the specified stock @include("inventory::includes.multibuy",["multibuy" => \RecursiveTree\Seat\Inventory\Helpers\ItemHelper::itemListToMultiBuy($stock_levels["target_missing"])])</h6>
 
                     @if(count($stock_levels["target_missing"])<1)
                         <div class="alert alert-warning">
@@ -81,7 +81,7 @@
                     @endif
                 @endisset
 
-                <h6>Missing at this location @include("terminusinv::includes.multibuy",["multibuy" => \RecursiveTree\Seat\TerminusInventory\Helpers\ItemHelper::itemListToMultiBuy($stock_levels["missing_items"])])</h6>
+                <h6>Missing at this location @include("inventory::includes.multibuy",["multibuy" => \RecursiveTree\Seat\Inventory\Helpers\ItemHelper::itemListToMultiBuy($stock_levels["missing_items"])])</h6>
 
                 @if(count($stock_levels["missing_items"])<1)
                     <div class="alert alert-warning">
@@ -107,7 +107,7 @@
 @stop
 
 @push('javascript')
-    <script src="@terminusinvVersionedAsset('terminusinventory/js/bootstrap-autocomplete.js')"></script>
+    <script src="@inventoryVersionedAsset('inventory/js/bootstrap-autocomplete.js')"></script>
 
     <script>
         $('.basicAutoComplete').autoComplete({

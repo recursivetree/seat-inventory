@@ -5,7 +5,7 @@
 
 
 @section('full')
-    @include("terminusinv::includes.status")
+    @include("inventory::includes.status")
 
     <div class="card">
         <div class="card-body">
@@ -29,7 +29,7 @@
                         <tr>
                             <td>{{ $corporation->corporation->name }}</td>
                             <td>
-                                <form action="{{ route("terminusinv.deleteTrackingCorporation") }}" method="POST">
+                                <form action="{{ route("inventory.deleteTrackingCorporation") }}" method="POST">
                                     @csrf
                                     <input type="hidden" name="id" value="{{ $corporation->id }}">
                                     <button type="submit" class="btn btn-danger">Remove</button>
@@ -45,7 +45,7 @@
                 </tbody>
             </table>
 
-            <form method="POST" action="{{ route("terminusinv.addTrackingCorporation") }}" class="border rounded p-4">
+            <form method="POST" action="{{ route("inventory.addTrackingCorporation") }}" class="border rounded p-4">
                 <h6>Add Corporation</h6>
                 @csrf
                 <div class="form-group">
@@ -55,7 +55,7 @@
                             class="form-control basicAutoComplete" type="text"
                             autocomplete="off"
                             id="addTrackingCorporationCorporationInput"
-                            data-url="{{ route("terminusinv.trackingCorporationSuggestions") }}"
+                            data-url="{{ route("inventory.trackingCorporationSuggestions") }}"
                             name="id">
                     </select>
                 </div>
@@ -68,7 +68,7 @@
 @stop
 
 @push('javascript')
-    <script src="@terminusinvVersionedAsset('terminusinventory/js/bootstrap-autocomplete.js')"></script>
+    <script src="@inventoryVersionedAsset('inventory/js/bootstrap-autocomplete.js')"></script>
 
     <script>
         $('.basicAutoComplete').autoComplete({

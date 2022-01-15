@@ -1,18 +1,18 @@
 <?php
 
-namespace RecursiveTree\Seat\TerminusInventory\Http\Controllers;
+namespace RecursiveTree\Seat\Inventory\Http\Controllers;
 
 use Exception;
-use RecursiveTree\Seat\TerminusInventory\Helpers\FittingPluginHelper;
-use RecursiveTree\Seat\TerminusInventory\Helpers\LocationHelper;
-use RecursiveTree\Seat\TerminusInventory\Helpers\StockHelper;
-use RecursiveTree\Seat\TerminusInventory\Models\InventorySource;
-use RecursiveTree\Seat\TerminusInventory\Models\Location;
-use RecursiveTree\Seat\TerminusInventory\Models\Stock;
-use RecursiveTree\Seat\TerminusInventory\Models\StockItem;
-use RecursiveTree\Seat\TerminusInventory\Models\TrackedCorporation;
-use RecursiveTree\Seat\TerminusInventory\Helpers\ItemHelper;
-use RecursiveTree\Seat\TerminusInventory\Helpers\Parser;
+use RecursiveTree\Seat\Inventory\Helpers\FittingPluginHelper;
+use RecursiveTree\Seat\Inventory\Helpers\LocationHelper;
+use RecursiveTree\Seat\Inventory\Helpers\StockHelper;
+use RecursiveTree\Seat\Inventory\Models\InventorySource;
+use RecursiveTree\Seat\Inventory\Models\Location;
+use RecursiveTree\Seat\Inventory\Models\Stock;
+use RecursiveTree\Seat\Inventory\Models\StockItem;
+use RecursiveTree\Seat\Inventory\Models\TrackedCorporation;
+use RecursiveTree\Seat\Inventory\Helpers\ItemHelper;
+use RecursiveTree\Seat\Inventory\Helpers\Parser;
 
 use Seat\Web\Http\Controllers\Controller;
 use Seat\Eveapi\Models\Assets\CorporationAsset;
@@ -24,7 +24,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Seat\Eveapi\Models\Sde\InvType;
 
-class TerminusInventoryController extends Controller
+class InventoryController extends Controller
 {
     private function redirectWithStatus($request,$redirect,$message,$type){
         $request->session()->flash('message', [
@@ -37,35 +37,35 @@ class TerminusInventoryController extends Controller
     public function tracking(){
         $tracked_corporations = TrackedCorporation::all();
 
-        return view("terminusinv::tracking", compact('tracked_corporations'));
+        return view("inventory::tracking", compact('tracked_corporations'));
     }
 
     public function addTrackingCorporation(Request $request){
         $id = $request->id;
         if($id==null){
-            return $this->redirectWithStatus($request,'terminusinv.tracking',"No corporation specified!", 'error');
+            return $this->redirectWithStatus($request,'inventory.tracking',"No corporation specified!", 'error');
         }
         if(!CorporationInfo::where("corporation_id",$id)->exists()){
-            return $this->redirectWithStatus($request,'terminusinv.tracking',"Corporation not found!", 'error');
+            return $this->redirectWithStatus($request,'inventory.tracking',"Corporation not found!", 'error');
         }
         if(TrackedCorporation::where("corporation_id",$id)->exists()){
-            return $this->redirectWithStatus($request,'terminusinv.tracking',"Corporation is already added to the list of tracked corporations!", 'warning');
+            return $this->redirectWithStatus($request,'inventory.tracking',"Corporation is already added to the list of tracked corporations!", 'warning');
         }
 
         $db_entry = new TrackedCorporation();
         $db_entry->corporation_id = $id;
         $db_entry->save();
 
-        return $this->redirectWithStatus($request,'terminusinv.tracking',"Added corporation!", 'success');
+        return $this->redirectWithStatus($request,'inventory.tracking',"Added corporation!", 'success');
     }
 
     public function deleteTrackingCorporation(Request $request){
         $id = $request->id;
         if($id==null){
-            return $this->redirectWithStatus($request,'terminusinv.tracking',"No corporation provided!", 'error');
+            return $this->redirectWithStatus($request,'inventory.tracking',"No corporation provided!", 'error');
         }
         TrackedCorporation::destroy($id);
-        return $this->redirectWithStatus($request,'terminusinv.tracking',"Sucessfully removed inventory tracking.", 'success');
+        return $this->redirectWithStatus($request,'inventory.tracking',"Sucessfully removed inventory tracking.", 'success');
     }
 
     public function locationSuggestions(Request $request){
@@ -182,18 +182,18 @@ class TerminusInventoryController extends Controller
 
         //check if always required data is there
         if($location_id==null || $amount==null){
-            return $this->redirectWithStatus($request,'terminusinv.stocks',"Not all required data is provided!", 'error');
+            return $this->redirectWithStatus($request,'inventory.stocks',"Not all required data is provided!", 'error');
         }
 
         //check if the amount is in a valid range
         if($amount<1){
-            return $this->redirectWithStatus($request,'terminusinv.stocks',"The minimum amount is 1!", 'error');
+            return $this->redirectWithStatus($request,'inventory.stocks',"The minimum amount is 1!", 'error');
         }
 
         //check location
         $location = Location::find($location_id);
         if($location == null){
-            return $this->redirectWithStatus($request,'terminusinv.stocks',"Location not found!", 'error');
+            return $this->redirectWithStatus($request,'inventory.stocks',"Location not found!", 'error');
         }
 
         //items required for the stock
@@ -211,7 +211,7 @@ class TerminusInventoryController extends Controller
                 $fit = Parser::parseFit($fit_text);
             } catch (Exception $e){
                 $m = $e->getMessage();
-                return $this->redirectWithStatus($request,'terminusinv.stocks',"Could not parse fit: $m", 'error');
+                return $this->redirectWithStatus($request,'inventory.stocks',"Could not parse fit: $m", 'error');
             }
             $required_items = array_merge($required_items, $fit["items"]);
             $name = $fit["name"];
@@ -220,13 +220,13 @@ class TerminusInventoryController extends Controller
         if($fit_plugin_id != null && FittingPluginHelper::pluginIsAvailable()){
             $model = FittingPluginHelper::$FITTING_PLUGIN_FITTING_MODEL::find($fit_plugin_id);
             if($model == null){
-                return $this->redirectWithStatus($request,'terminusinv.stocks',"The fit could not be retrieved from the fitting plugin!", 'error');
+                return $this->redirectWithStatus($request,'inventory.stocks',"The fit could not be retrieved from the fitting plugin!", 'error');
             }
             try {
                 $fit = Parser::parseFit($model->eftfitting);
             } catch (Exception $e){
                 $m = $e->getMessage();
-                return $this->redirectWithStatus($request,'terminusinv.stocks',"Could not parse fit: $m", 'error');
+                return $this->redirectWithStatus($request,'inventory.stocks',"Could not parse fit: $m", 'error');
             }
             $required_items = array_merge($required_items, $fit["items"]);
             $name = $fit["name"];
@@ -267,21 +267,21 @@ class TerminusInventoryController extends Controller
             }
         });
 
-        return $this->redirectWithStatus($request,'terminusinv.stocks',"Added stock definition!", 'success');
+        return $this->redirectWithStatus($request,'inventory.stocks',"Added stock definition!", 'success');
     }
 
     public function stocks(Request $request){
         $fittings = Stock::all();
         $has_fitting_plugin = FittingPluginHelper::pluginIsAvailable();
 
-        return view("terminusinv::stocks",compact("fittings", "has_fitting_plugin"));
+        return view("inventory::stocks",compact("fittings", "has_fitting_plugin"));
     }
 
     public function editStock(Request $request,$id){
         $stock = Stock::find($id);
 
         if($stock==null){
-            return $this->redirectWithStatus($request,'terminusinv.stocks',"Could not find stock definition!", 'error');
+            return $this->redirectWithStatus($request,'inventory.stocks',"Could not find stock definition!", 'error');
         }
 
         $items = ItemHelper::itemListFromQuery($stock->items);
@@ -289,7 +289,7 @@ class TerminusInventoryController extends Controller
 
         $multibuy = ItemHelper::itemListToMultiBuy($items);
 
-        return view("terminusinv::editStock", compact("stock","multibuy"));
+        return view("inventory::editStock", compact("stock","multibuy"));
     }
 
     public function deleteStockPost(Request $request,$id){
@@ -302,7 +302,7 @@ class TerminusInventoryController extends Controller
             $item->destroy($item->id);
         }
 
-        return $this->redirectWithStatus($request,'terminusinv.stocks',"Deleted stock definition!", 'success');
+        return $this->redirectWithStatus($request,'inventory.stocks',"Deleted stock definition!", 'success');
     }
 
     public function itemBrowser(Request $request){
@@ -311,7 +311,7 @@ class TerminusInventoryController extends Controller
         $allowed_types = [];
 
         if($location_id != null && Location::find($location_id) == null){
-            return $this->redirectWithStatus($request,'terminusinv.itemBrowser',"Location not found!", 'error');
+            return $this->redirectWithStatus($request,'inventory.itemBrowser',"Location not found!", 'error');
         }
 
         if($request->checkbox_corporation_hangar!=null || $request->filter == null){
@@ -337,7 +337,7 @@ class TerminusInventoryController extends Controller
             });
         }
 
-        return view("terminusinv::itembrowser", compact("inventory_sources","request", "filter_item_type"));
+        return view("inventory::itembrowser", compact("inventory_sources","request", "filter_item_type"));
     }
 
     public function stockAvailability(Request $request){
@@ -356,15 +356,15 @@ class TerminusInventoryController extends Controller
         }
 
         if($location == null){
-            return view("terminusinv::availability", compact("request"));
+            return view("inventory::availability", compact("request"));
         }
 
         $stock_levels = StockHelper::computeStockLevels($location, $stock);
 
-        return view("terminusinv::availability", compact("request","stock_levels"));
+        return view("inventory::availability", compact("request","stock_levels"));
     }
 
     public function about(){
-        return view("terminusinv::about");
+        return view("inventory::about");
     }
 }

@@ -5,7 +5,7 @@
 
 
 @section('full')
-    @include("terminusinv::includes.status")
+    @include("inventory::includes.status")
 
     <div class="card">
         <div class="card-body">
@@ -24,7 +24,7 @@
             @else
                 <div class="list-group">
                     @foreach($fittings as $stock)
-                        <a href="{{ route("terminusinv.editStock",$stock->id) }}" class="list-group-item list-group-item-action">
+                        <a href="{{ route("inventory.editStock",$stock->id) }}" class="list-group-item list-group-item-action">
                             <b>{{ $stock->name }}</b>
                             {{ $stock->location->name }}
                             @if($stock->fitting_plugin_fitting_id != null)
@@ -60,7 +60,7 @@
 
                 {{-- EFT Fits --}}
                 <div class="tab-pane show active" id="fit-text-tab-content">
-                    <form action="{{ route("terminusinv.addStock") }}" method="POST">
+                    <form action="{{ route("inventory.addStock") }}" method="POST">
                         @csrf
 
                         <div class="form-group">
@@ -82,7 +82,7 @@
                                     class="form-control basicAutoComplete" type="text"
                                     autocomplete="off"
                                     id="fit-location"
-                                    data-url="{{ route("terminusinv.locationSuggestions") }}"
+                                    data-url="{{ route("inventory.locationSuggestions") }}"
                                     name="location_id">
                             </select>
                         </div>
@@ -94,7 +94,7 @@
 
                 {{-- Multibuy --}}
                 <div class="tab-pane" id="multibuy-text-tab-content">
-                    <form action="{{ route("terminusinv.addStock") }}" method="POST">
+                    <form action="{{ route("inventory.addStock") }}" method="POST">
                         @csrf
 
                         <div class="form-group">
@@ -121,7 +121,7 @@
                                     class="form-control basicAutoComplete" type="text"
                                     autocomplete="off"
                                     id="fit-location"
-                                    data-url="{{ route("terminusinv.locationSuggestions") }}"
+                                    data-url="{{ route("inventory.locationSuggestions") }}"
                                     name="location_id">
                             </select>
                         </div>
@@ -134,7 +134,7 @@
                 {{-- Plugin --}}
                 @if($has_fitting_plugin)
                     <div class="tab-pane" id="fit-plugin-tab-content">
-                        <form action="{{ route("terminusinv.addStock") }}" method="POST">
+                        <form action="{{ route("inventory.addStock") }}" method="POST">
                             @csrf
 
                             <div class="form-group">
@@ -144,7 +144,7 @@
                                         class="form-control basicAutoComplete" type="text"
                                         autocomplete="off"
                                         id="fit-plugin-fit"
-                                        data-url="{{ route("terminusinv.fittingPluginFittingsSuggestions") }}"
+                                        data-url="{{ route("inventory.fittingPluginFittingsSuggestions") }}"
                                         name="fit_plugin_id">
                                 </select>
                             </div>
@@ -161,7 +161,7 @@
                                         class="form-control basicAutoComplete" type="text"
                                         autocomplete="off"
                                         id="fit-location"
-                                        data-url="{{ route("terminusinv.locationSuggestions") }}"
+                                        data-url="{{ route("inventory.locationSuggestions") }}"
                                         name="location_id">
                                 </select>
                             </div>
@@ -179,7 +179,7 @@
 @stop
 
 @push('javascript')
-    <script src="@terminusinvVersionedAsset('terminusinventory/js/bootstrap-autocomplete.js')"></script>
+    <script src="@inventoryVersionedAsset('inventory/js/bootstrap-autocomplete.js')"></script>
 
     <script>
         $('.basicAutoComplete').autoComplete({

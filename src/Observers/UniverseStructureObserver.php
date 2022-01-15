@@ -1,10 +1,10 @@
 <?php
 
-namespace RecursiveTree\Seat\TerminusInventory\Observers;
+namespace RecursiveTree\Seat\Inventory\Observers;
 
 use Exception;
 use Illuminate\Support\Facades\DB;
-use RecursiveTree\Seat\TerminusInventory\Models\Location;
+use RecursiveTree\Seat\Inventory\Models\Location;
 
 class UniverseStructureObserver
 {

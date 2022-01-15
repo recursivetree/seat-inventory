@@ -1,98 +1,98 @@
 <?php
 
 Route::group([
-    'namespace'  => 'RecursiveTree\Seat\TerminusInventory\Http\Controllers',
+    'namespace'  => 'RecursiveTree\Seat\Inventory\Http\Controllers',
     'middleware' => ['web', 'auth'],
-    'prefix' => 'terminusinventory',
+    'prefix' => 'inventory',
 ], function () {
 
     Route::get('/about', [
-        'as'   => 'terminusinv.about',
-        'uses' => 'TerminusInventoryController@about',
-        'middleware' => 'can:terminusinv.view_inventory'
+        'as'   => 'inventory.about',
+        'uses' => 'InventoryController@about',
+        'middleware' => 'can:inventory.view_inventory'
     ]);
 
     Route::get('/tracking', [
-        'as'   => 'terminusinv.tracking',
-        'uses' => 'TerminusInventoryController@tracking',
-        'middleware' => 'can:terminusinv.view_inventory'
+        'as'   => 'inventory.tracking',
+        'uses' => 'InventoryController@tracking',
+        'middleware' => 'can:inventory.view_inventory'
     ]);
 
     Route::post('/tracking/corporations/add', [
-        'as'   => 'terminusinv.addTrackingCorporation',
-        'uses' => 'TerminusInventoryController@addTrackingCorporation',
-        'middleware' => 'can:terminusinv.edit_inventory'
+        'as'   => 'inventory.addTrackingCorporation',
+        'uses' => 'InventoryController@addTrackingCorporation',
+        'middleware' => 'can:inventory.edit_inventory'
     ]);
 
     Route::post('/tracking/corporations/delete', [
-        'as'   => 'terminusinv.deleteTrackingCorporation',
-        'uses' => 'TerminusInventoryController@deleteTrackingCorporation',
-        'middleware' => 'can:terminusinv.edit_inventory'
+        'as'   => 'inventory.deleteTrackingCorporation',
+        'uses' => 'InventoryController@deleteTrackingCorporation',
+        'middleware' => 'can:inventory.edit_inventory'
     ]);
 
     Route::get('/tracking/corporations/suggestions', [
-        'as'   => 'terminusinv.trackingCorporationSuggestions',
-        'uses' => 'TerminusInventoryController@trackingCorporationSuggestions',
-        'middleware' => 'can:terminusinv.view_inventory'
+        'as'   => 'inventory.trackingCorporationSuggestions',
+        'uses' => 'InventoryController@trackingCorporationSuggestions',
+        'middleware' => 'can:inventory.view_inventory'
     ]);
 
     Route::get('/locations/suggestions', [
-        'as'   => 'terminusinv.locationSuggestions',
-        'uses' => 'TerminusInventoryController@locationSuggestions',
-        'middleware' => 'can:terminusinv.view_inventory'
+        'as'   => 'inventory.locationSuggestions',
+        'uses' => 'InventoryController@locationSuggestions',
+        'middleware' => 'can:inventory.view_inventory'
     ]);
 
     Route::get('/stocks/plugin/fittings/suggestions', [
-        'as'   => 'terminusinv.fittingPluginFittingsSuggestions',
-        'uses' => 'TerminusInventoryController@fittingPluginFittingsSuggestions',
-        'middleware' => 'can:terminusinv.view_inventory'
+        'as'   => 'inventory.fittingPluginFittingsSuggestions',
+        'uses' => 'InventoryController@fittingPluginFittingsSuggestions',
+        'middleware' => 'can:inventory.view_inventory'
     ]);
 
     Route::get('/stocks', [
-        'as'   => 'terminusinv.stocks',
-        'uses' => 'TerminusInventoryController@stocks',
-        'middleware' => 'can:terminusinv.view_inventory'
+        'as'   => 'inventory.stocks',
+        'uses' => 'InventoryController@stocks',
+        'middleware' => 'can:inventory.view_inventory'
     ]);
 
     Route::post('/stocks/add', [
-        'as'   => 'terminusinv.addStock',
-        'uses' => 'TerminusInventoryController@addStockPost',
-        'middleware' => 'can:terminusinv.edit_inventory'
+        'as'   => 'inventory.addStock',
+        'uses' => 'InventoryController@addStockPost',
+        'middleware' => 'can:inventory.edit_inventory'
     ]);
 
     Route::get('/stocks/edit/{id}', [
-        'as'   => 'terminusinv.editStock',
-        'uses' => 'TerminusInventoryController@editStock',
-        'middleware' => 'can:terminusinv.view_inventory'
+        'as'   => 'inventory.editStock',
+        'uses' => 'InventoryController@editStock',
+        'middleware' => 'can:inventory.view_inventory'
     ]);
 
     Route::post('/stocks/delete/{id}', [
-        'as'   => 'terminusinv.deleteStock',
-        'uses' => 'TerminusInventoryController@deleteStockPost',
-        'middleware' => 'can:terminusinv.edit_inventory'
+        'as'   => 'inventory.deleteStock',
+        'uses' => 'InventoryController@deleteStockPost',
+        'middleware' => 'can:inventory.edit_inventory'
     ]);
 
     Route::get('/stocks/availability', [
-        'as'   => 'terminusinv.stockAvailability',
-        'uses' => 'TerminusInventoryController@stockAvailability',
-        'middleware' => 'can:terminusinv.view_inventory'
+        'as'   => 'inventory.stockAvailability',
+        'uses' => 'InventoryController@stockAvailability',
+        'middleware' => 'can:inventory.view_inventory'
     ]);
 
     Route::get('/stocks/suggestions', [
-        'as'   => 'terminusinv.stockSuggestions',
-        'uses' => 'TerminusInventoryController@stockSuggestions',
-        'middleware' => 'can:terminusinv.view_inventory'
+        'as'   => 'inventory.stockSuggestions',
+        'uses' => 'InventoryController@stockSuggestions',
+        'middleware' => 'can:inventory.view_inventory'
     ]);
 
     Route::get('/itembrowser', [
-        'as'   => 'terminusinv.itemBrowser',
-        'uses' => 'TerminusInventoryController@itemBrowser',
-        'middleware' => 'can:terminusinv.view_inventory'
+        'as'   => 'inventory.itemBrowser',
+        'uses' => 'InventoryController@itemBrowser',
+        'middleware' => 'can:inventory.view_inventory'
     ]);
 
     Route::get('/items/suggestions', [
-        'as'   => 'terminusinv.itemTypeSuggestions',
-        'uses' => 'TerminusInventoryController@itemTypeSuggestions',
-        'middleware' => 'can:terminusinv.view_inventory'
+        'as'   => 'inventory.itemTypeSuggestions',
+        'uses' => 'InventoryController@itemTypeSuggestions',
+        'middleware' => 'can:inventory.view_inventory'
     ]);
 });
