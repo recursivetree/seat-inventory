@@ -137,7 +137,7 @@ class InventoryController extends Controller
         if($query==null){
             $types = InvType::where("marketGroupID", "!=", null)->get();
         } else {
-            $types = InvType::where("marketGroupID", "!=", null)->where("typeName","like","$query%")->limit(100)->get();
+            $types = InvType::where("marketGroupID", "!=", null)->where("typeName","like","%$query%")->limit(100)->get();
         }
 
         $suggestions = [];
@@ -157,7 +157,7 @@ class InventoryController extends Controller
         if($query==null){
             $stocks = Stock::all();
         } else {
-            $stocks = Stock::where("name", "like", "$query%")->limit(100)->get();
+            $stocks = Stock::where("name", "like", "%$query%")->limit(100)->get();
         }
 
         $suggestions = [];
