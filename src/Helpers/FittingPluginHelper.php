@@ -8,5 +8,5 @@ class FittingPluginHelper
         return class_exists(self::$FITTING_PLUGIN_FITTING_MODEL);
     }
 
-    public static string $FITTING_PLUGIN_FITTING_MODEL = "Denngarr\Seat\Fitting\Models\Fitting";
+    public static $FITTING_PLUGIN_FITTING_MODEL = "Denngarr\Seat\Fitting\Models\Fitting";
 }
