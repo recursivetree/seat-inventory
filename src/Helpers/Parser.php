@@ -29,7 +29,7 @@ class Parser
         }
 
         $matches = [];
-        $res = preg_match("/^\s*\[(\w+[\w ]*\w), ?[\w ]*]/Uu",$fit,$matches);
+        $res = preg_match("/\[([\w '-]+),[\w '-]+]/",$fit,$matches);
         if($res!=1) {
             throw new Exception("Missing ship type!");
         }
@@ -39,7 +39,7 @@ class Parser
         $items['item_amount'][] = 1;
 
         $matches = [];
-        $res = preg_match("/^\s*\[\w+[\w ]*\w+, ?([\w ]*)\]/u",$fit, $matches);
+        $res = preg_match("/\[[\w '-]+,([\w '-]+)]/",$fit, $matches);
         if($res!=1) {
             throw new Exception("Missing ship name!");
         }
@@ -53,10 +53,13 @@ class Parser
 
     public static function parseMultiBuy($multibuy): array
     {
+        $multibuy = preg_replace('~\R~u', "\n", $multibuy);
 
         $matches = [];
 
-        preg_match_all("/^(?<item_name>[\w '-]+)\s+(?<item_amount>\d+)/m",$multibuy, $matches);
+        preg_match_all("/^(?<item_name>[\w '-]+?)(?: x(?<item_amount>\d+))?$/m",$multibuy, $matches);
+
+        //dd($matches);
 
         $intermediate = [
             'item_names'=>$matches['item_name'],
@@ -72,8 +75,12 @@ class Parser
 
         for ($i=0; $i < count($item_list['item_names']); $i++){
 
-            $amount = intval($item_list['item_amount'][$i]);
-            if ($amount==0) continue;
+            if($item_list['item_amount'][$i] != "") {
+                $amount = intval($item_list['item_amount'][$i]);
+                if ($amount == 0) continue;
+            } else {
+                $amount = 1;
+            }
 
             $item = $item_list['item_names'][$i];
             $result = InvType::where('typeName', $item)->first();
