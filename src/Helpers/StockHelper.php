@@ -29,7 +29,7 @@ class StockHelper
                 if ($amount == 0) continue;
 
                 if (array_key_exists($item->type_id, $item_map)) {
-                    $possible = floor($item_map[$item->type_id] / $amount);
+                    $possible = floor($item_map[$item->type_id] / $item->amount);
                     if ($possible < $target_stock_limit) {
                         $target_stock_limit = $possible;
                     }

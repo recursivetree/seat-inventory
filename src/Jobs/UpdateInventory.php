@@ -175,7 +175,7 @@ class UpdateInventory implements ShouldQueue
             $location = new Location();
             $location->station_id = $station_id;
             $location->structure_id = $structure_id;
-            $location->name = "Unknown contract destination";
+            $location->name = "Unknown location";
             $location->save();
         }
         return $location;
