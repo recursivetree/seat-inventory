@@ -23,7 +23,7 @@ class UpdateInventory implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    private static array $ITEM_BLACKLIST = [
+    private static $ITEM_BLACKLIST = [
         27 //Corporation Hangar Office
     ];
 
