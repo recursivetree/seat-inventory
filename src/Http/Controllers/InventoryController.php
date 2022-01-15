@@ -117,7 +117,7 @@ class InventoryController extends Controller
         if($query==null){
             $fittings = FittingPluginHelper::$FITTING_PLUGIN_FITTING_MODEL::all();
         } else {
-            $fittings = FittingPluginHelper::$FITTING_PLUGIN_FITTING_MODEL::where("fitname","like","%$query%")->get();
+            $fittings = FittingPluginHelper::$FITTING_PLUGIN_FITTING_MODEL::where("fitname","like","%$query%")->orWhere("shiptype","like","%$query%")->get();
         }
 
         $suggestions = [];
