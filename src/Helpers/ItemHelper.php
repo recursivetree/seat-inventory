@@ -8,8 +8,8 @@ use Seat\Eveapi\Models\Sde\InvType;
 
 class ItemHelper
 {
-    public int $type_id;
-    public int $amount;
+    public $type_id;
+    public $amount;
 
     public function __construct($type_id, $amount){
         $this->type_id = $type_id;
