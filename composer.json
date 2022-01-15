@@ -10,7 +10,7 @@
   ],
   "autoload": {
     "psr-4": {
-      "RecursiveTree\\Seat\\TerminusInventory\\": "src/"
+      "RecursiveTree\\Seat\\Inventory\\": "src/"
     }
   },
   "minimum-stability": "dev",
@@ -29,7 +29,7 @@
   "extra": {
     "laravel": {
       "providers": [
-        "RecursiveTree\\Seat\\TerminusInventory\\TerminusInventoryServiceProvider"
+        "RecursiveTree\\Seat\\Inventory\\TerminusInventoryServiceProvider"
       ]
     }
   }
