@@ -2,7 +2,6 @@
 
 namespace RecursiveTree\Seat\TerminusInventory\Helpers;
 
-use JetBrains\PhpStorm\Pure;
 use RecursiveTree\Seat\TerminusInventory\Models\InventoryItem;
 use RecursiveTree\Seat\TerminusInventory\Models\StockItem;
 use Seat\Eveapi\Models\Sde\InvType;
@@ -15,6 +14,15 @@ class ItemHelper
     public function __construct($type_id, $amount){
         $this->type_id = $type_id;
         $this->amount = $amount;
+    }
+
+    public function name(){
+        $type = InvType::find($this->type_id);
+        if($type!=null) {
+            return $type->typeName;
+        } else {
+            return "unknown-item-$this->type_id";
+        }
     }
 
     public function asStockItem(){
@@ -42,12 +50,8 @@ class ItemHelper
         $lines = [];
 
         foreach ($item_list as $item){
-            $type = InvType::find($item->type_id);
-            if($type!=null) {
-                $lines[] = "$type->typeName $item->amount";
-            } else {
-                $lines[] = "unknown-type-$item->type_id $item->amount";
-            }
+            $name = $item->name();
+            $lines[] = "$name $item->amount";
         }
 
         return implode("\n",$lines);
@@ -81,4 +85,5 @@ class ItemHelper
 
         return $optimized;
     }
+
 }

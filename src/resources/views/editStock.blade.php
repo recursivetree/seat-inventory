@@ -5,26 +5,6 @@
 
 
 @section('full')
-    <div class="modal fade" id="multibuyModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Mulibuy</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <textarea class="w-100" rows="15" id="multibuyTextArea" onclick="this.focus();this.select();document.execCommand('copy');" readonly="readonly">{{ $multibuy }}</textarea>
-                </div>
-                <div class="modal-footer">
-                    <button id="multiBuyModalCopyButton" class="btn btn-primary">Copy</button>
-                    <button class="btn btn-secondary" data-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     @include("terminusinv::includes.status")
 
     <div class="card">
@@ -37,6 +17,8 @@
             </h5>
 
             <p>{{ $stock->location->name }}</p>
+
+            <p> You specified a minimal stock level of {{ $stock->amount }} "{{ $stock->name }}"s in  {{ $stock->location->name }}</p>
 
             <h6>Items</h6>
             @if($stock->items->isEmpty())
@@ -65,7 +47,7 @@
                     <button type="submit" class="btn btn-danger">Delete</button>
                 </form>
 
-                <button class="btn btn-secondary" data-toggle="modal" data-target="#multibuyModal">Multibuy</button>
+                @include("terminusinv::includes.multibuy",["multibuy" => $multibuy])
             </div>
         </div>
     </div>

@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
+use RecursiveTree\Seat\TerminusInventory\Jobs\UpdateInventory;
 use RecursiveTree\Seat\TerminusInventory\Observers\UniverseStationObserver;
 use RecursiveTree\Seat\TerminusInventory\Observers\UniverseStructureObserver;
 use Seat\Eveapi\Models\Universe\UniverseStation;
@@ -68,6 +69,8 @@ class AddTables extends Migration
         foreach ($structures as $structure){
             $observer->saved($structure);
         }
+
+        UpdateInventory::dispatch()->onQueue('default');
     }
 
     /**

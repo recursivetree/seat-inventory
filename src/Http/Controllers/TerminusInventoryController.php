@@ -51,7 +51,7 @@ class TerminusInventoryController extends Controller
         if(TrackedCorporation::where("corporation_id",$id)->exists()){
             return $this->redirectWithStatus($request,'terminusinv.tracking',"Corporation is already added to the list of tracked corporations!", 'warning');
         }
-        
+
         $db_entry = new TrackedCorporation();
         $db_entry->corporation_id = $id;
         $db_entry->save();
@@ -284,7 +284,10 @@ class TerminusInventoryController extends Controller
             return $this->redirectWithStatus($request,'terminusinv.stocks',"Could not find stock definition!", 'error');
         }
 
-        $multibuy = ItemHelper::itemListToMultiBuy($stock->items);
+        $items = ItemHelper::itemListFromQuery($stock->items);
+        //dd($items);
+
+        $multibuy = ItemHelper::itemListToMultiBuy($items);
 
         return view("terminusinv::editStock", compact("stock","multibuy"));
     }
@@ -341,7 +344,7 @@ class TerminusInventoryController extends Controller
         $location = null;
         $stock = null;
 
-        if($request->location_id==null){
+        if($request->location_id != null){
             $location = Location::find($request->location_id);
         }
 
@@ -356,9 +359,9 @@ class TerminusInventoryController extends Controller
             return view("terminusinv::availability", compact("request"));
         }
 
-        StockHelper::computeStockLevels($location, $stock);
+        $stock_levels = StockHelper::computeStockLevels($location, $stock);
 
-        return view("terminusinv::availability", compact("request",));
+        return view("terminusinv::availability", compact("request","stock_levels"));
     }
 
     public function about(){

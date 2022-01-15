@@ -49,9 +49,59 @@
                 </div>
             </form>
 
-{{--            @foreach($stocks as $stock)--}}
-{{--                <p>{{ $stock->name }}</p>--}}
-{{--            @endforeach--}}
+            @isset($stock_levels)
+                @isset($request->stock_id)
+                    <h6>{{ $request->stock_id_text }}</h6>
+                    <p>
+                        <span>
+                            You have {{ $stock_levels["target_amount"] }}x <i>{{ $request->stock_id_text }}</i> available.
+                        </span>
+                        <small class="text-muted">This is the max number you can get, including items from other fits</small>
+                    </p>
+
+                    <h6>Missing for the specified stock @include("terminusinv::includes.multibuy",["multibuy" => \RecursiveTree\Seat\TerminusInventory\Helpers\ItemHelper::itemListToMultiBuy($stock_levels["target_missing"])])</h6>
+
+                    @if(count($stock_levels["target_missing"])<1)
+                        <div class="alert alert-warning">
+                            There are no items missing
+                        </div>
+                    @else
+                        <ul class="list-group">
+                            @foreach($stock_levels["target_missing"] as $item)
+                                <li class="list-group-item">
+                                    <img src="https://images.evetech.net/types/{{ $item->type_id }}/icon" height="24">
+                                    <span>
+                                    {{ $item->amount }}x
+                                    {{ $item->name() }}
+                                </span>
+                                </li>
+                            @endforeach
+                        </ul>
+                        <small class="text-muted">These items are required to reach the minimal specified quantity of this stock</small>
+                    @endif
+                @endisset
+
+                <h6>Missing at this location @include("terminusinv::includes.multibuy",["multibuy" => \RecursiveTree\Seat\TerminusInventory\Helpers\ItemHelper::itemListToMultiBuy($stock_levels["missing_items"])])</h6>
+
+                @if(count($stock_levels["missing_items"])<1)
+                    <div class="alert alert-warning">
+                        There are no items missing
+                    </div>
+                @else
+                    <ul class="list-group">
+                        @foreach($stock_levels["missing_items"] as $item)
+                            <li class="list-group-item">
+                                <img src="https://images.evetech.net/types/{{ $item->type_id }}/icon" height="24">
+                                <span>
+                                {{ $item->amount }}x
+                                {{ $item->name() }}
+                            </span>
+                            </li>
+                        @endforeach
+                    </ul>
+                    <small class="text-muted">All missing items at the location of this stock</small>
+                @endif
+            @endisset
         </div>
     </div>
 @stop
