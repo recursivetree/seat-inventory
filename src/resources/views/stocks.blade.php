@@ -90,21 +90,21 @@
                         <div class="form-check">
                             <input
                                 type="checkbox"
-                                id="check-corporation-hangars"
+                                id="fit_check-corporation-hangars"
                                 class="form-check-input"
                                 name="check_corporation_hangars"
                                 checked>
-                            <label for="check-corporation-hangars">Check in corporation hangars</label>
+                            <label for="fit_check-corporation-hangars">Check in corporation hangars</label>
                         </div>
 
                         <div class="form-check">
                             <input
                                     type="checkbox"
-                                    id="check-contracts"
+                                    id="fit_check-contracts"
                                     class="form-check-input"
                                     name="check_contracts"
                                     checked>
-                            <label for="check-contracts">Check contracts</label>
+                            <label for="fit_check-contracts">Check contracts</label>
                         </div>
 
                         <button type="submit" class="btn btn-primary">Submit</button>
@@ -149,21 +149,21 @@
                         <div class="form-check">
                             <input
                                     type="checkbox"
-                                    id="check-corporation-hangars"
+                                    id="multibuy_check-corporation-hangars"
                                     class="form-check-input"
                                     name="check_corporation_hangars"
                                     checked>
-                            <label for="check-corporation-hangars">Check in corporation hangars</label>
+                            <label for="multibuy_check-corporation-hangars">Check in corporation hangars</label>
                         </div>
 
                         <div class="form-check">
                             <input
                                     type="checkbox"
-                                    id="check-contracts"
+                                    id="multibuy_check-contracts"
                                     class="form-check-input"
                                     name="check_contracts"
                                     checked>
-                            <label for="check-contracts">Check contracts</label>
+                            <label for="multibuy_check-contracts">Check contracts</label>
                         </div>
 
                         <button type="submit" class="btn btn-primary">Submit</button>
@@ -209,21 +209,21 @@
                             <div class="form-check">
                                 <input
                                         type="checkbox"
-                                        id="check-corporation-hangars"
+                                        id="fitting_plugin_check-corporation-hangars"
                                         class="form-check-input"
                                         name="check_corporation_hangars"
                                         checked>
-                                <label for="check-corporation-hangars">Check in corporation hangars</label>
+                                <label for="fitting_plugin_check-corporation-hangars">Check in corporation hangars</label>
                             </div>
 
                             <div class="form-check">
                                 <input
                                         type="checkbox"
-                                        id="check-contracts"
+                                        id="fitting_plugin_check-contracts"
                                         class="form-check-input"
                                         name="check_contracts"
                                         checked>
-                                <label for="check-contracts">Check contracts</label>
+                                <label for="fitting_plugin_check-contracts">Check contracts</label>
                             </div>
 
                             <button type="submit" class="btn btn-primary">Submit</button>
