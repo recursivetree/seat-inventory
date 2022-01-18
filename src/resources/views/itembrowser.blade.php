@@ -9,15 +9,13 @@
 
     <div class="card">
         <div class="card-body">
-            <h5>
+            <h1>
                 Item Browser
-            </h5>
+            </h1>
 
-            <h6>Filter</h6>
+            <h2>Filter</h2>
 
             <form action="{{ route("inventory.itemBrowser") }}" method="GET">
-
-                <input type="hidden" name="filter" value="true">
 
                 <div class="form-check">
                     <input
@@ -25,7 +23,7 @@
                             id="checkbox-corporation-hangars"
                             class="form-check-input"
                             name="checkbox_corporation_hangar"
-                            @if($request->checkbox_corporation_hangar!=null or !isset($request->filter))
+                            @if($check_corporation_hangars)
                             checked
                             @endif>
                     <label for="checkbox-corporation-hangars">Corporation Hangars</label>
@@ -37,7 +35,7 @@
                             id="checkbox-contracts"
                             class="form-check-input"
                             name="checkbox_contracts"
-                            @if($request->checkbox_contracts!=null or !isset($request->filter))
+                            @if($check_contracts)
                             checked
                             @endif>
                     <label for="checkbox-contracts">Contracts</label>
@@ -73,7 +71,7 @@
                 </div>
             </form>
 
-            <h6>Items</h6>
+            <h2>Items</h2>
             @if($inventory_sources->isEmpty())
                 <p>There were no items found!</p>
             @endif
@@ -117,22 +115,22 @@
     <script>
         $('.basicAutoComplete').autoComplete({
             resolverSettings: {
-                requestThrottling: 250
+                requestThrottling: 50
             },
             minLength: 0,
         });
 
-        @isset($request->location_id)
+        @isset($location_id)
             $('#stock-location').autoComplete('set', {
-                value: "{{ $request->location_id }}",
-                text: "{{ $request->location_id_text }}"
+                value: "{{ $location_id }}",
+                text: "{{ $location_id_text }}"
             });
         @endisset
 
-        @isset($request->item_id)
+        @isset($filter_item_type)
             $('#stock-item').autoComplete('set', {
-                value: "{{ $request->item_id }}",
-                text: "{{ $request->item_id_text }}"
+                value: "{{ $filter_item_type }}",
+                text: "{{ $filter_item_type_text }}"
             });
         @endisset
 

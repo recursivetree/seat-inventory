@@ -179,6 +179,8 @@ class InventoryController extends Controller
         $amount = $request->amount;
         $location_id = $request->location_id;
         $name = $request->name;
+        $check_contracts = $request->check_contracts != null;
+        $check_corporation_hangars = $request->check_corporation_hangars != null;
 
         //check if always required data is there
         if($location_id==null || $amount==null){
@@ -237,8 +239,8 @@ class InventoryController extends Controller
 
         //fill data
         $stock->amount = $amount;
-        $stock->check_contracts = true;
-        $stock->check_corporation_hangars = true;
+        $stock->check_contracts = $check_contracts;
+        $stock->check_corporation_hangars = $check_corporation_hangars;
         $stock->location_id = $location->id;
 
         //if there is a link to the fitting plugin, save it
@@ -307,18 +309,29 @@ class InventoryController extends Controller
 
     public function itemBrowser(Request $request){
         $location_id = $request->location_id;
+        $location_id_text = $request->location_id_text;
         $filter_item_type = $request->item_id;
+        $filter_item_type_text = $request->item_id_text;
+        $check_corporation_hangars = $request->checkbox_corporation_hangar!=null;
+        $check_contracts = $request->checkbox_contracts!=null;
+
         $allowed_types = [];
+
+        $has_no_filter = ($location_id==null) && ($filter_item_type == null) && ($check_corporation_hangars == false) && ($check_contracts == false);
+
+        //dd($location_id==null,$filter_item_type == null);
+        $check_contracts = $check_contracts || $has_no_filter;
+        $check_corporation_hangars = $check_corporation_hangars || $has_no_filter;
+
+        if($check_corporation_hangars){
+            $allowed_types[] = "corporation_hangar";
+        }
+        if($check_contracts){
+            $allowed_types[] = "contract";
+        }
 
         if($location_id != null && Location::find($location_id) == null){
             return $this->redirectWithStatus($request,'inventory.itemBrowser',"Location not found!", 'error');
-        }
-
-        if($request->checkbox_corporation_hangar!=null || $request->filter == null){
-            $allowed_types[] = "corporation_hangar";
-        }
-        if($request->checkbox_contracts!=null || $request->filter == null){
-            $allowed_types[] = "contract";
         }
 
         $query = InventorySource::whereIn("source_type", $allowed_types);
@@ -337,7 +350,16 @@ class InventoryController extends Controller
             });
         }
 
-        return view("inventory::itembrowser", compact("inventory_sources","request", "filter_item_type"));
+        return view("inventory::itembrowser", compact(
+            "inventory_sources",
+            "filter_item_type",
+            "check_contracts",
+            "check_corporation_hangars",
+            "location_id",
+            "location_id_text",
+            "filter_item_type",
+            "filter_item_type_text"
+        ));
     }
 
     public function stockAvailability(Request $request){

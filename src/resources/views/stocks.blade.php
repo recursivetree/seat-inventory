@@ -9,13 +9,13 @@
 
     <div class="card">
         <div class="card-body">
-            <h5>
+            <h1>
                 Inventory Tracking
-            </h5>
+            </h1>
 
-            <h6>
+            <h2>
                 Stocks
-            </h6>
+            </h2>
 
             @if($fittings->isEmpty())
                 <div class="alert alert-primary">
@@ -35,7 +35,7 @@
                 </div>
             @endif
 
-            <h6 class="mt-4">Add Fit</h6>
+            <h2 class="mt-4">Add Fit</h2>
 
             <ul class="nav nav-tabs" id="fitTypeTab" data-tabs="tabs">
                 <li class="nav-item">
@@ -87,6 +87,26 @@
                             </select>
                         </div>
 
+                        <div class="form-check">
+                            <input
+                                type="checkbox"
+                                id="check-corporation-hangars"
+                                class="form-check-input"
+                                name="check_corporation_hangars"
+                                checked>
+                            <label for="check-corporation-hangars">Check in corporation hangars</label>
+                        </div>
+
+                        <div class="form-check">
+                            <input
+                                    type="checkbox"
+                                    id="check-contracts"
+                                    class="form-check-input"
+                                    name="check_contracts"
+                                    checked>
+                            <label for="check-contracts">Check contracts</label>
+                        </div>
+
                         <button type="submit" class="btn btn-primary">Submit</button>
 
                     </form>
@@ -124,6 +144,26 @@
                                     data-url="{{ route("inventory.locationSuggestions") }}"
                                     name="location_id">
                             </select>
+                        </div>
+
+                        <div class="form-check">
+                            <input
+                                    type="checkbox"
+                                    id="check-corporation-hangars"
+                                    class="form-check-input"
+                                    name="check_corporation_hangars"
+                                    checked>
+                            <label for="check-corporation-hangars">Check in corporation hangars</label>
+                        </div>
+
+                        <div class="form-check">
+                            <input
+                                    type="checkbox"
+                                    id="check-contracts"
+                                    class="form-check-input"
+                                    name="check_contracts"
+                                    checked>
+                            <label for="check-contracts">Check contracts</label>
                         </div>
 
                         <button type="submit" class="btn btn-primary">Submit</button>
@@ -164,6 +204,26 @@
                                         data-url="{{ route("inventory.locationSuggestions") }}"
                                         name="location_id">
                                 </select>
+                            </div>
+
+                            <div class="form-check">
+                                <input
+                                        type="checkbox"
+                                        id="check-corporation-hangars"
+                                        class="form-check-input"
+                                        name="check_corporation_hangars"
+                                        checked>
+                                <label for="check-corporation-hangars">Check in corporation hangars</label>
+                            </div>
+
+                            <div class="form-check">
+                                <input
+                                        type="checkbox"
+                                        id="check-contracts"
+                                        class="form-check-input"
+                                        name="check_contracts"
+                                        checked>
+                                <label for="check-contracts">Check contracts</label>
                             </div>
 
                             <button type="submit" class="btn btn-primary">Submit</button>

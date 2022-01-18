@@ -9,13 +9,13 @@
 
     <div class="card">
         <div class="card-body">
-            <h5>
+            <h1>
                 Inventory Tracking
-            </h5>
+            </h1>
 
-            <h6 class="mt-4">
+            <h2 class="mt-4">
                 Corporations
-            </h6>
+            </h2>
 
             <table class="table table-striped mb-4">
                 <thead>
@@ -45,11 +45,11 @@
                 </tbody>
             </table>
 
+            <h2>Add Corporation</h2>
             <form method="POST" action="{{ route("inventory.addTrackingCorporation") }}" class="border rounded p-4">
-                <h6>Add Corporation</h6>
                 @csrf
                 <div class="form-group">
-                    <label for="addTrackingCorporationCorporationInput">Location</label>
+                    <label for="addTrackingCorporationCorporationInput">Coporation</label>
                     <select
                             placeholder="enter a corp name or ticker like 'Terminus.' or 'TRM.' ..."
                             class="form-control basicAutoComplete" type="text"

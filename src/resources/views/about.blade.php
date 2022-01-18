@@ -7,8 +7,14 @@
 @section('full')
     <div class="card">
         <div class="card-body">
-            <h5 class="card-title">About</h5>
-            <p class="card-text">
+            <h1>About</h1>
+            <p>
+                I hope you enjoy working with seat-inventory. To support the development, have you considered donating
+                something? Donations are always welcome and motivate me to put more effort into this project, although
+                they are by no means required. If you end up using this module a lot, I'd appreciate a donation.
+                You can give ISK, PLEX or Ships to 'recursivetree'.
+            </p>
+            <p>
                 This plugin uses the following libaries:
                 <ul>
                     <li>

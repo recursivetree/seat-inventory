@@ -9,11 +9,11 @@
 
     <div class="card">
         <div class="card-body">
-            <h5>
+            <h1>
                 Stock Availability
-            </h5>
+            </h1>
 
-            <h6>Filter</h6>
+            <h2>Filter</h2>
 
             <form action="{{ route("inventory.stockAvailability") }}" method="GET">
 
@@ -51,7 +51,7 @@
 
             @isset($stock_levels)
                 @isset($request->stock_id)
-                    <h6>{{ $request->stock_id_text }}</h6>
+                    <h2>{{ $request->stock_id_text }}</h2>
                     <p>
                         <span>
                             You have {{ $stock_levels["target_amount"] }}x <i>{{ $request->stock_id_text }}</i> available.
@@ -59,7 +59,7 @@
                         <small class="text-muted">This is the max number you can get, including items from other fits</small>
                     </p>
 
-                    <h6>Missing for the specified stock @include("inventory::includes.multibuy",["multibuy" => \RecursiveTree\Seat\Inventory\Helpers\ItemHelper::itemListToMultiBuy($stock_levels["target_missing"])])</h6>
+                    <h2>Missing for the specified stock @include("inventory::includes.multibuy",["multibuy" => \RecursiveTree\Seat\Inventory\Helpers\ItemHelper::itemListToMultiBuy($stock_levels["target_missing"])])</h2>
 
                     @if(count($stock_levels["target_missing"])<1)
                         <div class="alert alert-warning">
@@ -81,7 +81,7 @@
                     @endif
                 @endisset
 
-                <h6>Missing at this location @include("inventory::includes.multibuy",["multibuy" => \RecursiveTree\Seat\Inventory\Helpers\ItemHelper::itemListToMultiBuy($stock_levels["missing_items"])])</h6>
+                <h2>Missing at this location @include("inventory::includes.multibuy",["multibuy" => \RecursiveTree\Seat\Inventory\Helpers\ItemHelper::itemListToMultiBuy($stock_levels["missing_items"])])</h2>
 
                 @if(count($stock_levels["missing_items"])<1)
                     <div class="alert alert-warning">

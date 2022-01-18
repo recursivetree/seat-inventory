@@ -2,11 +2,11 @@
     $id = rand()
 @endphp
 
-<div class="modal fade" id="multibuyModal{{$id}}" tabindex="-1">
+<div class="modal fade text-muted" id="multibuyModal{{$id}}" tabindex="-1" style="font-size: 1rem;">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Mulibuy</h5>
+                <h5 class="modal-title">Multibuy</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -22,7 +22,7 @@
     </div>
 </div>
 
-<button class="btn btn-secondary" data-toggle="modal" data-target="#multibuyModal{{$id}}">Multibuy</button>
+<button class="btn btn-secondary m-1" data-toggle="modal" data-target="#multibuyModal{{$id}}">Multibuy</button>
 
 @push('javascript')
     <script>

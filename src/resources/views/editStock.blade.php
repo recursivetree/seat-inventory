@@ -9,18 +9,43 @@
 
     <div class="card">
         <div class="card-body">
-            <h5>
+            <h1>
                 {{ $stock->name }}
                 @if($stock->fitting_plugin_fitting_id != null)
                     <span class="badge badge-primary">Fitting Plugin</span>
                 @endif
-            </h5>
+            </h1>
 
-            <p>{{ $stock->location->name }}</p>
+            <dl class="row">
+                <dt class="col-sm-3">Name</dt>
+                <dd class="col-sm-9">{{  $stock->name }}</dd>
 
-            <p> You specified a minimal stock level of {{ $stock->amount }} "{{ $stock->name }}"s in  {{ $stock->location->name }}</p>
+                <dt class="col-sm-3">Location</dt>
+                <dd class="col-sm-9">{{ $stock->location->name }}</dd>
 
-            <h6>Items</h6>
+                <dt class="col-sm-3">Minimum stock level</dt>
+                <dd class="col-sm-9">{{ $stock->amount }}</dd>
+
+                <dt class="col-sm-3">Check contracts</dt>
+                <dd class="col-sm-9">
+                    @if($stock->check_contracts)
+                        <i class="fas fa-check" style="color: green;"></i>
+                    @else
+                        <i class="fas fa-times" style="color: red;"></i>
+                    @endif
+                </dd>
+
+                <dt class="col-sm-3">Check corporation Hangar</dt>
+                <dd class="col-sm-9">
+                    @if($stock->check_corporation_hangars)
+                        <i class="fas fa-check" style="color: green;"></i>
+                    @else
+                        <i class="fas fa-times" style="color: red;"></i>
+                    @endif
+                </dd>
+            </dl>
+
+            <h2>Items @include("inventory::includes.multibuy",["multibuy" => $multibuy])</h2>
             @if($stock->items->isEmpty())
                 <div class="alert alert-warning">
                     There are no items in this fit
@@ -40,11 +65,11 @@
             @endif
 
             <div class="d-flex">
-                <a href="{{ route("inventory.stocks") }}" class="btn btn-primary">Back</a>
+                <a href="{{ route("inventory.stocks") }}" class="btn btn-primary m-1">Back</a>
 
                 <form action="{{ route("inventory.deleteStock", $stock->id) }}" method="POST">
                     @csrf
-                    <button type="submit" class="btn btn-danger">Delete</button>
+                    <button type="submit" class="btn btn-danger m-1">Delete</button>
                 </form>
 
                 @include("inventory::includes.multibuy",["multibuy" => $multibuy])
