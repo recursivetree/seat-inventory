@@ -11,9 +11,6 @@
         <div class="card-body">
             <h1>
                 {{ $stock->name }}
-                @if($stock->fitting_plugin_fitting_id != null)
-                    <span class="badge badge-primary">Fitting Plugin</span>
-                @endif
             </h1>
 
             <dl class="row">
@@ -43,6 +40,22 @@
                         <i class="fas fa-times" style="color: red;"></i>
                     @endif
                 </dd>
+
+                <dt class="col-sm-3">Linked to a fitting</dt>
+                <dd class="col-sm-9">
+                    @if($stock->fitting_plugin_fitting_id)
+                        <i class="fas fa-check" style="color: green;"></i>
+                    @else
+                        <i class="fas fa-times" style="color: red;"></i>
+                    @endif
+                </dd>
+
+                @if($stock->fitting_plugin_fitting_id)
+                    <dt class="col-sm-3">Name of linked fitting</dt>
+                    <dd class="col-sm-9">
+                        {{ \RecursiveTree\Seat\Inventory\Models\Stock::fittingName($stock) }}
+                    </dd>
+                @endif
             </dl>
 
             <h2>Items @include("inventory::includes.multibuy",["multibuy" => $multibuy])</h2>
