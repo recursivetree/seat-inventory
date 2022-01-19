@@ -22,7 +22,13 @@
     </div>
 </div>
 
-<button class="btn btn-secondary m-1" data-toggle="modal" data-target="#multibuyModal{{$id}}">Multibuy</button>
+<button class="btn btn-secondary m-1" data-toggle="modal" data-target="#multibuyModal{{$id}}">
+    @if(isset($title))
+        {{ $title }}
+    @else
+        Multibuy
+    @endif
+</button>
 
 @push('javascript')
     <script>

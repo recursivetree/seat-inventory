@@ -67,6 +67,7 @@ class ItemHelper
         $item_2_amount = [];
 
         foreach ($item_list as $item){
+            if($item->amount < 1) continue;
             if(array_key_exists($item->type_id, $item_2_amount)){
                 $item_2_amount[$item->type_id] += $item->amount;
             } else {
@@ -84,6 +85,14 @@ class ItemHelper
         }
 
         return $optimized;
+    }
+
+    public static function missingListFromQuery($list){
+        return $list->filter(function ($e){
+            return $e->missing_items > 0;
+        })->map(function ($e){
+           return new ItemHelper($e->type_id,$e->missing_items);
+        });
     }
 
 }

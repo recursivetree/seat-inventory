@@ -57,9 +57,9 @@ class Parser
 
         $matches = [];
 
-        preg_match_all("/^(?<item_name>[\w '-]+?)(?: x(?<item_amount>\d+))?$/m",$multibuy, $matches);
+        preg_match_all("/^(?<item_name>[\w '-]+?) (?:x)?(?<item_amount>\d+)$/m",$multibuy, $matches);
 
-        //dd($matches);
+        //dd($matches,$multibuy);
 
         $intermediate = [
             'item_names'=>$matches['item_name'],

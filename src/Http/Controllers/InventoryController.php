@@ -287,11 +287,15 @@ class InventoryController extends Controller
         }
 
         $items = ItemHelper::itemListFromQuery($stock->items);
-        //dd($items);
+
+        $missing = $stock->items->map(function ($e){
+            return new ItemHelper($e->type_id,$e->missing_items);
+        });
+        $missing = ItemHelper::itemListToMultiBuy($missing);
 
         $multibuy = ItemHelper::itemListToMultiBuy($items);
 
-        return view("inventory::editStock", compact("stock","multibuy"));
+        return view("inventory::editStock", compact("stock","multibuy","missing"));
     }
 
     public function deleteStockPost(Request $request,$id){
@@ -363,27 +367,21 @@ class InventoryController extends Controller
     }
 
     public function stockAvailability(Request $request){
-        $location = null;
-        $stock = null;
+        $location_id = $request->location_id ?: null;
+        $location_id_text = $request->location_id_text ?: null;
 
-        if($request->location_id != null){
-            $location = Location::find($request->location_id);
+        if($location_id != null) {
+            $stocks = Stock::where("location_id", $location_id)->get();
+            $stock_ids = $stocks->pluck("id");
+
+            $missing_items = ItemHelper::missingListFromQuery(StockItem::whereIn("stock_id",$stock_ids)->where("missing_items",">","0")->get());
+            $missing_items = ItemHelper::simplifyItemList($missing_items);
+            $missing_multibuy = ItemHelper::itemListToMultiBuy($missing_items);
+
+            return view("inventory::availability", compact("stocks", "location_id", "location_id_text", "missing_multibuy", "missing_items"));
+        } else {
+            return view("inventory::availability", compact( "location_id", "location_id_text"));
         }
-
-        if($request->stock_id){
-            $stock = Stock::find($request->stock_id);
-            if ($stock != null){
-                $location = $stock->location;
-            }
-        }
-
-        if($location == null){
-            return view("inventory::availability", compact("request"));
-        }
-
-        $stock_levels = StockHelper::computeStockLevels($location, $stock);
-
-        return view("inventory::availability", compact("request","stock_levels"));
     }
 
     public function about(){

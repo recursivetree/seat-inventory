@@ -23,6 +23,15 @@
                 <dt class="col-sm-3">Minimum stock level</dt>
                 <dd class="col-sm-9">{{ $stock->amount }}</dd>
 
+                <dt class="col-sm-3">Minimum stock level fulfilled</dt>
+                <dd class="col-sm-9">
+                    @if($stock->available_on_contracts + $stock->available_in_hangars >= $stock->amount)
+                        <i class="fas fa-check" style="color: green;"></i>
+                    @else
+                        <i class="fas fa-times" style="color: red;"></i>
+                    @endif
+                </dd>
+
                 <dt class="col-sm-3">Check contracts</dt>
                 <dd class="col-sm-9">
                     @if($stock->check_contracts)
@@ -56,6 +65,21 @@
                         {{ \RecursiveTree\Seat\Inventory\Models\Stock::fittingName($stock) }}
                     </dd>
                 @endif
+
+                <dt class="col-sm-3">On Contracts</dt>
+                <dd class="col-sm-9">
+                    {{ $stock->available_on_contracts }}
+                </dd>
+
+                <dt class="col-sm-3">In Hangars</dt>
+                <dd class="col-sm-9">
+                    {{ $stock->available_in_hangars }}
+                </dd>
+
+                <dt class="col-sm-3">Amount missing</dt>
+                <dd class="col-sm-9">
+                    {{ $stock->amount - $stock->available_on_contracts - $stock->available_in_hangars }}
+                </dd>
             </dl>
 
             <h2>Items @include("inventory::includes.multibuy",["multibuy" => $multibuy])</h2>
@@ -77,6 +101,25 @@
                 </ul>
             @endif
 
+            <h2>Missing Items @include("inventory::includes.multibuy",["multibuy" => $missing, "title"=>"Multibuy Missing Items"])</h2>
+            @if($stock->items->isEmpty())
+                <div class="alert alert-warning">
+                    There are no items in this stock
+                </div>
+            @else
+                <ul class="list-group mb-4">
+                    @foreach($stock->items as $item)
+                        <li class="list-group-item">
+                            <img src="https://images.evetech.net/types/{{ $item->type_id }}/icon" height="24">
+                            <span>
+                                {{ $item->type->typeName }}
+                                {{ $item->missing_items }}x missing
+                            </span>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+
             <div class="d-flex">
                 <a href="{{ route("inventory.stocks") }}" class="btn btn-primary m-1">Back</a>
 
@@ -86,6 +129,8 @@
                 </form>
 
                 @include("inventory::includes.multibuy",["multibuy" => $multibuy])
+
+                @include("inventory::includes.multibuy",["multibuy" => $missing, "title"=>"Multibuy Missing Items"])
             </div>
         </div>
     </div>

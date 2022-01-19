@@ -32,76 +32,54 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="stock-location">Stock/Fit</label>
-                    <select
-                            placeholder="enter the name of a stock/fit"
-                            class="form-control basicAutoComplete"
-                            autocomplete="off"
-                            id="stock-id"
-                            data-url="{{ route("inventory.stockSuggestions") }}"
-                            name="stock_id">
-                    </select>
-                </div>
-
-                <div class="form-group">
                     <button type="submit" class="btn btn-primary">Filter</button>
-                    <a href="{{ route("inventory.stockAvailability") }}" class="btn btn-secondary" role="button">Clear Filters</a>
                 </div>
             </form>
 
-            @isset($stock_levels)
-                @isset($request->stock_id)
-                    <h2>{{ $request->stock_id_text }}</h2>
-                    <p>
-                        <span>
-                            You have {{ $stock_levels["target_amount"] }}x <i>{{ $request->stock_id_text }}</i> available.
-                        </span>
-                        <small class="text-muted">This is the max number you can get, including items from other fits</small>
-                    </p>
+            @isset($stocks)
 
-                    <h2>Missing for the specified stock @include("inventory::includes.multibuy",["multibuy" => \RecursiveTree\Seat\Inventory\Helpers\ItemHelper::itemListToMultiBuy($stock_levels["target_missing"])])</h2>
-
-                    @if(count($stock_levels["target_missing"])<1)
-                        <div class="alert alert-warning">
-                            There are no items missing
-                        </div>
-                    @else
-                        <ul class="list-group">
-                            @foreach($stock_levels["target_missing"] as $item)
-                                <li class="list-group-item">
-                                    <img src="https://images.evetech.net/types/{{ $item->type_id }}/icon" height="24">
-                                    <span>
-                                    {{ $item->amount }}x
-                                    {{ $item->name() }}
-                                </span>
-                                </li>
-                            @endforeach
-                        </ul>
-                        <small class="text-muted">These items are required to reach the minimal specified quantity of this stock</small>
-                    @endif
-                @endisset
-
-                <h2>Missing at this location @include("inventory::includes.multibuy",["multibuy" => \RecursiveTree\Seat\Inventory\Helpers\ItemHelper::itemListToMultiBuy($stock_levels["missing_items"])])</h2>
-
-                @if(count($stock_levels["missing_items"])<1)
-                    <div class="alert alert-warning">
-                        There are no items missing
+                <h2 class="mb-0">Stocks</h2>
+                <small class="text-muted">All stocks in {{ $location_id_text }}</small>
+                @if($stocks->isEmpty())
+                    <div class="alert alert-primary">
+                        There are no stocks in {{ $location_id_text }}!
                     </div>
                 @else
-                    <ul class="list-group">
-                        @foreach($stock_levels["missing_items"] as $item)
+                    <div class="list-group mb-4 mt-2">
+                        @foreach($stocks as $stock)
+                            <a href="{{ route("inventory.editStock",$stock->id) }}" class="list-group-item list-group-item-action">
+                                <b>{{ $stock->name }}</b>
+                                {{ $stock->location->name }}
+                                @if($stock->fitting_plugin_fitting_id != null)
+                                    <span class="badge badge-primary">Fitting Plugin</span>
+                                @endif
+                            </a>
+                        @endforeach
+                    </div>
+                @endif
+
+                <h2 class="mb-0">Missing @include("inventory::includes.multibuy",["multibuy" => $missing_multibuy])</h2>
+                <small class="text-muted">All items missing in {{ $location_id_text }}</small>
+                @if($stocks->isEmpty())
+                    <p>
+                        There are no missing items.
+                    </p>
+                @else
+                    <div class="list-group mt-2">
+                        @foreach($missing_items as $item)
                             <li class="list-group-item">
                                 <img src="https://images.evetech.net/types/{{ $item->type_id }}/icon" height="24">
                                 <span>
-                                {{ $item->amount }}x
-                                {{ $item->name() }}
+                                    {{ $item->amount }}x
+                                    {{ $item->name() }}
                             </span>
                             </li>
                         @endforeach
-                    </ul>
-                    <small class="text-muted">All missing items at the location of this stock</small>
+                    </div>
                 @endif
             @endisset
+
+
         </div>
     </div>
 @stop
@@ -112,29 +90,16 @@
     <script>
         $('.basicAutoComplete').autoComplete({
             resolverSettings: {
-                requestThrottling: 250
+                requestThrottling: 50
             },
             minLength:0,
         });
 
-        @if(isset($request->location_id))
+        @if(isset($location_id)&&isset($location_id_text))
             $('#stock-location').autoComplete('set', {
-                value: "{{ $request->location_id }}",
-                text: "{{ $request->location_id_text }}"
-            });
-        @elseif(isset($request->stock_id))
-            $('#stock-id').autoComplete('set', {
-                value: "{{ $request->stock_id }}",
-                text: "{{ $request->stock_id_text }}"
+                value: "{{ $location_id }}",
+                text: "{{ $location_id_text }}"
             });
         @endif
-
-        $('#stock-location').on("autocomplete.select", function (evt, item) {
-            $('#stock-id').autoComplete('clear');
-        })
-
-        $('#stock-id').on("autocomplete.select", function (evt, item) {
-            $('#stock-location').autoComplete('clear');
-        })
     </script>
 @endpush

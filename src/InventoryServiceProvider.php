@@ -5,6 +5,8 @@ namespace RecursiveTree\Seat\Inventory;
 use Exception;
 use RecursiveTree\Seat\Inventory\Jobs\UpdateInventory;
 use RecursiveTree\Seat\Inventory\Jobs\UpdateLocations;
+use RecursiveTree\Seat\Inventory\Jobs\UpdateStockLevels;
+use RecursiveTree\Seat\Inventory\Models\Location;
 use RecursiveTree\Seat\Inventory\Observers\FittingPluginFittingObserver;
 use RecursiveTree\Seat\Inventory\Helpers\FittingPluginHelper;
 use RecursiveTree\Seat\Inventory\Observers\UniverseStationObserver;
@@ -63,6 +65,22 @@ class InventoryServiceProvider extends AbstractSeatPlugin
             } else {
                 UpdateInventory::dispatch()->onQueue('default');
                 $this->info("Scheduled an inventory update!");
+            }
+        });
+
+        Artisan::command('inventory:stocks {location_id} {--sync}', function ($location_id) {
+            $location = Location::find($location_id);
+            if ($location == null){
+                $this->error("Location not found");
+                return;
+            }
+
+            if ($this->option("sync")){
+                UpdateStockLevels::dispatchNow($location_id);
+                $this->info("Synchronously processed stock level updates!");
+            } else {
+                UpdateStockLevels::dispatch($location_id)->onQueue('default');
+                $this->info("Scheduled an stock level update!");
             }
         });
 

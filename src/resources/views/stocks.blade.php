@@ -19,7 +19,7 @@
 
             @if($fittings->isEmpty())
                 <div class="alert alert-primary">
-                    You haven't added any fits to monitor yet.
+                    You haven't added any stocks to monitor yet.
                 </div>
             @else
                 <div class="list-group">
