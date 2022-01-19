@@ -40,12 +40,15 @@ class UpdateInventory implements ShouldQueue
             $this->handleCorporationAssets($corporations);
             $this->handleContracts($corporations);
         });
+
+        $ids = InventorySource::all()->pluck("location_id")->unique();
+        foreach ($ids as $id) {
+            UpdateStockLevels::dispatch($id)->onQueue('default');
+        }
     }
 
     private function handleContracts($corporations){
         $contracts = CorporationContract::whereIn("corporation_id",$corporations)->with("detail")->get();
-
-        //error_log(json_encode($contracts));
 
         foreach ($contracts as $contract){
             $details = $contract->detail;

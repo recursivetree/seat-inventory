@@ -92,8 +92,6 @@ class UpdateStockLevels implements ShouldQueue
         $demand_map = ItemHelper::itemListToTypeIDMap($demand_list);
         $bonus_map = []; // if the proportional scheduling has leftovers, store them for use with other stocks
 
-        error_log(json_encode($demand_map));
-
         //calculate stock level
         foreach ($stocks as $stock) {
             if ($stock->check_corporation_hangars != true) continue; //sort out contracts that don't consider hangars
@@ -105,8 +103,6 @@ class UpdateStockLevels implements ShouldQueue
                 $total_available = array_key_exists($item->type_id, $item_map) ? $item_map[$item->type_id] : 0;
                 $item_demand = array_key_exists($item->type_id, $demand_map) ? $demand_map[$item->type_id] : 1;
                 $possible_percentage =  $total_available / $item_demand;
-
-                //error_log("$possible_percentage $total_available $item_demand");
 
                 if($possible_percentage < 1){
                     $items_required = $item->amount * $stock_numbers_required;
@@ -126,8 +122,6 @@ class UpdateStockLevels implements ShouldQueue
                     $bonus = fmod($exact_available, 1.0);
                     $bonus_map[$item->type_id] = $bonus;
 
-
-                    error_log("$items_required $exact_available $available $missing $fulfilled $bonus");
                 } else {
                     $item->missing_items = 0;
                 }

@@ -6,6 +6,7 @@ use Exception;
 use RecursiveTree\Seat\Inventory\Helpers\FittingPluginHelper;
 use RecursiveTree\Seat\Inventory\Helpers\LocationHelper;
 use RecursiveTree\Seat\Inventory\Helpers\StockHelper;
+use RecursiveTree\Seat\Inventory\Jobs\UpdateStockLevels;
 use RecursiveTree\Seat\Inventory\Models\InventorySource;
 use RecursiveTree\Seat\Inventory\Models\Location;
 use RecursiveTree\Seat\Inventory\Models\Stock;
@@ -268,6 +269,9 @@ class InventoryController extends Controller
                 $item->save();
             }
         });
+
+        //update stock levels for new stock
+        UpdateStockLevels::dispatch($location->id)->onQueue('default');
 
         return $this->redirectWithStatus($request,'inventory.stocks',"Added stock definition!", 'success');
     }
