@@ -60,6 +60,7 @@ class InventoryServiceProvider extends AbstractSeatPlugin
 
         Artisan::command('inventory:assets {--sync}', function () {
             if ($this->option("sync")){
+                $this->info("processing...");
                 UpdateInventory::dispatchNow();
                 $this->info("Synchronously processed inventory updates!");
             } else {
@@ -76,6 +77,7 @@ class InventoryServiceProvider extends AbstractSeatPlugin
             }
 
             if ($this->option("sync")){
+                $this->info("processing...");
                 UpdateStockLevels::dispatchNow($location_id);
                 $this->info("Synchronously processed stock level updates!");
             } else {
