@@ -128,9 +128,13 @@ class UpdateInventory implements ShouldQueue
 
         $current_parent = $item;
         while (true) {
+
             $parent = CorporationAsset::where("item_id",$current_parent->location_id)->first();
 
             if ($parent == null) {
+                break;
+            } elseif ($parent->location_flag="OfficeFolder") {
+                $current_parent = $parent;
                 break;
             }
 
