@@ -32,7 +32,7 @@ class UpdateStockLevels implements ShouldQueue
     public function handle()
     {
 
-        $stocks = Stock::where("location_id",$this->location_id)->get();
+        $stocks = Stock::where("location_id",$this->location_id)->orderBy("priority","desc")->get();
 
         //reset stock level caches
         foreach ($stocks as $stock) {
@@ -43,9 +43,10 @@ class UpdateStockLevels implements ShouldQueue
         //contracts
         $contract_sources = InventorySource::where("location_id",$this->location_id)->where("source_type","contract")->get();
 
+        //because the contracts are sorted by priority, we don't have to handle it here
         foreach ($contract_sources as $contract){
             $item_list = ItemHelper::itemListFromQuery($contract->items);
-            $item_map = ItemHelper::itemListToTypeIDMap($item_list);
+            $total_items_map = ItemHelper::itemListToTypeIDMap($item_list);
 
             foreach ($stocks as $stock){
                 if($stock->check_contracts != true) continue;
@@ -53,18 +54,18 @@ class UpdateStockLevels implements ShouldQueue
                 foreach ($stock->items as $item){
                     $required = $item->amount;
 
-                    if(!array_key_exists($item->type_id,$item_map)){
+                    if(!array_key_exists($item->type_id,$total_items_map)){
                         continue 2;//quit inner loop
                     }
 
-                    if($item_map[$item->type_id]<$required){
+                    if($total_items_map[$item->type_id]<$required){
                         continue 2;//quit inner loop
                     }
                 }
 
                 //all items are available
                 $stock->available_on_contracts += 1;
-                continue 2; // continue outer loop
+                continue 2; // use this contract for this stock, therefore continue with the next contract
             }
         }
 
@@ -73,64 +74,79 @@ class UpdateStockLevels implements ShouldQueue
         $source_ids = InventorySource::where("location_id",$this->location_id)->where("source_type","corporation_hangar")->pluck('id');
         $items = InventoryItem::whereIn("source_id",$source_ids)->get();
         $item_list = ItemHelper::itemListFromQuery($items);
-        $item_map = ItemHelper::itemListToTypeIDMap($item_list);
 
-        //build up demand list considering that some stocks might already be covered by contracts
-        $demand_list = [];
-        foreach ($stocks as $stock){
-            if($stock->check_corporation_hangars != true) continue; //sort out contracts that don't consider hangars
 
-            $stock_numbers_required = $stock->amount - $stock->available_on_contracts;
+        $total_items_map = ItemHelper::itemListToTypeIDMap($item_list);
+        $used_items_map = $total_items_map;
 
-            $required_items = ItemHelper::itemListFromQuery($stock->items); //creates a new ItemHelper instance, avoiding side effects when changing the amount
-            foreach ($required_items as $item){
-                $item->amount *= $stock_numbers_required;
+        $priority_sorted = $stocks->groupBy("priority")->sortKeysDesc();
+
+        $bonus_map = [];
+
+        foreach ($priority_sorted as $stock_list){
+            $total_items_map = $used_items_map;
+
+            //build up demand list considering that some stocks might already be covered by contracts
+            $demand_list = [];
+            foreach ($stock_list as $stock){
+                if($stock->check_corporation_hangars != true) continue; //sort out contracts that don't consider hangars
+
+                //parts might already be covered over contracts
+                $stock_numbers_required = $stock->amount - $stock->available_on_contracts;
+
+                //get items
+                $required_items = ItemHelper::itemListFromQuery($stock->items); //creates a new ItemHelper instance, avoiding side effects when changing the amount
+                foreach ($required_items as $item){
+                    $item->amount *= $stock_numbers_required;
+                }
+
+                //merge all required items into one list
+                $demand_list = array_merge($demand_list,$required_items);
             }
+            $demand_map = ItemHelper::itemListToTypeIDMap($demand_list);
+            // if the proportional scheduling has leftovers, store them for use with other stocks
 
-            $demand_list = array_merge($demand_list,$required_items);
-        }
-        $demand_map = ItemHelper::itemListToTypeIDMap($demand_list);
-        $bonus_map = []; // if the proportional scheduling has leftovers, store them for use with other stocks
+            //calculate stock level
+            foreach ($stock_list as $stock) {
+                if ($stock->check_corporation_hangars != true) continue; //sort out contracts that don't consider hangars
 
-        //calculate stock level
-        foreach ($stocks as $stock) {
-            if ($stock->check_corporation_hangars != true) continue; //sort out contracts that don't consider hangars
+                $stock_numbers_required = $stock->amount - $stock->available_on_contracts;  //number of stocks required
+                $stock_numbers_possible = $stock_numbers_required;                          //max number of stock multiples you can possibly assemble
 
-            $stock_numbers_required = $stock->amount - $stock->available_on_contracts;
-            $stock_numbers_possible = $stock_numbers_required;
-
-            foreach ($stock->items as $item){
-                $total_available = array_key_exists($item->type_id, $item_map) ? $item_map[$item->type_id] : 0;
-                $item_demand = array_key_exists($item->type_id, $demand_map) ? $demand_map[$item->type_id] : 1;
-                $possible_percentage =  $total_available / $item_demand;
-
-                if($possible_percentage < 1){
+                foreach ($stock->items as $item){
+                    $total_available = array_key_exists($item->type_id, $total_items_map) ? $total_items_map[$item->type_id] : 0;
+                    $item_demand = array_key_exists($item->type_id, $demand_map) ? $demand_map[$item->type_id] : 1;
+                    $possible_percentage =  $total_available / $item_demand;
                     $items_required = $item->amount * $stock_numbers_required;
 
-                    $bonus = array_key_exists($item->type_id,$bonus_map)? $bonus_map[$item->type_id] : 0;
-                    $exact_available = ($items_required * $possible_percentage) + $bonus;
+                    if($possible_percentage < 1){
+                        $bonus = array_key_exists($item->type_id,$bonus_map)? $bonus_map[$item->type_id] : 0;
+                        $exact_available = ($items_required * $possible_percentage) + $bonus;
 
-                    $available = floor($exact_available);
-                    $missing = $items_required - $available;
-                    $item->missing_items = $missing;
+                        $available = floor($exact_available);
+                        $missing = $items_required - $available;
+                        $item->missing_items = $missing;
 
-                    $fulfilled = intdiv($available, $item->amount);
-                    if($fulfilled < $stock_numbers_possible){
-                        $stock_numbers_possible = $fulfilled;
+                        $used_items_map [$item->type_id] -= $available;
+
+                        $fulfilled = intdiv($available, $item->amount);
+                        if($fulfilled < $stock_numbers_possible){
+                            $stock_numbers_possible = $fulfilled;
+                        }
+
+                        $bonus = fmod($exact_available, 1.0);
+                        $bonus_map[$item->type_id] = $bonus;
+
+                    } else {
+                        $item->missing_items = 0;
+                        $used_items_map[$item->type_id] -= $items_required;
                     }
-
-                    $bonus = fmod($exact_available, 1.0);
-                    $bonus_map[$item->type_id] = $bonus;
-
-                } else {
-                    $item->missing_items = 0;
+                    $item->save();
                 }
-                $item->save();
+
+                $stock->available_in_hangars = $stock_numbers_possible;
             }
-
-            $stock->available_in_hangars = $stock_numbers_possible;
         }
-
 
         //save stocks with cached data
         foreach ($stocks as $stock){

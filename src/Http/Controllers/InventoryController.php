@@ -182,6 +182,7 @@ class InventoryController extends Controller
         $name = $request->name;
         $check_contracts = $request->check_contracts != null;
         $check_corporation_hangars = $request->check_corporation_hangars != null;
+        $priority = $request->priority ?: 1;
 
         //check if always required data is there
         if($location_id==null || $amount==null){
@@ -243,6 +244,7 @@ class InventoryController extends Controller
         $stock->check_contracts = $check_contracts;
         $stock->check_corporation_hangars = $check_corporation_hangars;
         $stock->location_id = $location->id;
+        $stock->priority = $priority;
 
         //if there is a link to the fitting plugin, save it
         if($fit_plugin_id!=null){

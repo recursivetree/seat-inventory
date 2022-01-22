@@ -30,6 +30,7 @@
                             @if($stock->fitting_plugin_fitting_id != null)
                                 <span class="badge badge-primary">Fitting Plugin</span>
                             @endif
+                            @include("inventory::includes.priority",["priority"=>$stock->priority])
                         </a>
                     @endforeach
                 </div>
@@ -84,6 +85,18 @@
                                     id="fit-location"
                                     data-url="{{ route("inventory.locationSuggestions") }}"
                                     name="location_id">
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="fit_priority">Priority</label>
+                            <select name="priority" id="fit_priority" class="form-control">
+                                <option value="0">Very Low</option>
+                                <option value="1">Low</option>
+                                <option value="2" selected>Normal</option>
+                                <option value="3">Preferred</option>
+                                <option value="4">Important</option>
+                                <option value="5">Critical</option>
                             </select>
                         </div>
 
@@ -146,6 +159,18 @@
                             </select>
                         </div>
 
+                        <div class="form-group">
+                            <label for="multibuy_priority">Priority</label>
+                            <select name="priority" id="multibuy_priority" class="form-control">
+                                <option value="0">Very Low</option>
+                                <option value="1">Low</option>
+                                <option value="2" selected>Normal</option>
+                                <option value="3">Preferred</option>
+                                <option value="4">Important</option>
+                                <option value="5">Critical</option>
+                            </select>
+                        </div>
+
                         <div class="form-check">
                             <input
                                     type="checkbox"
@@ -203,6 +228,18 @@
                                         id="fit-location"
                                         data-url="{{ route("inventory.locationSuggestions") }}"
                                         name="location_id">
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="plugin_priority">Priority</label>
+                                <select name="priority" id="plugin_priority" class="form-control">
+                                    <option value="0">Very Low</option>
+                                    <option value="1">Low</option>
+                                    <option value="2" selected>Normal</option>
+                                    <option value="3">Preferred</option>
+                                    <option value="4">Important</option>
+                                    <option value="5">Critical</option>
                                 </select>
                             </div>
 

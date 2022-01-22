@@ -32,6 +32,9 @@
                     @endif
                 </dd>
 
+                <dt class="col-sm-3">Priority</dt>
+                <dd class="col-sm-9">@include("inventory::includes.priority",["priority"=>$stock->priority])</dd>
+
                 <dt class="col-sm-3">Check contracts</dt>
                 <dd class="col-sm-9">
                     @if($stock->check_contracts)

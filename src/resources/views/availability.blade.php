@@ -53,6 +53,7 @@
                                 @if($stock->fitting_plugin_fitting_id != null)
                                     <span class="badge badge-primary">Fitting Plugin</span>
                                 @endif
+                                @include("inventory::includes.priority",["priority"=>$stock->priority])
                             </a>
                         @endforeach
                     </div>
