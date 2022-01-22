@@ -7,7 +7,7 @@
 @elseif ($priority == 2)
     <span class="badge badge-primary">Normal</span>
 @elseif ($priority == 1)
-    <span class="badge badge-primary">Low</span>
+    <span class="badge badge-secondary">Low</span>
 @else
-    <span class="badge badge-primary">Very Low</span>
+    <span class="badge badge-secondary">Very Low</span>
 @endif

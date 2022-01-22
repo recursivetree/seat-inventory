@@ -182,7 +182,7 @@ class InventoryController extends Controller
         $name = $request->name;
         $check_contracts = $request->check_contracts != null;
         $check_corporation_hangars = $request->check_corporation_hangars != null;
-        $priority = $request->priority ?: 1;
+        $priority = $request->priority ?: 0;
 
         //check if always required data is there
         if($location_id==null || $amount==null){
