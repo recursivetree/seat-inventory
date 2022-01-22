@@ -11,10 +11,3 @@
 @else
     <span class="badge badge-primary">Very Low</span>
 @endif
-
-Critical
-Important
-Preferred
-Normal
-Low
-Very Low
