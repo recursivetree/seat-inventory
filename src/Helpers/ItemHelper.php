@@ -50,6 +50,8 @@ class ItemHelper
         $lines = [];
 
         foreach ($item_list as $item){
+
+            if($item->amount < 1) continue;
             $name = $item->name();
             $lines[] = "$name $item->amount";
         }
@@ -94,5 +96,4 @@ class ItemHelper
            return new ItemHelper($e->type_id,$e->missing_items);
         });
     }
-
 }

@@ -8,7 +8,6 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
-
 use RecursiveTree\Seat\Inventory\Helpers\ItemHelper;
 use RecursiveTree\Seat\Inventory\Models\InventoryItem;
 use RecursiveTree\Seat\Inventory\Models\InventorySource;
@@ -16,7 +15,6 @@ use RecursiveTree\Seat\Inventory\Models\Location;
 use RecursiveTree\Seat\Inventory\Models\TrackedCorporation;
 use Seat\Eveapi\Models\Assets\CorporationAsset;
 use Seat\Eveapi\Models\Contracts\CorporationContract;
-
 use Illuminate\Support\Facades\DB;
 
 class UpdateInventory implements ShouldQueue
@@ -46,7 +44,7 @@ class UpdateInventory implements ShouldQueue
             $this->handleContracts($corporations);
         });
 
-        $ids = InventorySource::all()->pluck("location_id")->unique();
+        $ids = Location::all()->pluck("id")->unique();
         foreach ($ids as $id) {
             UpdateStockLevels::dispatch($id)->onQueue('default');
         }

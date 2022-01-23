@@ -95,7 +95,7 @@
 
                 @include("inventory::includes.multibuy",["multibuy" => $multibuy])
 
-                @include("inventory::includes.multibuy",["multibuy" => $missing, "title"=>"Multibuy Missing Items"])
+                @include("inventory::includes.multibuy",["multibuy" => $missing_multibuy, "title"=>"Multibuy Missing Items"])
             </div>
         </div>
     </div>
@@ -130,34 +130,32 @@
         </div>
     </div>
 
-    <div class="card">
-        <div class="card-header">
-            <h3 class="card-title">Missing Items</h3>
-        </div>
-        <div class="card-body">
-            <div class="d-flex justify-content-between">
-                <p class="align-self-baseline">All items missing to assemble the minimum stock level.</p>
-                @include("inventory::includes.multibuy",["multibuy" => $missing, "title"=>"Multibuy Missing Items"])
+    @if(!$missing->isEmpty())
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Missing Items</h3>
             </div>
-            @if($stock->items->isEmpty())
-                <div class="alert alert-warning">
-                    There are no items in this stock
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <p class="align-self-baseline">All items missing to assemble the minimum stock level.</p>
+                    @include("inventory::includes.multibuy",["multibuy" => $missing_multibuy, "title"=>"Multibuy Missing Items"])
                 </div>
-            @else
+
                 <ul class="list-group">
-                    @foreach($stock->items as $item)
+                    @foreach($missing as $item)
                         <li class="list-group-item">
                             <img src="https://images.evetech.net/types/{{ $item->type_id }}/icon" height="24">
                             <span>
-                                {{ $item->type->typeName }}
-                                {{ $item->missing_items }}x missing
+                                {{ $item->name() }}
+                                {{ $item->amount }}x missing
                             </span>
                         </li>
                     @endforeach
                 </ul>
-            @endif
+
+            </div>
         </div>
-    </div>
+    @endif
 @stop
 
 @push('javascript')

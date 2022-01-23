@@ -294,14 +294,15 @@ class InventoryController extends Controller
 
         $items = ItemHelper::itemListFromQuery($stock->items);
 
-        $missing = $stock->items->map(function ($e){
-            return new ItemHelper($e->type_id,$e->missing_items);
-        });
-        $missing = ItemHelper::itemListToMultiBuy($missing);
+        $missing = ItemHelper::missingListFromQuery($stock->items);
+
+        //dd(json_encode($missing));
+
+        $missing_multibuy = ItemHelper::itemListToMultiBuy($missing);
 
         $multibuy = ItemHelper::itemListToMultiBuy($items);
 
-        return view("inventory::editStock", compact("stock","multibuy","missing"));
+        return view("inventory::editStock", compact("stock","multibuy","missing_multibuy","missing"));
     }
 
     public function deleteStockPost(Request $request,$id){
