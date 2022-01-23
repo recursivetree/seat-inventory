@@ -8,16 +8,36 @@
     @include("inventory::includes.status")
 
     <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Add Corporation</h3>
+        </div>
         <div class="card-body">
-            <h1>
-                Inventory Tracking
-            </h1>
+            <form method="POST" action="{{ route("inventory.addTrackingCorporation") }}">
+                @csrf
+                <div class="form-group">
+                    <label for="addTrackingCorporationCorporationInput">Coporation</label>
+                    <select
+                            placeholder="enter a corp name or ticker like 'Terminus.' or 'TRM.' ..."
+                            class="form-control basicAutoComplete" type="text"
+                            autocomplete="off"
+                            id="addTrackingCorporationCorporationInput"
+                            data-url="{{ route("inventory.trackingCorporationSuggestions") }}"
+                            name="id">
+                    </select>
+                </div>
 
-            <h2 class="mt-4">
-                Corporations
-            </h2>
+                <button class="btn btn-primary" type="submit">Add Corporation</button>
+            </form>
 
-            <table class="table table-striped mb-4">
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Tracked Corporations</h3>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped">
                 <thead>
                 <tr>
                     <th>Corporation</th>
@@ -44,25 +64,6 @@
                     @endif
                 </tbody>
             </table>
-
-            <h2>Add Corporation</h2>
-            <form method="POST" action="{{ route("inventory.addTrackingCorporation") }}" class="border rounded p-4">
-                @csrf
-                <div class="form-group">
-                    <label for="addTrackingCorporationCorporationInput">Coporation</label>
-                    <select
-                            placeholder="enter a corp name or ticker like 'Terminus.' or 'TRM.' ..."
-                            class="form-control basicAutoComplete" type="text"
-                            autocomplete="off"
-                            id="addTrackingCorporationCorporationInput"
-                            data-url="{{ route("inventory.trackingCorporationSuggestions") }}"
-                            name="id">
-                    </select>
-                </div>
-
-                <button class="btn btn-primary" type="submit">Add Corporation</button>
-            </form>
-
         </div>
     </div>
 @stop

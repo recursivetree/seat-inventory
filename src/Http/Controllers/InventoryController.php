@@ -328,8 +328,8 @@ class InventoryController extends Controller
         $allowed_types = [];
 
         $has_no_filter = ($location_id==null) && ($filter_item_type == null) && ($check_corporation_hangars == false) && ($check_contracts == false);
+        $show_results = !(($location_id==null) && ($filter_item_type == null));
 
-        //dd($location_id==null,$filter_item_type == null);
         $check_contracts = $check_contracts || $has_no_filter;
         $check_corporation_hangars = $check_corporation_hangars || $has_no_filter;
 
@@ -344,14 +344,18 @@ class InventoryController extends Controller
             return $this->redirectWithStatus($request,'inventory.itemBrowser',"Location not found!", 'error');
         }
 
-        $query = InventorySource::whereIn("source_type", $allowed_types);
+        if($show_results) {
+            $query = InventorySource::whereIn("source_type", $allowed_types);
 
-        //filter location
-        if($location_id!=null){
-            $query = $query->where("location_id",$location_id);
+            //filter location
+            if ($location_id != null) {
+                $query = $query->where("location_id", $location_id);
+            }
+
+            $inventory_sources = $query->orderBy("location_id", "ASC")->get();
+        } else {
+            $inventory_sources = collect();
         }
-
-        $inventory_sources = $query->orderBy("location_id","ASC")->get();
 
         //item filter
         if($filter_item_type!=null) {
@@ -368,7 +372,8 @@ class InventoryController extends Controller
             "location_id",
             "location_id_text",
             "filter_item_type",
-            "filter_item_type_text"
+            "filter_item_type_text",
+            "show_results"
         ));
     }
 
@@ -377,7 +382,7 @@ class InventoryController extends Controller
         $location_id_text = $request->location_id_text ?: null;
 
         if($location_id != null) {
-            $stocks = Stock::where("location_id", $location_id)->get();
+            $stocks = Stock::where("location_id", $location_id)->orderBy("priority","DESC")->get();
             $stock_ids = $stocks->pluck("id");
 
             $missing_items = ItemHelper::missingListFromQuery(StockItem::whereIn("stock_id",$stock_ids)->where("missing_items",">","0")->get());

@@ -1,19 +1,17 @@
 @extends('web::layouts.grids.12')
 
-@section('title', "Title")
-@section('page_header', "Title")
+@section('title', "Stock Availability")
+@section('page_header', "Stock Availability")
 
 
 @section('full')
     @include("inventory::includes.status")
 
     <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Filter</h3>
+        </div>
         <div class="card-body">
-            <h1>
-                Stock Availability
-            </h1>
-
-            <h2>Filter</h2>
 
             <form action="{{ route("inventory.stockAvailability") }}" method="GET">
 
@@ -35,10 +33,15 @@
                     <button type="submit" class="btn btn-primary">Filter</button>
                 </div>
             </form>
+        </div>
+    </div>
 
-            @isset($stocks)
-
-                <h2 class="mb-0">Stocks</h2>
+    @isset($stocks)
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Stocks</h3>
+            </div>
+            <div class="card-body">
                 <small class="text-muted">All stocks in {{ $location_id_text }}</small>
                 @if($stocks->isEmpty())
                     <div class="alert alert-primary">
@@ -47,7 +50,8 @@
                 @else
                     <div class="list-group mb-4 mt-2">
                         @foreach($stocks as $stock)
-                            <a href="{{ route("inventory.editStock",$stock->id) }}" class="list-group-item list-group-item-action">
+                            <a href="{{ route("inventory.editStock",$stock->id) }}"
+                               class="list-group-item list-group-item-action">
                                 <b>{{ $stock->name }}</b>
                                 {{ $stock->location->name }}
                                 @if($stock->fitting_plugin_fitting_id != null)
@@ -59,8 +63,17 @@
                     </div>
                 @endif
 
-                <h2 class="mb-0">Missing @include("inventory::includes.multibuy",["multibuy" => $missing_multibuy])</h2>
-                <small class="text-muted">All items missing in {{ $location_id_text }}</small>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Missing</h3>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <p class="align-self-baseline">All items missing in {{ $location_id_text }}</p>
+                    @include("inventory::includes.multibuy",["multibuy" => $missing_multibuy])
+                </div>
                 @if($stocks->isEmpty())
                     <p>
                         There are no missing items.
@@ -71,18 +84,17 @@
                             <li class="list-group-item">
                                 <img src="https://images.evetech.net/types/{{ $item->type_id }}/icon" height="24">
                                 <span>
-                                    {{ $item->amount }}x
-                                    {{ $item->name() }}
-                            </span>
+                                        {{ $item->amount }}x
+                                        {{ $item->name() }}
+                                </span>
                             </li>
                         @endforeach
                     </div>
                 @endif
-            @endisset
 
-
+            </div>
         </div>
-    </div>
+    @endisset
 @stop
 
 @push('javascript')
@@ -93,14 +105,14 @@
             resolverSettings: {
                 requestThrottling: 50
             },
-            minLength:0,
+            minLength: 0,
         });
 
         @if(isset($location_id)&&isset($location_id_text))
-            $('#stock-location').autoComplete('set', {
-                value: "{{ $location_id }}",
-                text: "{{ $location_id_text }}"
-            });
+        $('#stock-location').autoComplete('set', {
+            value: "{{ $location_id }}",
+            text: "{{ $location_id_text }}"
+        });
         @endif
     </script>
 @endpush

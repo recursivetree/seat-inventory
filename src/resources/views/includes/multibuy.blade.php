@@ -22,7 +22,7 @@
     </div>
 </div>
 
-<button class="btn btn-secondary m-1" data-toggle="modal" data-target="#multibuyModal{{$id}}">
+<button class="btn btn-secondary align-self-baseline" data-toggle="modal" data-target="#multibuyModal{{$id}}">
     @if(isset($title))
         {{ $title }}
     @else

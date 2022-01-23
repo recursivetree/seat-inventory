@@ -8,35 +8,10 @@
     @include("inventory::includes.status")
 
     <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Add Fit</h3>
+        </div>
         <div class="card-body">
-            <h1>
-                Inventory Tracking
-            </h1>
-
-            <h2>
-                Stocks
-            </h2>
-
-            @if($fittings->isEmpty())
-                <div class="alert alert-primary">
-                    You haven't added any stocks to monitor yet.
-                </div>
-            @else
-                <div class="list-group">
-                    @foreach($fittings as $stock)
-                        <a href="{{ route("inventory.editStock",$stock->id) }}" class="list-group-item list-group-item-action">
-                            <b>{{ $stock->name }}</b>
-                            {{ $stock->location->name }}
-                            @if($stock->fitting_plugin_fitting_id != null)
-                                <span class="badge badge-primary">Fitting Plugin</span>
-                            @endif
-                            @include("inventory::includes.priority",["priority"=>$stock->priority])
-                        </a>
-                    @endforeach
-                </div>
-            @endif
-
-            <h2 class="mt-4">Add Fit</h2>
 
             <ul class="nav nav-tabs" id="fitTypeTab" data-tabs="tabs">
                 <li class="nav-item">
@@ -102,11 +77,11 @@
 
                         <div class="form-check">
                             <input
-                                type="checkbox"
-                                id="fit_check-corporation-hangars"
-                                class="form-check-input"
-                                name="check_corporation_hangars"
-                                checked>
+                                    type="checkbox"
+                                    id="fit_check-corporation-hangars"
+                                    class="form-check-input"
+                                    name="check_corporation_hangars"
+                                    checked>
                             <label for="fit_check-corporation-hangars">Check in corporation hangars</label>
                         </div>
 
@@ -250,7 +225,8 @@
                                         class="form-check-input"
                                         name="check_corporation_hangars"
                                         checked>
-                                <label for="fitting_plugin_check-corporation-hangars">Check in corporation hangars</label>
+                                <label for="fitting_plugin_check-corporation-hangars">Check in corporation
+                                    hangars</label>
                             </div>
 
                             <div class="form-check">
@@ -273,6 +249,35 @@
             </div>
         </div>
     </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Stocks</h3>
+        </div>
+        <div class="card-body">
+
+            @if($fittings->isEmpty())
+                <div class="alert alert-primary">
+                    You haven't added any stocks to monitor yet.
+                </div>
+            @else
+                <div class="list-group">
+                    @foreach($fittings as $stock)
+                        <a href="{{ route("inventory.editStock",$stock->id) }}"
+                           class="list-group-item list-group-item-action">
+                            <b>{{ $stock->name }}</b>
+                            {{ $stock->location->name }}
+                            @if($stock->fitting_plugin_fitting_id != null)
+                                <span class="badge badge-primary">Fitting Plugin</span>
+                            @endif
+                            @include("inventory::includes.priority",["priority"=>$stock->priority])
+                        </a>
+                    @endforeach
+                </div>
+            @endif
+        </div>
+    </div>
+
 @stop
 
 @push('javascript')

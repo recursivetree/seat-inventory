@@ -1,19 +1,17 @@
 @extends('web::layouts.grids.12')
 
-@section('title', "Title")
-@section('page_header', "Title")
+@section('title', "Item Browser")
+@section('page_header', "Item Browser")
 
 
 @section('full')
     @include("inventory::includes.status")
 
     <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Filter</h3>
+        </div>
         <div class="card-body">
-            <h1>
-                Item Browser
-            </h1>
-
-            <h2>Filter</h2>
 
             <form action="{{ route("inventory.itemBrowser") }}" method="GET">
 
@@ -70,43 +68,50 @@
                     <a href="{{ route("inventory.itemBrowser") }}" class="btn btn-secondary" role="button">Clear Filters</a>
                 </div>
             </form>
-
-            <h2>Items</h2>
-            @if($inventory_sources->isEmpty())
-                <p>There were no items found!</p>
-            @endif
-
-            @foreach($inventory_sources as $source)
-
-                <ol class="breadcrumb mb-0 mt-1" data-toggle="collapse"
-                    data-target="#{{ "inventorysourceid$source->id" }}">
-                    <li class="breadcrumb-item">{{ $source->location->name }}</li>
-                    <li class="breadcrumb-item">
-                        @if($source->source_type == "corporation_hangar")
-                            Corporation Hangar
-                        @elseif($source->source_type == "contract")
-                            Contract
-                        @else
-                            $source->source_type
-                        @endif
-                    </li>
-                    <li class="breadcrumb-item">{{ $source->source_name }}</li>
-                </ol>
-
-                <ul class="list-group collapse" id="{{ "inventorysourceid$source->id" }}">
-                    @foreach( ($filter_item_type==null)? $source->items : $source->items->where("type_id",$filter_item_type) as $item)
-                        <li class="list-group-item">
-                            <img src="https://images.evetech.net/types/{{ $item->type_id }}/icon" height="24">
-                            <span>
-                                {{ $item->amount }}x
-                                {{ $item->type->typeName }}
-                            </span>
-                        </li>
-                    @endforeach
-                </ul>
-            @endforeach
         </div>
     </div>
+    @if($show_results)
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Items</h3>
+            </div>
+            <div class="card-body">
+                    @if($inventory_sources->isEmpty())
+                        <p>There were no items found!</p>
+                    @endif
+
+                    @foreach($inventory_sources as $source)
+
+                        <ol class="breadcrumb mb-0 mt-1" data-toggle="collapse"
+                            data-target="#{{ "inventorysourceid$source->id" }}">
+                            <li class="breadcrumb-item">{{ $source->location->name }}</li>
+                            <li class="breadcrumb-item">
+                                @if($source->source_type == "corporation_hangar")
+                                    Corporation Hangar
+                                @elseif($source->source_type == "contract")
+                                    Contract
+                                @else
+                                    $source->source_type
+                                @endif
+                            </li>
+                            <li class="breadcrumb-item">{{ $source->source_name }}</li>
+                        </ol>
+
+                        <ul class="list-group collapse" id="{{ "inventorysourceid$source->id" }}">
+                            @foreach( ($filter_item_type==null)? $source->items : $source->items->where("type_id",$filter_item_type) as $item)
+                                <li class="list-group-item">
+                                    <img src="https://images.evetech.net/types/{{ $item->type_id }}/icon" height="24">
+                                    <span>
+                                        {{ $item->amount }}x
+                                        {{ $item->type->typeName }}
+                                    </span>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @endforeach
+            </div>
+        </div>
+    @endif
 @stop
 
 @push('javascript')

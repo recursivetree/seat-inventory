@@ -8,10 +8,10 @@
     @include("inventory::includes.status")
 
     <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">{{ $stock->name }}</h3>
+        </div>
         <div class="card-body">
-            <h1>
-                {{ $stock->name }}
-            </h1>
 
             <dl class="row">
                 <dt class="col-sm-3">Name</dt>
@@ -85,13 +85,37 @@
                 </dd>
             </dl>
 
-            <h2>Items @include("inventory::includes.multibuy",["multibuy" => $multibuy])</h2>
+            <div class="btn-group">
+                <a href="{{ route("inventory.stocks") }}" class="btn btn-primary">Back</a>
+
+                <form id="delete-button" class="btn btn-danger" action="{{ route("inventory.deleteStock", $stock->id) }}" method="POST">
+                    @csrf
+                    <span type="submit">Delete</span>
+                </form>
+
+                @include("inventory::includes.multibuy",["multibuy" => $multibuy])
+
+                @include("inventory::includes.multibuy",["multibuy" => $missing, "title"=>"Multibuy Missing Items"])
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Items</h3>
+        </div>
+        <div class="card-body">
+            <div class="d-flex justify-content-between">
+                <p class="align-self-baseline">All items required for one stock.</p>
+                @include("inventory::includes.multibuy",["multibuy" => $multibuy])
+            </div>
+
             @if($stock->items->isEmpty())
                 <div class="alert alert-warning">
                     There are no items in this fit
                 </div>
             @else
-                <ul class="list-group mb-4">
+                <ul class="list-group">
                     @foreach($stock->items as $item)
                         <li class="list-group-item">
                             <img src="https://images.evetech.net/types/{{ $item->type_id }}/icon" height="24">
@@ -103,14 +127,24 @@
                     @endforeach
                 </ul>
             @endif
+        </div>
+    </div>
 
-            <h2>Missing Items @include("inventory::includes.multibuy",["multibuy" => $missing, "title"=>"Multibuy Missing Items"])</h2>
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Missing Items</h3>
+        </div>
+        <div class="card-body">
+            <div class="d-flex justify-content-between">
+                <p class="align-self-baseline">All items missing to assemble the minimum stock level.</p>
+                @include("inventory::includes.multibuy",["multibuy" => $missing, "title"=>"Multibuy Missing Items"])
+            </div>
             @if($stock->items->isEmpty())
                 <div class="alert alert-warning">
                     There are no items in this stock
                 </div>
             @else
-                <ul class="list-group mb-4">
+                <ul class="list-group">
                     @foreach($stock->items as $item)
                         <li class="list-group-item">
                             <img src="https://images.evetech.net/types/{{ $item->type_id }}/icon" height="24">
@@ -122,19 +156,6 @@
                     @endforeach
                 </ul>
             @endif
-
-            <div class="d-flex">
-                <a href="{{ route("inventory.stocks") }}" class="btn btn-primary m-1">Back</a>
-
-                <form action="{{ route("inventory.deleteStock", $stock->id) }}" method="POST">
-                    @csrf
-                    <button type="submit" class="btn btn-danger m-1">Delete</button>
-                </form>
-
-                @include("inventory::includes.multibuy",["multibuy" => $multibuy])
-
-                @include("inventory::includes.multibuy",["multibuy" => $missing, "title"=>"Multibuy Missing Items"])
-            </div>
         </div>
     </div>
 @stop
@@ -145,7 +166,7 @@
     <script>
         $('.basicAutoComplete').autoComplete({
             resolverSettings: {
-                requestThrottling: 250
+                requestThrottling: 50
             },
             minLength: 0,
         });
@@ -155,6 +176,10 @@
             textarea.focus();
             textarea.select();
             document.execCommand('copy');
+        })
+
+        $("#delete-button").click(function () {
+            $("#delete-button").submit();
         })
     </script>
 @endpush
