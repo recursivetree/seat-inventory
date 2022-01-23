@@ -22,6 +22,11 @@ class UpdateStockLevels implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    public function tags()
+    {
+        return [ 'location:' . $this->location_id, "seat-inventory", "stock-levels" ];
+    }
+
     private $location_id;
 
     public function __construct($location_id){

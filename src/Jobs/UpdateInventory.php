@@ -23,6 +23,11 @@ class UpdateInventory implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    public function tags()
+    {
+        return ["seat-inventory", "assets" ];
+    }
+
     private static $ITEM_BLACKLIST = [
         27 //Corporation Hangar Office
     ];
