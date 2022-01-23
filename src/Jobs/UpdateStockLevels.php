@@ -127,7 +127,12 @@ class UpdateStockLevels implements ShouldQueue
                         $missing = $items_required - $available;
                         $item->missing_items = $missing;
 
-                        $used_items_map [$item->type_id] -= $available;
+                        if(array_key_exists($item->type_id,$used_items_map)) {
+                            $used_items_map [$item->type_id] -= $available;
+                            if($used_items_map [$item->type_id]<0){
+                                $used_items_map [$item->type_id] = 0;
+                            }
+                        }
 
                         $fulfilled = intdiv($available, $item->amount);
                         if($fulfilled < $stock_numbers_possible){
