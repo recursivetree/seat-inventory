@@ -18,7 +18,7 @@
                 <dd class="col-sm-9">{{  $stock->name }}</dd>
 
                 <dt class="col-sm-3">Location</dt>
-                <dd class="col-sm-9">{{ $stock->location->name }}</dd>
+                <dd class="col-sm-9"><a href="{{ route("inventory.stockAvailability",["location_id"=>$stock->location->id,"location_id_text"=>$stock->location->name]) }}"> {{ $stock->location->name }}</a></dd>
 
                 <dt class="col-sm-3">Minimum stock level</dt>
                 <dd class="col-sm-9">{{ $stock->amount }}</dd>
@@ -69,20 +69,37 @@
                     </dd>
                 @endif
 
-                <dt class="col-sm-3">On Contracts</dt>
-                <dd class="col-sm-9">
-                    {{ $stock->available_on_contracts }}
-                </dd>
+                @if($stock->amount - $stock->available_on_contracts - $stock->available_in_hangars > 0)
+                    <dt class="col-sm-3">On Contracts</dt>
+                    <dd class="col-sm-9 text-warning">
+                        {{ $stock->available_on_contracts }}
+                    </dd>
+                    <dt class="col-sm-3">In Hangars</dt>
+                    <dd class="col-sm-9 text-warning">
+                        {{ $stock->available_in_hangars }}
+                    </dd>
+                @else
+                    <dt class="col-sm-3">On Contracts</dt>
+                    <dd class="col-sm-9 text-success">
+                        {{ $stock->available_on_contracts }}
+                    </dd>
+                    <dt class="col-sm-3">In Hangars</dt>
+                    <dd class="col-sm-9 text-success">
+                        {{ $stock->available_in_hangars }}
+                    </dd>
+                @endif
 
-                <dt class="col-sm-3">In Hangars</dt>
-                <dd class="col-sm-9">
-                    {{ $stock->available_in_hangars }}
-                </dd>
-
-                <dt class="col-sm-3">Amount missing</dt>
-                <dd class="col-sm-9">
-                    {{ $stock->amount - $stock->available_on_contracts - $stock->available_in_hangars }}
-                </dd>
+                @if($stock->amount - $stock->available_on_contracts - $stock->available_in_hangars > 0)
+                    <dt class="col-sm-3">Amount missing</dt>
+                    <dd class="col-sm-9 text-danger">
+                        {{ $stock->amount - $stock->available_on_contracts - $stock->available_in_hangars }}
+                    </dd>
+                @else
+                    <dt class="col-sm-3">Amount missing</dt>
+                    <dd class="col-sm-9 text-green">
+                        {{ $stock->amount - $stock->available_on_contracts - $stock->available_in_hangars }}
+                    </dd>
+                @endif
             </dl>
 
             <div class="btn-group">

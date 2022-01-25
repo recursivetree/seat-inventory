@@ -15,8 +15,6 @@
 
             <form action="{{ route("inventory.stockAvailability") }}" method="GET">
 
-                <input type="hidden" name="filter" value="true">
-
                 <div class="form-group">
                     <label for="stock-location">Location</label>
                     <select
