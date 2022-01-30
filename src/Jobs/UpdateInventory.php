@@ -55,6 +55,10 @@ class UpdateInventory implements ShouldQueue
     }
 
     private function handleContracts($corporations, $alliances){
+
+        //get the time from around when the query is triggered, so in case the db updates in between, we make sure that at least some ca be from the old state
+        $time = now();
+
         $contracts = ContractDetail::where("type","item_exchange")
             ->where("status","outstanding")
             ->whereIn("assignee_id",$corporations)
@@ -77,6 +81,7 @@ class UpdateInventory implements ShouldQueue
             $source->location_id = $location->id;
             $source->source_name = "$contract->title";
             $source->source_type = "contract";
+            $source->last_updated = $time;
             $source->save();
 
             $simplified = ItemHelper::simplifyItemList($items);
@@ -92,6 +97,10 @@ class UpdateInventory implements ShouldQueue
     }
 
     private function handleCorporationAssets($corporations){
+
+        //get the time from around when the query is triggered, so in case the db updates in between, we make sure that at least some ca be from the old state
+        $time = now();
+
         $items = CorporationAsset::whereIn("corporation_id",$corporations)->get(); //TODO check tracked corporations
         $item_dict = [];
 
@@ -112,6 +121,7 @@ class UpdateInventory implements ShouldQueue
             }
             $source->source_type = "corporation_hangar";
             $source->location_id = $location->id;
+            $source->last_updated = $time;
 
             $source->save();
 

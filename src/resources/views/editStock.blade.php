@@ -28,6 +28,11 @@
                     @include("inventory::includes.tickcross",["value"=>$stock->available_on_contracts + $stock->available_in_hangars >= $stock->amount])
                 </dd>
 
+                <dt class="col-sm-3">Last stock level update</dt>
+                <dd class="col-sm-9">
+                    {{ $stock->last_updated }}
+                </dd>
+
                 <dt class="col-sm-3">Priority</dt>
                 <dd class="col-sm-9">@include("inventory::includes.priority",["priority"=>$stock->priority])</dd>
 

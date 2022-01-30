@@ -39,10 +39,14 @@ class UpdateStockLevels implements ShouldQueue
 
         $stocks = Stock::where("location_id",$this->location_id)->orderBy("priority","desc")->get();
 
+        //get the time from around when the query is triggered, so in case the db updates in between, we make sure that at least some ca be from the old state
+        $time = now();
+
         //reset stock level caches
         foreach ($stocks as $stock) {
             $stock->available_on_contracts = 0;
             $stock->available_in_hangars = 0;
+            $stock->last_updated = $time;
         }
 
         //contracts

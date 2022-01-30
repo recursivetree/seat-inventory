@@ -95,6 +95,7 @@
                                 @endif
                             </li>
                             <li class="breadcrumb-item">{{ $source->source_name }}</li>
+                            <li class="breadcrumb-item">{{ $source->last_updated }}</li>
                         </ol>
 
                         <ul class="list-group collapse" id="{{ "inventorysourceid$source->id" }}">
