@@ -8,6 +8,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use RecursiveTree\Seat\Inventory\Helpers\ContractHelper;
 use RecursiveTree\Seat\Inventory\Helpers\ItemHelper;
 use RecursiveTree\Seat\Inventory\Models\InventoryItem;
 use RecursiveTree\Seat\Inventory\Models\InventorySource;
@@ -77,9 +78,15 @@ class UpdateInventory implements ShouldQueue
 
             $location = $this->getOrCreateLocation($station_id, $structure_id);
 
+            if($contract->title != ""){
+                $name = $contract->title;
+            } else {
+                $name = ContractHelper::getDescriptiveContractName($contract);
+            }
+
             $source = new InventorySource();
             $source->location_id = $location->id;
-            $source->source_name = "$contract->title";
+            $source->source_name = $name;
             $source->source_type = "contract";
             $source->last_updated = $time;
             $source->save();
