@@ -11,10 +11,12 @@ use RecursiveTree\Seat\Inventory\Models\InventorySource;
 use RecursiveTree\Seat\Inventory\Models\Location;
 use RecursiveTree\Seat\Inventory\Models\Stock;
 use RecursiveTree\Seat\Inventory\Models\StockItem;
+use RecursiveTree\Seat\Inventory\Models\TrackedAlliance;
 use RecursiveTree\Seat\Inventory\Models\TrackedCorporation;
 use RecursiveTree\Seat\Inventory\Helpers\ItemHelper;
 use RecursiveTree\Seat\Inventory\Helpers\Parser;
 
+use Seat\Eveapi\Models\Alliances\Alliance;
 use Seat\Web\Http\Controllers\Controller;
 use Seat\Eveapi\Models\Assets\CorporationAsset;
 use Seat\Eveapi\Models\Assets\CharacterAsset;
@@ -37,8 +39,9 @@ class InventoryController extends Controller
 
     public function tracking(){
         $tracked_corporations = TrackedCorporation::all();
+        $tracked_alliances = TrackedAlliance::all();
 
-        return view("inventory::tracking", compact('tracked_corporations'));
+        return view("inventory::tracking", compact('tracked_corporations','tracked_alliances'));
     }
 
     public function addTrackingCorporation(Request $request){
@@ -57,7 +60,51 @@ class InventoryController extends Controller
         $db_entry->corporation_id = $id;
         $db_entry->save();
 
+        $ids = Location::all()->pluck("id")->unique();
+        foreach ($ids as $id) {
+            UpdateStockLevels::dispatch($id)->onQueue('default');
+        }
+
         return $this->redirectWithStatus($request,'inventory.tracking',"Added corporation!", 'success');
+    }
+
+    public function addTrackingAlliance(Request $request){
+        $id = $request->id;
+        $automate_corporations = $request->automate_corporations != null;
+
+        if($id==null){
+            return $this->redirectWithStatus($request,'inventory.tracking',"No alliance specified!", 'error');
+        }
+
+        if(!Alliance::where("alliance_id",$id)->exists()){
+            return $this->redirectWithStatus($request,'inventory.tracking',"Alliance not found!", 'error');
+        }
+        if(TrackedAlliance::where("alliance_id",$id)->exists()){
+            return $this->redirectWithStatus($request,'inventory.tracking',"Alliance is already added to the list of tracked alliances!", 'warning');
+        }
+
+        $db_entry = new TrackedAlliance();
+        $db_entry->alliance_id = $id;
+        $db_entry->automate_corporations = $automate_corporations;
+        $db_entry->save();
+
+        if($automate_corporations){
+            $alliance = Alliance::find($id);
+            foreach ($alliance->members as $member_corporation){
+                if(!TrackedCorporation::where("corporation_id",$member_corporation->corporation_id)->exists()){
+                    $db_entry = new TrackedCorporation();
+                    $db_entry->corporation_id = $member_corporation->corporation_id;
+                    $db_entry->save();
+                }
+            }
+        }
+
+        $ids = Location::all()->pluck("id")->unique();
+        foreach ($ids as $id) {
+            UpdateStockLevels::dispatch($id)->onQueue('default');
+        }
+
+        return $this->redirectWithStatus($request,'inventory.tracking',"Added alliance!", 'success');
     }
 
     public function deleteTrackingCorporation(Request $request){
@@ -66,7 +113,16 @@ class InventoryController extends Controller
             return $this->redirectWithStatus($request,'inventory.tracking',"No corporation provided!", 'error');
         }
         TrackedCorporation::destroy($id);
-        return $this->redirectWithStatus($request,'inventory.tracking',"Sucessfully removed inventory tracking.", 'success');
+        return $this->redirectWithStatus($request,'inventory.tracking',"Successfully removed inventory tracking.", 'success');
+    }
+
+    public function deleteTrackingAlliance(Request $request){
+        $id = $request->id;
+        if($id==null){
+            return $this->redirectWithStatus($request,'inventory.tracking',"No alliance provided!", 'error');
+        }
+        TrackedAlliance::destroy($id);
+        return $this->redirectWithStatus($request,'inventory.tracking',"Successfully removed inventory tracking.", 'success');
     }
 
     public function locationSuggestions(Request $request){
@@ -103,6 +159,26 @@ class InventoryController extends Controller
             $suggestions[] = [
                 "text" => "[$corporation->ticker] $corporation->name",
                 "value" => $corporation->corporation_id,
+            ];
+        }
+
+        return response()->json($suggestions);
+    }
+
+    public function trackingAllianceSuggestions(Request $request){
+        $query = $request->q;
+
+        if ($query==null){
+            $alliances = Alliance::all();
+        } else {
+            $alliances = Alliance::where("name","like","%$query%")->get();
+        }
+
+        $suggestions = [];
+        foreach ($alliances as $alliance){
+            $suggestions[] = [
+                "text" => $alliance->name,
+                "value" => $alliance->alliance_id,
             ];
         }
 

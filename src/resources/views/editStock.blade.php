@@ -25,11 +25,7 @@
 
                 <dt class="col-sm-3">Minimum stock level fulfilled</dt>
                 <dd class="col-sm-9">
-                    @if($stock->available_on_contracts + $stock->available_in_hangars >= $stock->amount)
-                        <i class="fas fa-check" style="color: green;"></i>
-                    @else
-                        <i class="fas fa-times" style="color: red;"></i>
-                    @endif
+                    @include("inventory::includes.tickcross",["value"=>$stock->available_on_contracts + $stock->available_in_hangars >= $stock->amount])
                 </dd>
 
                 <dt class="col-sm-3">Priority</dt>
@@ -37,29 +33,17 @@
 
                 <dt class="col-sm-3">Check contracts</dt>
                 <dd class="col-sm-9">
-                    @if($stock->check_contracts)
-                        <i class="fas fa-check" style="color: green;"></i>
-                    @else
-                        <i class="fas fa-times" style="color: red;"></i>
-                    @endif
+                    @include("inventory::includes.tickcross",["value"=>$stock->check_contracts])
                 </dd>
 
                 <dt class="col-sm-3">Check corporation Hangar</dt>
                 <dd class="col-sm-9">
-                    @if($stock->check_corporation_hangars)
-                        <i class="fas fa-check" style="color: green;"></i>
-                    @else
-                        <i class="fas fa-times" style="color: red;"></i>
-                    @endif
+                    @include("inventory::includes.tickcross",["value"=>$stock->check_corporation_hangars])
                 </dd>
 
                 <dt class="col-sm-3">Linked to a fitting</dt>
                 <dd class="col-sm-9">
-                    @if($stock->fitting_plugin_fitting_id)
-                        <i class="fas fa-check" style="color: green;"></i>
-                    @else
-                        <i class="fas fa-times" style="color: red;"></i>
-                    @endif
+                    @include("inventory::includes.tickcross",["value"=>$stock->fitting_plugin_fitting_id])
                 </dd>
 
                 @if($stock->fitting_plugin_fitting_id)

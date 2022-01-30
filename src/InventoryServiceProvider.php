@@ -7,10 +7,12 @@ use RecursiveTree\Seat\Inventory\Jobs\UpdateInventory;
 use RecursiveTree\Seat\Inventory\Jobs\UpdateLocations;
 use RecursiveTree\Seat\Inventory\Jobs\UpdateStockLevels;
 use RecursiveTree\Seat\Inventory\Models\Location;
+use RecursiveTree\Seat\Inventory\Observers\AllianceMemberObserver;
 use RecursiveTree\Seat\Inventory\Observers\FittingPluginFittingObserver;
 use RecursiveTree\Seat\Inventory\Helpers\FittingPluginHelper;
 use RecursiveTree\Seat\Inventory\Observers\UniverseStationObserver;
 use RecursiveTree\Seat\Inventory\Observers\UniverseStructureObserver;
+use Seat\Eveapi\Models\Alliances\AllianceMember;
 use Seat\Services\AbstractSeatPlugin;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Artisan;
@@ -57,6 +59,7 @@ class InventoryServiceProvider extends AbstractSeatPlugin
 
         UniverseStructure::observe(UniverseStructureObserver::class);
         UniverseStation::observe(UniverseStationObserver::class);
+        AllianceMember::observe(AllianceMemberObserver::class);
 
         Artisan::command('inventory:assets {--sync}', function () {
             if ($this->option("sync")){

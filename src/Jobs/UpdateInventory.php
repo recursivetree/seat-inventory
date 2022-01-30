@@ -12,8 +12,10 @@ use RecursiveTree\Seat\Inventory\Helpers\ItemHelper;
 use RecursiveTree\Seat\Inventory\Models\InventoryItem;
 use RecursiveTree\Seat\Inventory\Models\InventorySource;
 use RecursiveTree\Seat\Inventory\Models\Location;
+use RecursiveTree\Seat\Inventory\Models\TrackedAlliance;
 use RecursiveTree\Seat\Inventory\Models\TrackedCorporation;
 use Seat\Eveapi\Models\Assets\CorporationAsset;
+use Seat\Eveapi\Models\Contracts\ContractDetail;
 use Seat\Eveapi\Models\Contracts\CorporationContract;
 use Illuminate\Support\Facades\DB;
 
@@ -39,9 +41,11 @@ class UpdateInventory implements ShouldQueue
             }
 
             $corporations = TrackedCorporation::all()->pluck("corporation_id");
+            $alliances = TrackedAlliance::all()->pluck("alliance_id");
 
+            $this->handleContracts($corporations, $alliances);
             $this->handleCorporationAssets($corporations);
-            $this->handleContracts($corporations);
+
         });
 
         $ids = Location::all()->pluck("id")->unique();
@@ -50,32 +54,28 @@ class UpdateInventory implements ShouldQueue
         }
     }
 
-    private function handleContracts($corporations){
-        $contracts = CorporationContract::whereIn("corporation_id",$corporations)->with("detail")->get();
+    private function handleContracts($corporations, $alliances){
+        $contracts = ContractDetail::where("type","item_exchange")
+            ->where("status","outstanding")
+            ->whereIn("assignee_id",$corporations)
+            ->orWhereIn("assignee_id",$alliances)
+            ->get();
 
         foreach ($contracts as $contract){
-            $details = $contract->detail;
-            if($details->type != "item_exchange"){
-                continue;
-            }
-            if($details->status != "outstanding"){
-                continue;
-            }
-
             $items = [];
 
-            foreach ( $details->lines as $item){
+            foreach ( $contract->lines as $item){
                 $items[] = new ItemHelper($item->type_id,$item->quantity);
             }
 
-            $station_id = $details->end_location->station_id;
-            $structure_id = $details->end_location->structure_id;
+            $station_id = $contract->end_location->station_id;
+            $structure_id = $contract->end_location->structure_id;
 
             $location = $this->getOrCreateLocation($station_id, $structure_id);
 
             $source = new InventorySource();
             $source->location_id = $location->id;
-            $source->source_name = "$details->title";
+            $source->source_name = "$contract->title";
             $source->source_type = "contract";
             $source->save();
 
