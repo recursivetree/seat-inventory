@@ -6,6 +6,7 @@ use Exception;
 use RecursiveTree\Seat\Inventory\Helpers\FittingPluginHelper;
 use RecursiveTree\Seat\Inventory\Helpers\LocationHelper;
 use RecursiveTree\Seat\Inventory\Helpers\StockHelper;
+use RecursiveTree\Seat\Inventory\Jobs\UpdateInventory;
 use RecursiveTree\Seat\Inventory\Jobs\UpdateStockLevels;
 use RecursiveTree\Seat\Inventory\Models\InventorySource;
 use RecursiveTree\Seat\Inventory\Models\Location;
@@ -60,10 +61,8 @@ class InventoryController extends Controller
         $db_entry->corporation_id = $id;
         $db_entry->save();
 
-        $ids = Location::all()->pluck("id")->unique();
-        foreach ($ids as $id) {
-            UpdateStockLevels::dispatch($id)->onQueue('default');
-        }
+        //new corporations, new assets
+        UpdateInventory::dispatch()->onQueue('default');
 
         return $this->redirectWithStatus($request,'inventory.tracking',"Added corporation!", 'success');
     }
@@ -99,10 +98,8 @@ class InventoryController extends Controller
             }
         }
 
-        $ids = Location::all()->pluck("id")->unique();
-        foreach ($ids as $id) {
-            UpdateStockLevels::dispatch($id)->onQueue('default');
-        }
+        //new corporations, new assets
+        UpdateInventory::dispatch()->onQueue('default');
 
         return $this->redirectWithStatus($request,'inventory.tracking',"Added alliance!", 'success');
     }
