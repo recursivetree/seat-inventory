@@ -9,159 +9,88 @@
 
     <div class="card">
         <div class="card-header">
-            <h3 class="card-title">{{ $stock->name }}</h3>
+            <h3 class="card-title">Edit Stock</h3>
         </div>
         <div class="card-body">
 
-            <dl class="row">
-                <dt class="col-sm-3">Name</dt>
-                <dd class="col-sm-9">{{  $stock->name }}</dd>
-
-                <dt class="col-sm-3">Location</dt>
-                <dd class="col-sm-9"><a href="{{ route("inventory.stockAvailability",["location_id"=>$stock->location->id,"location_id_text"=>$stock->location->name]) }}"> {{ $stock->location->name }}</a></dd>
-
-                <dt class="col-sm-3">Minimum stock level</dt>
-                <dd class="col-sm-9">{{ $stock->amount }}</dd>
-
-                <dt class="col-sm-3">Minimum stock level fulfilled</dt>
-                <dd class="col-sm-9">
-                    @include("inventory::includes.tickcross",["value"=>$stock->available_on_contracts + $stock->available_in_hangars >= $stock->amount])
-                </dd>
-
-                <dt class="col-sm-3">Last stock level update</dt>
-                <dd class="col-sm-9">
-                    {{ $stock->last_updated }}
-                </dd>
-
-                <dt class="col-sm-3">Priority</dt>
-                <dd class="col-sm-9">@include("inventory::includes.priority",["priority"=>$stock->priority])</dd>
-
-                <dt class="col-sm-3">Check contracts</dt>
-                <dd class="col-sm-9">
-                    @include("inventory::includes.tickcross",["value"=>$stock->check_contracts])
-                </dd>
-
-                <dt class="col-sm-3">Check corporation Hangar</dt>
-                <dd class="col-sm-9">
-                    @include("inventory::includes.tickcross",["value"=>$stock->check_corporation_hangars])
-                </dd>
-
-                <dt class="col-sm-3">Linked to a fitting</dt>
-                <dd class="col-sm-9">
-                    @include("inventory::includes.tickcross",["value"=>$stock->fitting_plugin_fitting_id])
-                </dd>
-
-                @if($stock->fitting_plugin_fitting_id)
-                    <dt class="col-sm-3">Name of linked fitting</dt>
-                    <dd class="col-sm-9">
-                        {{ \RecursiveTree\Seat\Inventory\Models\Stock::fittingName($stock) }}
-                    </dd>
-                @endif
-
-                @if($stock->amount - $stock->available_on_contracts - $stock->available_in_hangars > 0)
-                    <dt class="col-sm-3">On Contracts</dt>
-                    <dd class="col-sm-9 text-warning">
-                        {{ $stock->available_on_contracts }}
-                    </dd>
-                    <dt class="col-sm-3">In Hangars</dt>
-                    <dd class="col-sm-9 text-warning">
-                        {{ $stock->available_in_hangars }}
-                    </dd>
-                @else
-                    <dt class="col-sm-3">On Contracts</dt>
-                    <dd class="col-sm-9 text-success">
-                        {{ $stock->available_on_contracts }}
-                    </dd>
-                    <dt class="col-sm-3">In Hangars</dt>
-                    <dd class="col-sm-9 text-success">
-                        {{ $stock->available_in_hangars }}
-                    </dd>
-                @endif
-
-                @if($stock->amount - $stock->available_on_contracts - $stock->available_in_hangars > 0)
-                    <dt class="col-sm-3">Amount missing</dt>
-                    <dd class="col-sm-9 text-danger">
-                        {{ $stock->amount - $stock->available_on_contracts - $stock->available_in_hangars }}
-                    </dd>
-                @else
-                    <dt class="col-sm-3">Amount missing</dt>
-                    <dd class="col-sm-9 text-green">
-                        {{ $stock->amount - $stock->available_on_contracts - $stock->available_in_hangars }}
-                    </dd>
-                @endif
-            </dl>
-
-            <div class="btn-group">
-                <a href="{{ route("inventory.stocks") }}" class="btn btn-primary">Back</a>
-
-                <form id="delete-button" class="btn btn-danger" action="{{ route("inventory.deleteStock", $stock->id) }}" method="POST">
+            {{-- Multibuy --}}
+            <div class="tab-pane show active" id="multibuy-text-tab-content">
+                <form action="{{ route("inventory.saveStock") }}" method="POST">
                     @csrf
-                    <span type="submit">Delete</span>
+
+                    <input type="hidden" name="stock_id" value="{{ $stock->id }}">
+
+                    <div class="form-group">
+                        <label for="stock-name">Name</label>
+                        <input type="text" id="stock-name" class="form-control" name="name" placeholder="Enter a name..." value="{{ $stock->name }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="multibuy-text">Multibuy</label>
+                        <textarea id="multibuy-text" class="form-control monospace-font text-sm" rows="10"
+                                  name="multibuy_text" placeholder="">{{ $multibuy }}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="stock-amount">Amount</label>
+                        <input type="number" id="stock-amount" class="form-control" name="amount" value="{{ $stock->amount }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fit-location">Location</label>
+                        <select
+                                placeholder="enter the name of a location"
+                                class="form-control basicAutoComplete" type="text"
+                                autocomplete="off"
+                                id="fit-location"
+                                data-url="{{ route("inventory.locationSuggestions") }}"
+                                name="location_id">
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="multibuy_priority">Priority</label>
+                        <select name="priority" id="multibuy_priority" class="form-control">
+                            <option value="0" @if($stock->priority==0) selected @endif>Very Low</option>
+                            <option value="1" @if($stock->priority==1) selected @endif>Low</option>
+                            <option value="2" @if($stock->priority==2) selected @endif>Normal</option>
+                            <option value="3" @if($stock->priority==3) selected @endif>Preferred</option>
+                            <option value="4" @if($stock->priority==4) selected @endif>Important</option>
+                            <option value="5" @if($stock->priority==5) selected @endif>Critical</option>
+                        </select>
+                    </div>
+
+                    <div class="form-check">
+                        <input
+                                type="checkbox"
+                                id="multibuy_check-corporation-hangars"
+                                class="form-check-input"
+                                name="check_corporation_hangars"
+                                @if($stock->check_corporation_hangars) checked @endif>
+                        <label for="multibuy_check-corporation-hangars">Check in corporation hangars</label>
+                    </div>
+
+                    <div class="form-check">
+                        <input
+                                type="checkbox"
+                                id="multibuy_check-contracts"
+                                class="form-check-input"
+                                name="check_contracts"
+                                @if($stock->check_contracts) checked @endif>
+                        <label for="multibuy_check-contracts">Check contracts</label>
+                    </div>
+
+                    <div class="d-flex">
+                        <button type="submit" class="btn btn-primary m-1">Submit</button>
+                        <a href="{{ url()->previous() }}" class="btn btn-secondary m-1">Back</a>
+                    </div>
+
                 </form>
-
-                @include("inventory::includes.multibuy",["multibuy" => $multibuy])
-
-                @include("inventory::includes.multibuy",["multibuy" => $missing_multibuy, "title"=>"Multibuy Missing Items"])
             </div>
+
+
         </div>
     </div>
-
-    <div class="card">
-        <div class="card-header">
-            <h3 class="card-title">Items</h3>
-        </div>
-        <div class="card-body">
-            <div class="d-flex justify-content-between">
-                <p class="align-self-baseline">All items required for one stock.</p>
-                @include("inventory::includes.multibuy",["multibuy" => $multibuy])
-            </div>
-
-            @if($stock->items->isEmpty())
-                <div class="alert alert-warning">
-                    There are no items in this fit
-                </div>
-            @else
-                <ul class="list-group">
-                    @foreach($stock->items as $item)
-                        <li class="list-group-item">
-                            <img src="https://images.evetech.net/types/{{ $item->type_id }}/icon" height="24">
-                            <span>
-                                {{ $item->amount }}x
-                                {{ $item->type->typeName }}
-                            </span>
-                        </li>
-                    @endforeach
-                </ul>
-            @endif
-        </div>
-    </div>
-
-    @if(!$missing->isEmpty())
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Missing Items</h3>
-            </div>
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
-                    <p class="align-self-baseline">All items missing to assemble the minimum stock level.</p>
-                    @include("inventory::includes.multibuy",["multibuy" => $missing_multibuy, "title"=>"Multibuy Missing Items"])
-                </div>
-
-                <ul class="list-group">
-                    @foreach($missing as $item)
-                        <li class="list-group-item">
-                            <img src="https://images.evetech.net/types/{{ $item->type_id }}/icon" height="24">
-                            <span>
-                                {{ $item->name() }}
-                                {{ $item->amount }}x missing
-                            </span>
-                        </li>
-                    @endforeach
-                </ul>
-
-            </div>
-        </div>
-    @endif
 @stop
 
 @push('javascript')
@@ -172,18 +101,12 @@
             resolverSettings: {
                 requestThrottling: 50
             },
-            minLength: 0,
+            minLength: 1,
         });
 
-        $("#multiBuyModalCopyButton").click(function () {
-            const textarea = $("#multibuyTextArea")
-            textarea.focus();
-            textarea.select();
-            document.execCommand('copy');
-        })
-
-        $("#delete-button").click(function () {
-            $("#delete-button").submit();
-        })
+        $('#fit-location').autoComplete('set', {
+            value: "{{ $stock->location->id }}",
+            text: "{{ $stock->location->name }}"
+        });
     </script>
 @endpush

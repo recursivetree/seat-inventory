@@ -48,7 +48,7 @@
                 @else
                     <div class="list-group mb-4 mt-2">
                         @foreach($stocks as $stock)
-                            <a href="{{ route("inventory.editStock",$stock->id) }}"
+                            <a href="{{ route("inventory.viewStock",$stock->id) }}"
                                class="list-group-item list-group-item-action">
                                 <b>{{ $stock->name }}</b>
                                 {{ $stock->location->name }}

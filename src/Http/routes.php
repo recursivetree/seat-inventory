@@ -72,16 +72,28 @@ Route::group([
         'middleware' => 'can:inventory.view_inventory'
     ]);
 
-    Route::post('/stocks/add', [
-        'as'   => 'inventory.addStock',
-        'uses' => 'InventoryController@addStockPost',
+    Route::post('/stocks/save', [
+        'as'   => 'inventory.saveStock',
+        'uses' => 'InventoryController@saveStockPost',
         'middleware' => 'can:inventory.edit_inventory'
+    ]);
+
+    Route::get('/stocks/view/{id}', [
+        'as'   => 'inventory.viewStock',
+        'uses' => 'InventoryController@viewStock',
+        'middleware' => 'can:inventory.view_inventory'
     ]);
 
     Route::get('/stocks/edit/{id}', [
         'as'   => 'inventory.editStock',
         'uses' => 'InventoryController@editStock',
-        'middleware' => 'can:inventory.view_inventory'
+        'middleware' => 'can:inventory.edit_inventory'
+    ]);
+
+    Route::get('/stocks/new', [
+        'as'   => 'inventory.newStock',
+        'uses' => 'InventoryController@newStock',
+        'middleware' => 'can:inventory.edit_inventory'
     ]);
 
     Route::post('/stocks/delete/{id}', [

@@ -246,7 +246,7 @@ class InventoryController extends Controller
         return response()->json($suggestions);
     }
 
-    public function addStockPost(Request $request){
+    public function saveStockPost(Request $request){
         $fit_plugin_id = $request->fit_plugin_id;
         $fit_text = $request->fit_text;
         $multibuy_text = $request->multibuy_text;
@@ -309,8 +309,15 @@ class InventoryController extends Controller
             $name = $fit["name"];
         }
 
-        //new stock entry to fill
-        $stock = new Stock();
+        if($request->stock_id == null) {
+            //new stock entry to fill
+            $stock = new Stock();
+        } else {
+            $stock = Stock::find($request->stock_id);
+            if($stock == null){
+                $stock = new Stock();
+            }
+        }
 
         //fill data
         $stock->amount = $amount;
@@ -334,6 +341,8 @@ class InventoryController extends Controller
         $required_items = ItemHelper::simplifyItemList($required_items);
 
         DB::transaction(function () use ($required_items, $stock) {
+            $stock->items()->delete();
+
             $stock->save();
 
             $id=$stock->id;
@@ -351,14 +360,29 @@ class InventoryController extends Controller
         return $this->redirectWithStatus($request,'inventory.stocks',"Added stock definition!", 'success');
     }
 
-    public function stocks(Request $request){
-        $fittings = Stock::all();
-        $has_fitting_plugin = FittingPluginHelper::pluginIsAvailable();
+    public function editStock($id, Request $request){
+        $stock = Stock::find($id);
+        if($stock == null){
+            return $this->redirectWithStatus($request,'inventory.stocks',"Could not find stock definition!", 'error');
+        }
 
-        return view("inventory::stocks",compact("fittings", "has_fitting_plugin"));
+        $multibuy = ItemHelper::itemListToMultiBuy(ItemHelper::itemListFromQuery($stock->items));
+
+        return view("inventory::editStock", compact("stock","multibuy"));
     }
 
-    public function editStock(Request $request,$id){
+    public function newStock(){
+        $has_fitting_plugin = FittingPluginHelper::pluginIsAvailable();
+        return view("inventory::newStock", compact("has_fitting_plugin"));
+    }
+
+    public function stocks(Request $request){
+        $fittings = Stock::all();
+
+        return view("inventory::stocks",compact("fittings" ));
+    }
+
+    public function viewStock(Request $request,$id){
         $stock = Stock::find($id);
 
         if($stock==null){
@@ -375,7 +399,7 @@ class InventoryController extends Controller
 
         $multibuy = ItemHelper::itemListToMultiBuy($items);
 
-        return view("inventory::editStock", compact("stock","multibuy","missing_multibuy","missing"));
+        return view("inventory::viewStock", compact("stock","multibuy","missing_multibuy","missing"));
     }
 
     public function deleteStockPost(Request $request,$id){
