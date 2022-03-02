@@ -110,6 +110,10 @@ class InventoryController extends Controller
             return $this->redirectWithStatus($request,'inventory.tracking',"No corporation provided!", 'error');
         }
         TrackedCorporation::destroy($id);
+
+        //remove assets from old alliance
+        UpdateInventory::dispatch()->onQueue('default');
+
         return $this->redirectWithStatus($request,'inventory.tracking',"Successfully removed inventory tracking.", 'success');
     }
 
@@ -119,6 +123,10 @@ class InventoryController extends Controller
             return $this->redirectWithStatus($request,'inventory.tracking',"No alliance provided!", 'error');
         }
         TrackedAlliance::destroy($id);
+
+        //remove assets from old alliance
+        UpdateInventory::dispatch()->onQueue('default');
+
         return $this->redirectWithStatus($request,'inventory.tracking',"Successfully removed inventory tracking.", 'success');
     }
 
@@ -403,6 +411,8 @@ class InventoryController extends Controller
     }
 
     public function deleteStockPost(Request $request,$id){
+        $stock = Stock::find($id);
+
         if($id!=null) {
             Stock::destroy($id);
         }
@@ -410,6 +420,11 @@ class InventoryController extends Controller
         $items = StockItem::where("stock_id",$id)->get();
         foreach ($items as $item){
             $item->destroy($item->id);
+        }
+
+        if($stock) {
+            //update stock levels for new stock
+            UpdateStockLevels::dispatch($stock->location_id)->onQueue('default');
         }
 
         return $this->redirectWithStatus($request,'inventory.stocks',"Deleted stock definition!", 'success');
@@ -534,6 +549,9 @@ class InventoryController extends Controller
                 $source_item->source_id = $source->id;
                 $source_item->save();
             }
+
+            //update stock levels for new stock
+            UpdateStockLevels::dispatch($source->location_id)->onQueue('default');
 
         } else {
             return $this->redirectWithStatus($request,'inventory.movingItems',"No items could be added, as the item list is empty.", 'warnings');
