@@ -423,7 +423,7 @@ class InventoryController extends Controller
         $check_corporation_hangars = $request->checkbox_corporation_hangar!=null;
         $check_contracts = $request->checkbox_contracts!=null;
 
-        $allowed_types = [];
+        $allowed_types = ["in_transport"];
 
         $has_no_filter = ($location_id==null) && ($filter_item_type == null) && ($check_corporation_hangars == false) && ($check_contracts == false);
         $show_results = !(($location_id==null) && ($filter_item_type == null));
@@ -495,5 +495,69 @@ class InventoryController extends Controller
 
     public function about(){
         return view("inventory::about");
+    }
+
+    public function getMovingItems(Request $request){
+        $sources = InventorySource::where("source_type","in_transport")->get();
+
+        return view("inventory::movingItems",compact("sources"));
+    }
+
+    public function addMovingItems(Request $request){
+        $location_id = $request->location_id;
+        $multibuy = $request->multibuy_text;
+
+        if(!$location_id){
+            return $this->redirectWithStatus($request,'inventory.movingItems',"No location specified!", 'error');
+        }
+
+        if (!Location::find($location_id)){
+            return $this->redirectWithStatus($request,'inventory.movingItems',"Location not found!", 'error');
+        }
+
+        if (!$multibuy){
+            return $this->redirectWithStatus($request,'inventory.movingItems',"No items found!", 'error');
+        }
+
+        $itemList = Parser::parseMultiBuy($multibuy);
+        $itemList = ItemHelper::simplifyItemList($itemList);
+
+        if(count($itemList)>0) {
+            $source = new InventorySource();
+            $source->location_id = $location_id;
+            $source->source_name = "Pending Delivery";
+            $source->source_type = "in_transport";
+            $source->save();
+
+            foreach ($itemList as $item){
+                $source_item = $item->asSourceItem();
+                $source_item->source_id = $source->id;
+                $source_item->save();
+            }
+
+        } else {
+            return $this->redirectWithStatus($request,'inventory.movingItems',"No items could be added, as the item list is empty.", 'warnings');
+        }
+
+        return $this->redirectWithStatus($request,'inventory.movingItems',"Successfully added items!", 'success');
+
+    }
+
+    public function removeMovingItems(Request $request){
+        $id = $request->source_id;
+        if(!$id){
+            return $this->redirectWithStatus($request,'inventory.movingItems',"Could not find inventory source!", 'error');
+        }
+
+        $source = InventorySource::find($id);
+
+        if($source) {
+            InventorySource::destroy($id);
+
+            //update stock levels for new stock
+            UpdateStockLevels::dispatch($source->location_id)->onQueue('default');
+        }
+
+        return $this->redirectWithStatus($request,'inventory.movingItems',"Marked item source as delivered!!", 'success');
     }
 }

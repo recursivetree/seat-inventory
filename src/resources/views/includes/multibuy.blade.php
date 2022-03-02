@@ -22,7 +22,7 @@
     </div>
 </div>
 
-<button class="btn btn-secondary align-self-baseline" data-toggle="modal" data-target="#multibuyModal{{$id}}">
+<button type="button" class="btn btn-secondary align-self-baseline" data-toggle="modal" data-target="#multibuyModal{{$id}}">
     @if(isset($title))
         {{ $title }}
     @else
@@ -33,6 +33,8 @@
 @push('javascript')
     <script>
         $("#multibuyCopyButton{{$id}}").click(function (e) {
+            e.stopPropagation();
+
             const textarea = $("#multibuyTextArea{{$id}}")
             textarea.focus();
             textarea.select();

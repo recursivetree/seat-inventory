@@ -80,7 +80,7 @@ class UpdateStockLevels implements ShouldQueue
 
 
         //hangar items
-        $source_ids = InventorySource::where("location_id",$this->location_id)->where("source_type","corporation_hangar")->pluck('id');
+        $source_ids = InventorySource::where("location_id",$this->location_id)->whereIn("source_type",["corporation_hangar","in_transport"])->pluck('id');
         $items = InventoryItem::whereIn("source_id",$source_ids)->get();
         $item_list = ItemHelper::itemListFromQuery($items);
 

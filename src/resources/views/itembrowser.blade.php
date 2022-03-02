@@ -76,40 +76,7 @@
                 <h3 class="card-title">Items</h3>
             </div>
             <div class="card-body">
-                    @if($inventory_sources->isEmpty())
-                        <p>There were no items found!</p>
-                    @endif
-
-                    @foreach($inventory_sources as $source)
-
-                        <ol class="breadcrumb mb-0 mt-1" data-toggle="collapse"
-                            data-target="#{{ "inventorysourceid$source->id" }}">
-                            <li class="breadcrumb-item">{{ $source->location->name }}</li>
-                            <li class="breadcrumb-item">
-                                @if($source->source_type == "corporation_hangar")
-                                    Corporation Hangar
-                                @elseif($source->source_type == "contract")
-                                    Contract
-                                @else
-                                    $source->source_type
-                                @endif
-                            </li>
-                            <li class="breadcrumb-item">{{ $source->source_name }}</li>
-                            <li class="breadcrumb-item">{{ $source->last_updated }}</li>
-                        </ol>
-
-                        <ul class="list-group collapse" id="{{ "inventorysourceid$source->id" }}">
-                            @foreach( ($filter_item_type==null)? $source->items : $source->items->where("type_id",$filter_item_type) as $item)
-                                <li class="list-group-item">
-                                    <img src="https://images.evetech.net/types/{{ $item->type_id }}/icon" height="24">
-                                    <span>
-                                        {{ $item->amount }}x
-                                        {{ $item->type->typeName }}
-                                    </span>
-                                </li>
-                            @endforeach
-                        </ul>
-                    @endforeach
+                @include("inventory::includes.inventorySourceList",["sources"=>$inventory_sources,"filter_item_type"=>$filter_item_type])
             </div>
         </div>
     @endif

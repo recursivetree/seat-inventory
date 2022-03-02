@@ -125,4 +125,22 @@ Route::group([
         'uses' => 'InventoryController@itemTypeSuggestions',
         'middleware' => 'can:inventory.view_inventory'
     ]);
+
+    Route::get('/sources/moving', [
+        'as'   => 'inventory.movingItems',
+        'uses' => 'InventoryController@getMovingItems',
+        'middleware' => 'can:inventory.view_inventory'
+    ]);
+
+    Route::post('/sources/moving/add', [
+        'as'   => 'inventory.addMovingItems',
+        'uses' => 'InventoryController@addMovingItems',
+        'middleware' => 'can:inventory.edit_inventory'
+    ]);
+
+    Route::post('/sources/moving/remove', [
+        'as'   => 'inventory.removeMovingItems',
+        'uses' => 'InventoryController@removeMovingItems',
+        'middleware' => 'can:inventory.edit_inventory'
+    ]);
 });
