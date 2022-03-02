@@ -124,8 +124,8 @@ class UpdateInventory implements ShouldQueue
             })
             ->leftJoin("recursive_tree_seat_inventory_inventory_source", function ($join) {
                 $join
-                    ->on("recursive_tree_seat_inventory_locations.id", "=", "recursive_tree_seat_inventory_inventory_source.location_id");
-                //->where("source_type","corporation_hangar");
+                    ->on("recursive_tree_seat_inventory_locations.id", "=", "recursive_tree_seat_inventory_inventory_source.location_id")
+                    ->where("source_type","corporation_hangar");
             })
             ->groupBy("corporation_assets.location_id", "recursive_tree_seat_inventory_locations.id", "recursive_tree_seat_inventory_inventory_source.id")
             ->get();
