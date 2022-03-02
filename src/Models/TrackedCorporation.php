@@ -10,7 +10,9 @@ class TrackedCorporation extends Model
     public $timestamps = false;
 
     public function corporation(){
-        return $this->hasOne(CorporationInfo::class, "corporation_id", "corporation_id");
+        return $this->hasOne(CorporationInfo::class, "corporation_id", "corporation_id")->withDefault([
+            'name' => trans('web::seat.unknown'),
+        ]);
     }
 
     protected $table = 'recursive_tree_seat_inventory_tracked_corporations';
