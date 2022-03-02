@@ -173,13 +173,8 @@ class UpdateStockLevels implements ShouldQueue
                 }
 
                 $stock->available_in_hangars = $stock_numbers_possible;
+                $stock->save();
             }
         }
-
-        //save stocks with cached data
-        foreach ($stocks as $stock){
-            $stock->save();
-        }
-
     }
 }
