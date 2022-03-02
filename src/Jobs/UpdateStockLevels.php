@@ -37,7 +37,7 @@ class UpdateStockLevels implements ShouldQueue
     public function handle()
     {
 
-        $stocks = Stock::where("location_id",$this->location_id)->orderBy("priority","desc")->get();
+        $stocks = Stock::with("items")->where("location_id",$this->location_id)->orderBy("priority","desc")->get();
 
         //get the time from around when the query is triggered, so in case the db updates in between, we make sure that at least some ca be from the old state
         $time = now();
@@ -59,6 +59,9 @@ class UpdateStockLevels implements ShouldQueue
 
             foreach ($stocks as $stock){
                 if($stock->check_contracts != true) continue;
+
+                //if we already fulfill a stock, don't consider it any further
+                if($stock->available_on_contracts>=$stock->amount) continue;
 
                 foreach ($stock->items as $item){
                     $required = $item->amount;
@@ -103,6 +106,11 @@ class UpdateStockLevels implements ShouldQueue
                 //parts might already be covered over contracts
                 $stock_numbers_required = $stock->amount - $stock->available_on_contracts;
 
+                //make sure we never have a negative requirements
+                if($stock_numbers_required < 0){
+                    $stock_numbers_required = 0;
+                }
+
                 //get items
                 $required_items = ItemHelper::itemListFromQuery($stock->items); //creates a new ItemHelper instance, avoiding side effects when changing the amount
                 foreach ($required_items as $item){
@@ -113,7 +121,6 @@ class UpdateStockLevels implements ShouldQueue
                 $demand_list = array_merge($demand_list,$required_items);
             }
             $demand_map = ItemHelper::itemListToTypeIDMap($demand_list);
-            // if the proportional scheduling has leftovers, store them for use with other stocks
 
             //calculate stock level
             foreach ($stock_list as $stock) {

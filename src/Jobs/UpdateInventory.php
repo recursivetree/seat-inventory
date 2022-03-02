@@ -37,14 +37,11 @@ class UpdateInventory implements ShouldQueue
 
     public function handle()
     {
-        DB::transaction(function () {
-            $corporations = TrackedCorporation::all()->pluck("corporation_id");
-            $alliances = TrackedAlliance::all()->pluck("alliance_id");
+        $corporations = TrackedCorporation::all()->pluck("corporation_id");
+        $alliances = TrackedAlliance::all()->pluck("alliance_id");
 
-            $this->handleContracts($corporations, $alliances);
-            $this->handleCorporationAssets($corporations);
-
-        });
+        $this->handleContracts($corporations, $alliances);
+        $this->handleCorporationAssets($corporations);
 
         $ids = Location::all()->pluck("id")->unique();
         foreach ($ids as $id) {
@@ -175,7 +172,7 @@ class UpdateInventory implements ShouldQueue
             $item_list = [];
 
             //because laravel is weird once again, we eager load up to a depth of 3: hangar/container/item (infinite would be perfect)
-            $assets = CorporationAsset::with("content")->where("location_id", $location->game_location_id)->get();
+            $assets = CorporationAsset::with("content.content.content")->where("location_id", $location->game_location_id)->get();
             foreach ($assets as $asset){
                 $this->handleAssetItem($asset, $item_list);
             }
@@ -190,14 +187,13 @@ class UpdateInventory implements ShouldQueue
                 ];
             }, $item_list);
 
-            DB::transaction(function () use ($time, $item_list, $location) {
-                InventoryItem::where("source_id", $location->source_id)->delete();
-                InventoryItem::insert($item_list);
 
-                $source = InventorySource::find($location->source_id);
-                $source->last_updated = $time;
-                $source->save();
-            });
+            InventoryItem::where("source_id", $location->source_id)->delete();
+            InventoryItem::insert($item_list);
+
+            $source = InventorySource::find($location->source_id);
+            $source->last_updated = $time;
+            $source->save();
         }
     }
 
