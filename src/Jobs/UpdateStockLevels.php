@@ -83,7 +83,9 @@ class UpdateStockLevels implements ShouldQueue
 
 
         //hangar items
-        $source_ids = InventorySource::where("location_id",$this->location_id)->whereIn("source_type",["corporation_hangar","in_transport"])->pluck('id');
+        $source_ids = InventorySource::where("location_id",$this->location_id)
+            ->whereIn("source_type",["corporation_hangar","in_transport"])
+            ->pluck('id');
         $items = InventoryItem::whereIn("source_id",$source_ids)->get();
         $item_list = ItemHelper::itemListFromQuery($items);
 
@@ -99,6 +101,7 @@ class UpdateStockLevels implements ShouldQueue
             $total_items_map = $used_items_map;
 
             //build up demand list considering that some stocks might already be covered by contracts
+            // this is done per priority
             $demand_list = [];
             foreach ($stock_list as $stock){
                 if($stock->check_corporation_hangars != true) continue; //sort out contracts that don't consider hangars
@@ -127,9 +130,13 @@ class UpdateStockLevels implements ShouldQueue
                 if ($stock->check_corporation_hangars != true) continue; //sort out contracts that don't consider hangars
 
                 $stock_numbers_required = $stock->amount - $stock->available_on_contracts;  //number of stocks required
+                if($stock_numbers_required<0){
+                    $stock_numbers_required = 0;
+                }
                 $stock_numbers_possible = $stock_numbers_required;                          //max number of stock multiples you can possibly assemble
 
                 foreach ($stock->items as $item){
+
                     $total_available = array_key_exists($item->type_id, $total_items_map) ? $total_items_map[$item->type_id] : 0;
                     $item_demand = array_key_exists($item->type_id, $demand_map) ? $demand_map[$item->type_id] : 1;
                     $possible_percentage =  $total_available / $item_demand;
