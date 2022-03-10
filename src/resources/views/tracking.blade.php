@@ -26,14 +26,35 @@
                     </select>
                 </div>
 
-                <div class="form-check">
-                    <input
-                            type="checkbox"
-                            id="checkbox-alliance-autoadd"
-                            class="form-check-input"
-                            name="automate_corporations"
-                    >
-                    <label for="checkbox-alliance-autoadd">Automatically track member corporations</label>
+                <div class="form-group">
+                    <label>Alliance Corporation Tracking</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="alliance_corporation_handling" id="alliance_corporation_handling1" value="manage" checked>
+                        <label class="form-check-label" for="alliance_corporation_handling1">
+                            Automatically update member corporations
+                        </label>
+                        <small class="form-text text-muted mt-0">
+                            Adds all current members as well as adding and removing corporations that join or leave in the future.
+                        </small>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="alliance_corporation_handling" id="alliance_corporation_handling2" value="add">
+                        <label class="form-check-label" for="alliance_corporation_handling2">
+                            Add all member corporations, but don't automatically update the list.
+                        </label>
+                        <small class="form-text text-muted mt-0">
+                            Current members will be tracked, but newly joined corporations have to be added manually.
+                        </small>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="alliance_corporation_handling" id="alliance_corporation_handling3" value="no">
+                        <label class="form-check-label" for="alliance_corporation_handling3">
+                            Ignore alliance members
+                        </label>
+                        <small class="form-text text-muted mt-0">
+                            Check this option if you only want to track alliance contracts
+                        </small>
+                    </div>
                 </div>
 
                 <button class="btn btn-primary" type="submit">Add Alliance</button>
@@ -85,12 +106,12 @@
                     <tr>
                         <td>{{ $alliance->alliance->name }}</td>
                         <td>
-                            @include("inventory::includes.tickcross",["value"=>$alliance->automate_corporations])
+                            @include("inventory::includes.tickcross",["value"=>$alliance->manage_members])
                         </td>
                         <td>
                             <form action="{{ route("inventory.deleteTrackingAlliance") }}" method="POST">
                                 @csrf
-                                <input type="hidden" name="id" value="{{ $alliance->id }}">
+                                <input type="hidden" name="id" value="{{ $alliance->alliance_id }}">
                                 <button type="submit" class="btn btn-danger">Remove</button>
                             </form>
                         </td>
@@ -115,6 +136,7 @@
                 <thead>
                 <tr>
                     <th>Corporation</th>
+                    <th>Managed By</th>
                     <th>Actions</th>
                 </tr>
                 </thead>
@@ -123,17 +145,28 @@
                         <tr>
                             <td>{{ $corporation->corporation->name }}</td>
                             <td>
+                                {{ $corporation->alliance->name }}
+                            </td>
+                            <td>
                                 <form action="{{ route("inventory.deleteTrackingCorporation") }}" method="POST">
                                     @csrf
-                                    <input type="hidden" name="id" value="{{ $corporation->id }}">
-                                    <button type="submit" class="btn btn-danger">Remove</button>
+                                    <input type="hidden" name="id" value="{{ $corporation->corporation_id }}">
+
+                                    @if($corporation->managed_by)
+                                        <span class="d-inline-block" tabindex="0" data-toggle="tooltip" data-placement="top"
+                                              title="This corporation is automatically managed by the alliance '{{ $corporation->alliance->name }}' and cannot be manually removed.">
+                                            <button type="submit" class="btn btn-danger" disabled style="pointer-events: none;">Remove</button>
+                                        </span>
+                                    @else
+                                        <button type="submit" class="btn btn-danger">Remove</button>
+                                    @endif
                                 </form>
                             </td>
                         </tr>
                     @endforeach
                     @if($tracked_corporations->isEmpty())
                         <tr>
-                            <td colspan="2">This table is empty</td>
+                            <td colspan="3">This table is empty</td>
                         </tr>
                     @endif
                 </tbody>
@@ -152,5 +185,9 @@
             },
             minLength:1,
         });
+
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip()
+        })
     </script>
 @endpush
