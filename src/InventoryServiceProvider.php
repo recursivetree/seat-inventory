@@ -22,8 +22,7 @@ use Illuminate\Queue\Events\JobProcessed;
 use Seat\Eveapi\Models\Universe\UniverseStation;
 use Seat\Eveapi\Models\Universe\UniverseStructure;
 use Seat\Eveapi\Jobs\Assets\Corporation\Assets;
-
-use  Seat\Eveapi\Jobs\Status\Status;
+use Illuminate\Support\Facades\DB;
 
 class InventoryServiceProvider extends AbstractSeatPlugin
 {
@@ -87,6 +86,14 @@ class InventoryServiceProvider extends AbstractSeatPlugin
                 UpdateStockLevels::dispatch($location_id)->onQueue('default');
                 $this->info("Scheduled an stock level update!");
             }
+        });
+
+        Artisan::command('inventory:fix', function () {
+            DB::table("recursive_tree_seat_inventory_stock_items")
+                ->leftJoin("recursive_tree_seat_inventory_stock_definitions","stock_id","id")
+                ->where("id",null)
+                ->delete();
+            $this->info("Deleted floating stock items!");
         });
 
         Queue::after(function (JobProcessed $event) {

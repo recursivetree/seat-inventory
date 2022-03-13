@@ -279,23 +279,19 @@ class InventoryController extends Controller
     }
 
     public function deleteStockPost(Request $request,$id){
+
         $stock = Stock::find($id);
 
-        if($id!=null) {
+        if($stock !== null) {
+
             Stock::destroy($id);
-        }
 
-        $items = StockItem::where("stock_id",$id)->get();
-        foreach ($items as $item){
-            $item->destroy($item->id);
-        }
+            StockItem::where("stock_id", $id)->delete();
 
-        if($stock) {
-            //update stock levels for new stock
-            UpdateStockLevels::dispatch($stock->location_id)->onQueue('default');
+            return $this->redirectWithStatus($request, 'inventory.stocks', "Deleted stock definition!", 'success');
+        } else {
+            return $this->redirectWithStatus($request, 'inventory.stocks', "You are attempting to delete a non-existent stock. Try to refresh your page.", 'error');
         }
-
-        return $this->redirectWithStatus($request,'inventory.stocks',"Deleted stock definition!", 'success');
     }
 
     public function itemBrowser(Request $request){
