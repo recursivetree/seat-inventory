@@ -8,7 +8,7 @@
     <span class="badge badge-primary">Normal</span>
 @elseif ($priority == 1)
     <span class="badge badge-secondary">Low</span>
-@elseif($priority == 1)
+@elseif($priority == 0)
     <span class="badge badge-secondary">Very Low</span>
 @else
     @if($priority>0)
