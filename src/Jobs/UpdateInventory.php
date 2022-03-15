@@ -13,6 +13,7 @@ use RecursiveTree\Seat\Inventory\Helpers\ItemHelper;
 use RecursiveTree\Seat\Inventory\Models\InventoryItem;
 use RecursiveTree\Seat\Inventory\Models\InventorySource;
 use RecursiveTree\Seat\Inventory\Models\Location;
+use RecursiveTree\Seat\Inventory\Models\Stock;
 use RecursiveTree\Seat\Inventory\Models\TrackedAlliance;
 use RecursiveTree\Seat\Inventory\Models\TrackedCorporation;
 use Seat\Eveapi\Models\Assets\CorporationAsset;
@@ -43,7 +44,7 @@ class UpdateInventory implements ShouldQueue
         $this->handleContracts($corporations, $alliances);
         $this->handleCorporationAssets($corporations);
 
-        $ids = Location::all()->pluck("id")->unique();
+        $ids = Stock::pluck("location_id")->unique();
         foreach ($ids as $id) {
             UpdateStockLevels::dispatch($id)->onQueue('default');
         }
@@ -59,10 +60,11 @@ class UpdateInventory implements ShouldQueue
             InventoryItem::where("source_id", $source->id)->delete();
         }
 
-        //get the time from around when the query is triggered, so in case the db updates in between, we make sure that at least some ca be from the old state
+        //get the time from around when the query is triggered, so in case the db updates assets in between, we only guarantee the old state
         $time = carbon();
 
-        $contracts = ContractDetail::where("type", "item_exchange")
+        $contracts = ContractDetail::with("lines")
+            ->where("type", "item_exchange")
             ->where("status", "outstanding")
             ->whereDate("date_expired",">",$time)
             ->whereIn("assignee_id", $valid_assingees)
