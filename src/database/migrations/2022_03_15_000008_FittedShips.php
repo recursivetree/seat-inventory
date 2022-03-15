@@ -6,6 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
 use RecursiveTree\Seat\Inventory\Jobs\UpdateInventory;
+use RecursiveTree\Seat\Inventory\Models\InventorySource;
 
 class FittedShips extends Migration
 {
@@ -20,6 +21,12 @@ class FittedShips extends Migration
 
     public function down()
     {
+        $sources = InventorySource::where("source_type","fitted_ship")->get();
+        foreach ($sources as $source){
+            $source->source_type = "corporation_hangar";
+            $source->save();
+        }
+
         Schema::table('recursive_tree_seat_inventory_inventory_source', function (Blueprint $table) {
             DB::statement("ALTER TABLE `recursive_tree_seat_inventory_inventory_source` CHANGE `source_type` `source_type` ENUM('corporation_hangar', 'contract', 'in_transport');");
         });

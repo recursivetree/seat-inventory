@@ -11,13 +11,17 @@ class FixOptimize extends Migration
 {
     public function up()
     {
-        Schema::table('recursive_tree_seat_inventory_inventory_item', function (Blueprint $table) {
-            $table->bigIncrements("id");
-        });
+        if(Schema::hasColumn('recursive_tree_seat_inventory_inventory_item', "id")) {
+            Schema::table('recursive_tree_seat_inventory_inventory_item', function (Blueprint $table) {
+                $table->bigIncrements("id");
+            });
+        }
 
-        Schema::table('recursive_tree_seat_inventory_stock_items', function (Blueprint $table) {
-            $table->bigIncrements("id");
-        });
+        if(Schema::hasColumn('recursive_tree_seat_inventory_stock_items', "id")) {
+            Schema::table('recursive_tree_seat_inventory_stock_items', function (Blueprint $table) {
+                $table->bigIncrements("id");
+            });
+        }
 
         UpdateInventory::dispatch()->onQueue('default');
     }
