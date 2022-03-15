@@ -63,8 +63,7 @@ class UpdateInventory implements ShouldQueue
         //get the time from around when the query is triggered, so in case the db updates assets in between, we only guarantee the old state
         $time = carbon();
 
-        $contracts = ContractDetail::with("lines")
-            ->where("type", "item_exchange")
+        $contracts = ContractDetail::where("type", "item_exchange")
             ->where("status", "outstanding")
             ->whereDate("date_expired",">",$time)
             ->whereIn("assignee_id", $valid_assingees)
@@ -109,6 +108,11 @@ class UpdateInventory implements ShouldQueue
     private function handleCorporationAssets($corporations)
     {
         $time = now();
+
+        //remove all assembled ships
+        $ids = InventorySource::where("source_type","fitted_ship")->pluck("id");
+        InventorySource::whereIn("id",$ids)->delete();
+        InventoryItem::whereIn("source_id",$ids)->delete();
 
         //get locations
         $locations = DB::table("corporation_assets")
@@ -176,19 +180,11 @@ class UpdateInventory implements ShouldQueue
             //because laravel is weird once again, we eager load up to a depth of 3: hangar/container/item (infinite would be perfect)
             $assets = CorporationAsset::with("content.content.content")->where("location_id", $location->game_location_id)->get();
             foreach ($assets as $asset){
-                $this->handleAssetItem($asset, $item_list);
+                $this->handleAssetItem($asset, $item_list,$location->inventory_location_id, true);
             }
 
             $item_list = ItemHelper::simplifyItemList($item_list);
-
-            $item_list = array_map(function ($e) use ($location) {
-                return [
-                    "type_id" => $e->type_id,
-                    "amount" => $e->amount,
-                    "source_id" => $location->source_id
-                ];
-            }, $item_list);
-
+            $item_list = ItemHelper::prepareBulkInsertionSourceItems($item_list,$location->source_id);
 
             InventoryItem::where("source_id", $location->source_id)->delete();
             InventoryItem::insert($item_list);
@@ -199,14 +195,37 @@ class UpdateInventory implements ShouldQueue
         }
     }
 
-    private function handleAssetItem($item, &$list)
+    private function handleAssetItem($item, &$list,$location, $handle_ship)
     {
-        $list[] = new ItemHelper($item->type_id, $item->quantity);
+        //check for ships
+        if($item->type->group->categoryID === 6 && $item->is_singleton && $handle_ship){
+            //it is an assembled ship, handle it differently
+            $this->handleAssembledShip($item,$location);
+        } else {
 
-        //chunking bugs it out, don't optimize it
-        foreach ($item->content as $content){
-            $this->handleAssetItem($content, $list);
+            $list[] = new ItemHelper($item->type_id, $item->quantity);
+
+            //chunking bugs it out, don't optimize it
+            foreach ($item->content as $content) {
+                $this->handleAssetItem($content, $list, $location, true);
+            }
         }
+    }
+
+    private function handleAssembledShip($ship,$location){
+        $source = new InventorySource();
+        $source->source_type = "fitted_ship";
+        $source->location_id = $location;
+        $ship_type_name = $ship->type->typeName;
+        $source->source_name = "$ship->name($ship_type_name)";
+        $source->save();
+
+        $item_list = [];
+        $this->handleAssetItem($ship,$item_list,$location,false);
+        $item_list = ItemHelper::simplifyItemList($item_list);
+        $bulk = ItemHelper::prepareBulkInsertionSourceItems($item_list,$source->id);
+
+        InventoryItem::insert($bulk);
     }
 
     private function createLocation($location_id): Location

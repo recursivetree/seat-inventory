@@ -39,6 +39,16 @@ class ItemHelper
         return $item;
     }
 
+    public static function prepareBulkInsertionSourceItems($item_list, $source){
+        return array_map(function ($e) use ($source) {
+            return [
+                "type_id" => $e->type_id,
+                "amount" => $e->amount,
+                "source_id" => $source
+            ];
+        }, $item_list);
+    }
+
     public static function simplifyItemList($item_list)
     {
         $item_2_amount = self::itemListToTypeIDMap($item_list);

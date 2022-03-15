@@ -39,6 +39,30 @@
                     <label for="checkbox-contracts">Contracts</label>
                 </div>
 
+                <div class="form-check">
+                    <input
+                            type="checkbox"
+                            id="checkbox-in-transport"
+                            class="form-check-input"
+                            name="checkbox_in_transport"
+                            @if($check_in_transport)
+                            checked
+                            @endif>
+                    <label for="checkbox-in-transport">Items in transport</label>
+                </div>
+
+                <div class="form-check">
+                    <input
+                            type="checkbox"
+                            id="checkbox-fitted-ships"
+                            class="form-check-input"
+                            name="checkbox_fitted_ships"
+                            @if($check_fitted_ships)
+                            checked
+                            @endif>
+                    <label for="checkbox-fitted-ships">Fitted ships (corporation hangar)</label>
+                </div>
+
                 <div class="form-group">
                     <label for="stock-location">Location</label>
                     <select

@@ -301,20 +301,36 @@ class InventoryController extends Controller
         $filter_item_type_text = $request->item_id_text;
         $check_corporation_hangars = $request->checkbox_corporation_hangar!=null;
         $check_contracts = $request->checkbox_contracts!=null;
+        $check_fitted_ships = $request->checkbox_fitted_ships!=null;
+        $check_in_transport = $request->checkbox_in_transport!=null;
 
-        $allowed_types = ["in_transport"];
+        $allowed_types = [];
 
-        $has_no_filter = ($location_id==null) && ($filter_item_type == null) && ($check_corporation_hangars == false) && ($check_contracts == false);
+        $has_no_filter = ($location_id==null)
+            && ($filter_item_type == null)
+            && ($check_corporation_hangars == false)
+            && ($check_contracts == false)
+            && ($check_fitted_ships == false)
+            && ($check_in_transport == false);
+
         $show_results = !(($location_id==null) && ($filter_item_type == null));
 
         $check_contracts = $check_contracts || $has_no_filter;
         $check_corporation_hangars = $check_corporation_hangars || $has_no_filter;
+        $check_fitted_ships = $check_fitted_ships || $has_no_filter;
+        $check_in_transport = $check_in_transport || $has_no_filter;
 
         if($check_corporation_hangars){
             $allowed_types[] = "corporation_hangar";
         }
         if($check_contracts){
             $allowed_types[] = "contract";
+        }
+        if($check_fitted_ships){
+            $allowed_types[] = "fitted_ship";
+        }
+        if($check_in_transport){
+            $allowed_types[] = "in_transport";
         }
 
         if($location_id != null && Location::find($location_id) == null){
@@ -346,6 +362,8 @@ class InventoryController extends Controller
             "filter_item_type",
             "check_contracts",
             "check_corporation_hangars",
+            "check_fitted_ships",
+            "check_in_transport",
             "location_id",
             "location_id_text",
             "filter_item_type",

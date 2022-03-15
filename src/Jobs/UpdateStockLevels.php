@@ -47,37 +47,57 @@ class UpdateStockLevels implements ShouldQueue
             $stock->available_on_contracts = 0;
             $stock->available_in_hangars = 0;
             $stock->last_updated = $time;
+
+            foreach ($stock->items as $item){
+                $item->missing_items = 0;
+                $item->save();
+            }
         }
 
-        //contracts
-        $contract_sources = InventorySource::where("location_id",$this->location_id)->where("source_type","contract")->get();
+        //contract-like(exact-match): contracts, fitted ships
+        $exact_match_sources = InventorySource::where("location_id",$this->location_id)
+            ->whereIn("source_type",["contract","fitted_ship"])
+            ->get();
 
-        //because the contracts are sorted by priority, we don't have to handle it here
-        foreach ($contract_sources as $contract){
-            $item_list = ItemHelper::itemListFromQuery($contract->items);
+        //dd($exact_match_sources);
+
+        //because the stocks are sorted by priority, we don't have to do anything priority related here
+        foreach ($exact_match_sources as $source){
+            $item_list = ItemHelper::itemListFromQuery($source->items);
             $total_items_map = ItemHelper::itemListToTypeIDMap($item_list);
 
+            $source_is_contract = $source->source_type == "contracts";
+
+            //stocks are sorted by priority with the highest priority first
             foreach ($stocks as $stock){
-                if($stock->check_contracts != true) continue;
+                if($source_is_contract && !$stock->check_contracts) continue;
+                if(!$source_is_contract && !$stock->check_corporation_hangars) continue;
 
                 //if we already fulfill a stock, don't consider it any further
-                if($stock->available_on_contracts>=$stock->amount) continue;
+                if($this->getStockCoveredAmount($stock) >= $stock->amount) continue;
 
                 foreach ($stock->items as $item){
                     $required = $item->amount;
 
                     if(!array_key_exists($item->type_id,$total_items_map)){
-                        continue 2;//quit inner loop
+                        //dd($item->type_id,$total_items_map);
+                        continue 2;//quit inner loop, go to next stock, as the stock can't be fulfilled
                     }
 
                     if($total_items_map[$item->type_id]<$required){
-                        continue 2;//quit inner loop
+                        //dd(8);
+                        continue 2;//quit inner loop, go to next stock, as the stock can't be fulfilled
                     }
                 }
 
                 //all items are available
-                $stock->available_on_contracts += 1;
-                continue 2; // use this contract for this stock, therefore continue with the next contract
+                if($source->source_type === "contract"){
+                    $stock->available_on_contracts += 1;
+                } else {
+                    $stock->available_in_hangars += 1;
+                }
+
+                continue 2; // use this source for this stock, therefore continue with the next stock
             }
         }
 
@@ -107,7 +127,7 @@ class UpdateStockLevels implements ShouldQueue
                 if($stock->check_corporation_hangars != true) continue; //sort out contracts that don't consider hangars
 
                 //parts might already be covered over contracts
-                $stock_numbers_required = $stock->amount - $stock->available_on_contracts;
+                $stock_numbers_required = $stock->amount - $this->getStockCoveredAmount($stock);
 
                 //make sure we never have a negative requirements
                 if($stock_numbers_required < 0){
@@ -129,7 +149,7 @@ class UpdateStockLevels implements ShouldQueue
             foreach ($stock_list as $stock) {
                 if ($stock->check_corporation_hangars != true) continue; //sort out contracts that don't consider hangars
 
-                $stock_numbers_required = $stock->amount - $stock->available_on_contracts;  //number of stocks required
+                $stock_numbers_required = $stock->amount - $this->getStockCoveredAmount($stock);  //number of stocks required
                 if($stock_numbers_required<0){
                     $stock_numbers_required = 0;
                 }
@@ -172,9 +192,16 @@ class UpdateStockLevels implements ShouldQueue
                     $item->save();
                 }
 
-                $stock->available_in_hangars = $stock_numbers_possible;
-                $stock->save();
+                $stock->available_in_hangars += $stock_numbers_possible;
             }
         }
+
+        foreach ($stocks as $stock){
+            $stock->save();
+        }
+    }
+
+    private function getStockCoveredAmount($stock){
+        return $stock->available_in_hangars + $stock-> available_on_contracts;
     }
 }
