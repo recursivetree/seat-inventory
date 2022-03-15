@@ -28,13 +28,17 @@ class FixOptimize extends Migration
 
     public function down()
     {
-        Schema::table('recursive_tree_seat_inventory_inventory_item', function (Blueprint $table) {
-            $table->dropColumn("id");
-        });
+        if(Schema::hasColumn('recursive_tree_seat_inventory_inventory_item', "id")) {
+            Schema::table('recursive_tree_seat_inventory_inventory_item', function (Blueprint $table) {
+                $table->dropColumn("id");
+            });
+        }
 
-        Schema::table('recursive_tree_seat_inventory_stock_items', function (Blueprint $table) {
-            $table->dropColumn("id");
-        });
+        if(Schema::hasColumn('recursive_tree_seat_inventory_stock_items', "id")) {
+            Schema::table('recursive_tree_seat_inventory_stock_items', function (Blueprint $table) {
+                $table->dropColumn("id");
+            });
+        }
     }
 }
 
