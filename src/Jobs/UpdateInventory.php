@@ -20,6 +20,7 @@ use Seat\Eveapi\Models\Assets\CorporationAsset;
 use Seat\Eveapi\Models\Contracts\ContractDetail;
 use Seat\Eveapi\Models\Contracts\CorporationContract;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redis;
 use Seat\Eveapi\Models\Universe\UniverseStation;
 use Seat\Eveapi\Models\Universe\UniverseStructure;
 
@@ -38,16 +39,20 @@ class UpdateInventory implements ShouldQueue
 
     public function handle()
     {
-        $corporations = TrackedCorporation::all()->pluck("corporation_id");
-        $alliances = TrackedAlliance::all()->pluck("alliance_id");
+        Redis::funnel('seat-inventory-asset-lock')->limit(1)->then(function () {
+            $corporations = TrackedCorporation::all()->pluck("corporation_id");
+            $alliances = TrackedAlliance::all()->pluck("alliance_id");
 
-        $this->handleContracts($corporations, $alliances);
-        $this->handleCorporationAssets($corporations);
+            $this->handleContracts($corporations, $alliances);
+            $this->handleCorporationAssets($corporations);
 
-        $ids = Stock::pluck("location_id")->unique();
-        foreach ($ids as $id) {
-            UpdateStockLevels::dispatch($id)->onQueue('default');
-        }
+            $ids = Stock::pluck("location_id")->unique();
+            foreach ($ids as $id) {
+                UpdateStockLevels::dispatch($id)->onQueue('default');
+            }
+        }, function () {
+            //ignore
+        });
     }
 
     private function handleContracts($corporations, $alliances)

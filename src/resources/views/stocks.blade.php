@@ -23,15 +23,7 @@
             @else
                 <div class="list-group">
                     @foreach($fittings as $stock)
-                        <a href="{{ route("inventory.viewStock",$stock->id) }}"
-                           class="list-group-item list-group-item-action">
-                            <b>{{ $stock->name }}</b>
-                            {{ $stock->location->name }}
-                            @if($stock->fitting_plugin_fitting_id != null)
-                                <span class="badge badge-primary">Fitting Plugin</span>
-                            @endif
-                            @include("inventory::includes.priority",["priority"=>$stock->priority])
-                        </a>
+                        @include("inventory::includes.stocklink",["stock"=>$stock])
                     @endforeach
                 </div>
             @endif
