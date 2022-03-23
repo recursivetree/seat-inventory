@@ -33,4 +33,13 @@ class Stock extends Model
         }
         return "could not get name";
     }
+
+    public function categories(){
+        return $this->belongsToMany(
+            StockCategory::class,
+            "recursive_tree_seat_inventory_stock_category_mapping",
+            "stock_id",
+            "category_id"
+        );
+    }
 }

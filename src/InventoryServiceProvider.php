@@ -8,6 +8,7 @@ use RecursiveTree\Seat\Inventory\Jobs\UpdateLocations;
 use RecursiveTree\Seat\Inventory\Jobs\UpdateStockLevels;
 use RecursiveTree\Seat\Inventory\Models\Location;
 use RecursiveTree\Seat\Inventory\Observers\AllianceMemberObserver;
+use RecursiveTree\Seat\Inventory\Observers\FittingPluginDoctrineObserver;
 use RecursiveTree\Seat\Inventory\Observers\FittingPluginFittingObserver;
 use RecursiveTree\Seat\Inventory\Helpers\FittingPluginHelper;
 use RecursiveTree\Seat\Inventory\Observers\UniverseStationObserver;
@@ -54,6 +55,7 @@ class InventoryServiceProvider extends AbstractSeatPlugin
 
         if(FittingPluginHelper::pluginIsAvailable()) {
             FittingPluginHelper::$FITTING_PLUGIN_FITTING_MODEL::observe(FittingPluginFittingObserver::class);
+            FittingPluginHelper::$FITTING_PLUGIN_DOCTRINE_MODEL::observe(FittingPluginDoctrineObserver::class);
         }
 
         UniverseStructure::observe(UniverseStructureObserver::class);

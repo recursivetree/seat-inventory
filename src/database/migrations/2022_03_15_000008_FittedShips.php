@@ -21,15 +21,7 @@ class FittedShips extends Migration
 
     public function down()
     {
-        $sources = InventorySource::where("source_type","fitted_ship")->get();
-        foreach ($sources as $source){
-            $source->source_type = "corporation_hangar";
-            $source->save();
-        }
-
-        Schema::table('recursive_tree_seat_inventory_inventory_source', function (Blueprint $table) {
-            DB::statement("ALTER TABLE `recursive_tree_seat_inventory_inventory_source` CHANGE `source_type` `source_type` ENUM('corporation_hangar', 'contract', 'in_transport');");
-        });
+        //data will be ignored
     }
 }
 

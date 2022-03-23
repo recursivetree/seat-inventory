@@ -3,6 +3,7 @@
 namespace RecursiveTree\Seat\Inventory\Http\Controllers;
 
 use Exception;
+use RecursiveTree\Seat\Inventory\Helpers\DoctrineCategorySyncHelper;
 use RecursiveTree\Seat\Inventory\Helpers\FittingPluginHelper;
 use RecursiveTree\Seat\Inventory\Helpers\LocationHelper;
 use RecursiveTree\Seat\Inventory\Helpers\StockHelper;
@@ -10,6 +11,7 @@ use RecursiveTree\Seat\Inventory\Jobs\UpdateStockLevels;
 use RecursiveTree\Seat\Inventory\Models\InventorySource;
 use RecursiveTree\Seat\Inventory\Models\Location;
 use RecursiveTree\Seat\Inventory\Models\Stock;
+use RecursiveTree\Seat\Inventory\Models\StockCategory;
 use RecursiveTree\Seat\Inventory\Models\StockItem;
 use RecursiveTree\Seat\Inventory\Helpers\ItemHelper;
 use RecursiveTree\Seat\Inventory\Helpers\Parser;
@@ -223,6 +225,9 @@ class InventoryController extends Controller
 
         //update stock levels for new stock
         UpdateStockLevels::dispatch($location->id)->onQueue('default');
+
+        //if it is in a doctrine, we have to add categories
+        DoctrineCategorySyncHelper::syncStock($stock);
 
         return $this->redirectWithStatus($request,'inventory.stocks',"Added stock definition!", 'success');
     }

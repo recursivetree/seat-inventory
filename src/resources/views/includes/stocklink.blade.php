@@ -17,4 +17,8 @@
         <span class="badge badge-primary">Fitting Plugin</span>
     @endif
     @include("inventory::includes.priority",["priority"=>$stock->priority])
+
+   @foreach($stock->categories as $category)
+        <span class="badge badge-secondary">{{ $category->name }}</span>
+    @endforeach
 </a>

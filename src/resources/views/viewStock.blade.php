@@ -92,6 +92,18 @@
                         {{ $stock->amount - $stock->available_on_contracts - $stock->available_in_hangars }}
                     </dd>
                 @endif
+
+                <dt class="col-sm-3">Categories</dt>
+                <dd class="col-sm-9">
+                    @foreach($stock->categories as $category)
+                        <span class="badge badge-primary">
+                            {{ $category->name }}
+                        </span>
+                    @endforeach
+                    @if($stock->categories->isEmpty())
+                        There are no categories added to this stock.
+                    @endif
+                </dd>
             </dl>
 
             <div class="btn-group">
