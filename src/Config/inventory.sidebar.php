@@ -7,6 +7,12 @@ return [
         'permission' => 'inventory.view_inventory',
         'entries'       => [
             [
+                'name'  => 'NewUI',
+                'icon'  => 'fas fa-space-shuttle',
+                'route' => 'inventory.main',
+                'permission' => 'inventory.view_inventory',
+            ],
+            [
                 'name'  => 'Tracking',
                 'icon'  => 'fas fa-cog',
                 'route' => 'inventory.tracking',

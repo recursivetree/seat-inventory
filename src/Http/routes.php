@@ -12,6 +12,12 @@ Route::group([
         'middleware' => 'can:inventory.view_inventory'
     ]);
 
+    Route::get('/dashboard', [
+        'as'   => 'inventory.main',
+        'uses' => 'InventoryController@main',
+        'middleware' => 'can:inventory.view_inventory'
+    ]);
+
     Route::get('/tracking', [
         'as'   => 'inventory.tracking',
         'uses' => 'TrackingController@tracking',

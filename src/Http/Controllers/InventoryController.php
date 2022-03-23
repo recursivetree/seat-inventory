@@ -31,6 +31,10 @@ class InventoryController extends Controller
         return redirect()->route($redirect);
     }
 
+    public function main(){
+        return view("inventory::main");
+    }
+
     public function locationSuggestions(Request $request){
         $query = $request->q;
         $suggestions = [];
