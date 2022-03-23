@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\DB;
 
 use RecursiveTree\Seat\Inventory\Helpers\DoctrineCategorySyncHelper;
 use RecursiveTree\Seat\Inventory\Helpers\FittingPluginHelper;
+use RecursiveTree\Seat\Inventory\Models\Stock;
+use RecursiveTree\Seat\Inventory\Models\StockCategory;
 
 
 class Categories extends Migration
@@ -32,6 +34,12 @@ class Categories extends Migration
         if(FittingPluginHelper::pluginIsAvailable()){
             DoctrineCategorySyncHelper::sync();
         }
+
+        $category = new StockCategory();
+        $category->name = "Uncategorized";
+        $category->save();
+
+        $category->stocks()->syncWithoutDetaching(Stock::pluck("id"));
     }
 
     public function down()

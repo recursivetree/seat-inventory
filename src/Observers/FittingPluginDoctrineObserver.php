@@ -18,6 +18,11 @@ class FittingPluginDoctrineObserver
         SyncDoctrine::dispatch($doctrine)->delay(carbon()->addSeconds(10));
     }
 
+    public function created($doctrine){
+        //due to the inner workings of seat-fitting, the observer is triggerred before the fittings are saved
+        SyncDoctrine::dispatch($doctrine)->delay(carbon()->addSeconds(10));
+    }
+
     public function deleted($doctrine){
         DoctrineCategorySyncHelper::removeDoctrine($doctrine);
     }

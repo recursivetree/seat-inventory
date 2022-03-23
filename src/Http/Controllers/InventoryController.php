@@ -32,7 +32,13 @@ class InventoryController extends Controller
     }
 
     public function main(){
-        return view("inventory::main");
+        $categories = StockCategory::with("stocks")->get();
+
+        $categories = $categories->filter(function ($category){
+            return $category->stocks()->where("location_id",338)->exists();
+        });
+
+        return view("inventory::main",compact("categories"));
     }
 
     public function locationSuggestions(Request $request){
