@@ -182,6 +182,10 @@
                                         <a href="{{ route("inventory.viewStock",$stock->id) }}">{{ $stock->name }}</a>
                                     </h5>
 
+                                    <a href="{{ route("inventory.editStock",$stock->id) }}" class="mr-2">
+                                        <i class="fas fa-pen"></i>
+                                    </a>
+
                                     <i class="fas fa-unlink text-danger unlinkStockFromCategory"
                                             style="cursor: pointer;"
                                             data-stock-id="{{ $stock->id }}"
