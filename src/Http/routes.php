@@ -30,6 +30,30 @@ Route::group([
         'middleware' => 'can:inventory.edit_inventory'
     ]);
 
+    Route::post('/categories/delete', [
+        'as'   => 'inventory.deleteCategory',
+        'uses' => 'InventoryController@deleteCategory',
+        'middleware' => 'can:inventory.edit_inventory'
+    ]);
+
+    Route::post('/categories/stocks/add', [
+        'as'   => 'inventory.addStockToCategory',
+        'uses' => 'InventoryController@addStockToCategory',
+        'middleware' => 'can:inventory.edit_inventory'
+    ]);
+
+    Route::post('/categories/stocks/remove', [
+        'as'   => 'inventory.removeStockFromCategory',
+        'uses' => 'InventoryController@removeStockFromCategory',
+        'middleware' => 'can:inventory.edit_inventory'
+    ]);
+
+    Route::get('/dashboard/category/edit/stocks/suggestions', [
+        'as'   => 'inventory.mainEditCategoryAddStockSuggestion',
+        'uses' => 'InventoryController@mainEditCategoryAddStockSuggestion',
+        'middleware' => 'can:inventory.view_inventory'
+    ]);
+
     Route::get('/tracking', [
         'as'   => 'inventory.tracking',
         'uses' => 'TrackingController@tracking',

@@ -83,6 +83,46 @@ class InventoryController extends Controller
         ]);
     }
 
+    public function mainEditCategoryAddStockSuggestion(Request $request){
+        $request->validate([
+            "term"=>"nullable|string",
+            "category"=>"nullable|integer"
+        ]);
+
+        $location_ids = null;
+        if($request->term){
+            $location_ids = Location::where("name","like","%$request->term%")->pluck("id");
+        }
+
+        if($request->category) {
+            $query = Stock::whereDoesntHave("categories", function ($query) use ($request) {
+                $query->where("recursive_tree_seat_inventory_stock_categories.id", $request->category);
+            });
+        } else {
+            $query = Stock::query();
+        }
+        if($request->term){
+            $query->where("name", "like", "%$request->term%");
+        }
+        if($location_ids) {
+            $query->orWhereIn("location_id", $location_ids);
+        }
+        $stocks = $query->get();
+
+        $suggestions = $stocks
+            ->map(function ($stock){
+                $location = $stock->location->name;
+                return [
+                    'id' => $stock->id,
+                    'text' => "$stock->name --- $location"
+                ];
+            });
+
+        return response()->json([
+            'results'=>$suggestions
+        ]);
+    }
+
     public function saveCategory(Request $request){
         $request->validate([
             "name" => "required|string|max:64",
@@ -101,6 +141,63 @@ class InventoryController extends Controller
         return $this->redirectWithStatus($request,'inventory.main',"Successfully modified category!", 'success');
     }
 
+    public function deleteCategory(Request $request){
+        $request->validate([
+            "id" => "required|integer"
+        ]);
+
+        $category = StockCategory::find($request->id);
+        if(!$category){
+            return $this->redirectWithStatus($request,'inventory.main',"Could not find category!", 'error');
+        }
+
+        //remove all linked stocks
+        $category->stocks()->detach();
+        //actually delete it
+        StockCategory::destroy($request->id);
+
+        //go back
+        return $this->redirectWithStatus($request,'inventory.main',"Successfully deleted category!", 'success');
+    }
+
+    public function addStockToCategory(Request $request){
+        $request->validate([
+            "stock"=>"required|integer",
+            "category"=>"required|integer"
+        ]);
+
+        $category = StockCategory::find($request->category);
+        if(!$category){
+            return $this->redirectWithStatus($request,'inventory.main',"Could not find category!", 'error');
+        }
+
+        $stock = Stock::find($request->stock);
+        if(!$stock){
+            return $this->redirectWithStatus($request,'inventory.main',"Could not find stock!", 'error');
+        }
+
+        $category->stocks()->attach($stock->id);
+
+        //go back
+        return $this->redirectWithStatus($request,'inventory.main',"Successfully added stock!", 'success');
+    }
+
+    public function removeStockFromCategory(Request $request){
+        $request->validate([
+            "stock"=>"required|integer",
+            "category"=>"required|integer"
+        ]);
+
+        $category = StockCategory::find($request->category);
+        if(!$category){
+            return $this->redirectWithStatus($request,'inventory.main',"Could not find category!", 'error');
+        }
+
+        $category->stocks()->detach($request->stock);
+
+        //go back
+        return $this->redirectWithStatus($request,'inventory.main',"Successfully removed stock!", 'success');
+    }
 
     public function locationSuggestions(Request $request){
         $query = $request->q;

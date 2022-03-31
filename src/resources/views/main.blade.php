@@ -1,12 +1,12 @@
-@extends('web::layouts.grids.12')
+@extends('web::layouts.app')
 
 @section('title', "Inventory Dashboard")
 @section('page_header', "Inventory Dashboard")
 
 
-@section('full')
+@section('content')
     <div class="modal" id="editCategoryModal">
-        <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="editCategoryModalTitle">Edit Category</h5>
@@ -16,7 +16,7 @@
                 </div>
 
                 <div class="modal-body">
-                    <form action="{{ route("inventory.saveCategory") }}" method="POST">
+                    <form action="{{ route("inventory.saveCategory") }}" method="POST" id="editCategoryModalSaveForm">
                         @csrf
 
                         <input type="hidden" name="id" value="" id="editCategoryModalCategoryId">
@@ -37,11 +37,77 @@
                                         name="name">
                             </div>
                         </div>
+                    </form>
 
-                        <div class="float-right">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                            <button type="submit" class="btn btn-primary" id="editCategoryModalSubmitButton">Create
-                            </button>
+                    <form id="editCategoryModalDeleteForm" action="{{ route("inventory.deleteCategory") }}" method="POST">
+                        @csrf
+                        <input type="hidden" value="" name="id" id="editCategoryModalDeleteCategoryId">
+                    </form>
+
+                    <div class="d-flex">
+                        <button type="submit" class="btn btn-danger" id="editCategoryModalDeleteButton" form="editCategoryModalDeleteForm">Delete Category</button>
+                        <button type="button" class="btn btn-secondary ml-auto mr-1" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary" id="editCategoryModalSubmitButton" form="editCategoryModalSaveForm">Create</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="addStockModal">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Stock</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <form action="{{ route("inventory.addStockToCategory") }}" method="POST">
+                        @csrf
+
+                        <input type="hidden" name="category" value="" id="addStockModalCategoryId">
+
+                        <div class="form-group">
+                            <label for="addStockModalStockSelect">Select Stock</label>
+                            <select id="addStockModalStockSelect" name="stock"></select>
+                        </div>
+
+                        <div class="d-flex">
+                            <button type="button" class="btn btn-secondary ml-auto mr-1" data-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Add</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="removeStockModal">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmation</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <form action="{{ route("inventory.removeStockFromCategory") }}" method="POST">
+                        @csrf
+
+                        <input type="hidden" name="stock" value="" id="removeStockModalStockId">
+                        <input type="hidden" name="category" value="" id="removeStockModalCategoryId">
+
+                        <p>Do you really want to remove the stock <i id="removeStockModalStockName"></i>?</p>
+
+                        <div class="d-flex">
+                            <button type="button" class="btn btn-primary ml-auto mr-1" data-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-danger">Remove</button>
                         </div>
                     </form>
                 </div>
@@ -72,11 +138,16 @@
             <div class="card-body">
 
                 <div class="d-flex align-items-baseline">
-                    <h5 class="card-title" data-toggle="collapse" data-target="#categoryContent{{ $category->id }}">
+                    <h5 class="card-title flex-grow-1" data-toggle="collapse" data-target="#categoryContent{{ $category->id }}">
                         {{ $category->name }}
                     </h5>
 
-                    <div class="mr-auto"></div>
+                    @if($category->fitting_plugin_doctrine_id == null)
+                        <button class="btn btn-success mr-1 addStockModalButton"
+                                data-category-id="{{ $category->id }}">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    @endif
 
                     <button class="btn btn-secondary mr-1 editCategoryButton"
                             data-category-id="{{ $category->id }}"
@@ -106,11 +177,17 @@
                             <div class="card m-1" style="width: 16rem;">
                                 {{--                            @if($location->id==$stock->location_id) background-color:red; @endif--}}
 
-                                <div class="card-header d-flex align-items-baseline">
+                                <div class="card-header d-flex align-items-baseline" style="padding-right: 0.75rem;">
                                     <h5 class="card-title mr-auto">
                                         <a href="{{ route("inventory.viewStock",$stock->id) }}">{{ $stock->name }}</a>
                                     </h5>
-                                    <a class="btn btn-secondary" href="{{ route("inventory.viewStock",$stock->id) }}">Modify</a>
+
+                                    <i class="fas fa-unlink text-danger unlinkStockFromCategory"
+                                            style="cursor: pointer;"
+                                            data-stock-id="{{ $stock->id }}"
+                                            data-category-id="{{ $category->id }}"
+                                            data-stock-name="{{ $stock->name }}">
+                                    </i>
                                 </div>
 
                                 <img src="{{ $stock->getIcon() }}" class="" alt="{{ $stock->name }} as image">
@@ -171,17 +248,29 @@
 @push("javascript")
     <script>
         const location_filter = $("#locationFilter")
-
         location_filter.select2({
             placeholder: "All locations",
             ajax: {
                 url: "{{ route("inventory.mainFilterLocationSuggestions") }}"
             }
         })
-
         location_filter.on('select2:select', function (e) {
             $("#filterForm").submit()
         });
+
+        $("#addStockModalStockSelect").select2({
+            placeholder: "Select a stock..",
+            ajax: {
+                url: "{{ route("inventory.mainEditCategoryAddStockSuggestion") }}",
+                data: function (params) {
+                    return {
+                        term: params.term,
+                        category: $("#addStockModalCategoryId").val()
+                    }
+                }
+            },
+            width: '100%'
+        })
 
         $(function () {
             $('[data-toggle="tooltip"]').tooltip()
@@ -191,13 +280,19 @@
             $('.btn').blur();
         });
 
-        function editCategory(name, id, hasDoctrine) {
-
-            hasDoctrine = hasDoctrine !== "" && hasDoctrine
+        function editCategory(name, id, hasDoctrine, allowDelete) {
 
             $("#editCategoryModalTitle").text(name ? "Edit Category" : "Create Category")
             $("#editCategoryModalSubmitButton").text(name ? "Save" : "Create")
             $("#editCategoryModalCategoryId").val(id ? id : "")
+            $("#editCategoryModalDeleteCategoryId").val(id ? id : "")
+
+            const delete_button = $("#editCategoryModalDeleteButton")
+            if(allowDelete){
+                delete_button.removeClass("invisible")
+            } else {
+                delete_button.addClass("invisible")
+            }
 
             const name_field = $("#editCategoryModalCategoryName")
             name_field.val(name ? name : "")
@@ -211,16 +306,45 @@
         }
 
         $("#createCategoryButton").click(function () {
-            editCategory(null, null, false)
+            editCategory(null, null, false, false)
         })
 
         $(".editCategoryButton").click(function () {
             const btn = $(this)
+
+            const hasDoctrine = btn.data("category-has-doctrine") !== ""
+
             editCategory(
                 btn.data("category-name"),
                 btn.data("category-id"),
-                btn.data("category-has-doctrine")
+                hasDoctrine,
+                !hasDoctrine // only allow delete when not linked to a doctrine
             )
         })
+
+        $(".addStockModalButton").click(function (){
+            const btn = $(this)
+
+            $("#addStockModalCategoryId").val(btn.data("category-id"))
+            $('#addStockModal').modal()
+        })
+
+        $(".unlinkStockFromCategory").click(function () {
+            const btn = $(this)
+
+            $("#removeStockModalStockId").val(btn.data("stock-id"))
+            $("#removeStockModalCategoryId").val(btn.data("category-id"))
+            $("#removeStockModalStockName").text(btn.data("stock-name"))
+
+            $('#removeStockModal').modal()
+        })
     </script>
+@endpush
+
+@push("head")
+    <style>
+        .stock-list-entry:hover{
+            background-color: #eee;
+        }
+    </style>
 @endpush
