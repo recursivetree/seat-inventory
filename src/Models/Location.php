@@ -23,4 +23,8 @@ class Location extends Model
             'name' => trans('web::seat.unknown'),
         ]);
     }
+
+    public function category(){
+        return $this->hasOne(StockCategory::class, 'id', 'category_id');
+    }
 }

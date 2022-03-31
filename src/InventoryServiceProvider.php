@@ -3,6 +3,7 @@
 namespace RecursiveTree\Seat\Inventory;
 
 use Exception;
+use RecursiveTree\Seat\Inventory\Jobs\CategorizeStocks;
 use RecursiveTree\Seat\Inventory\Jobs\UpdateInventory;
 use RecursiveTree\Seat\Inventory\Jobs\UpdateLocations;
 use RecursiveTree\Seat\Inventory\Jobs\UpdateStockLevels;
@@ -96,6 +97,14 @@ class InventoryServiceProvider extends AbstractSeatPlugin
                 ->where("id",null)
                 ->delete();
             $this->info("Deleted floating stock items!");
+        });
+
+        Artisan::command('inventory:categorize {--sync}', function () {
+            if($this->option("sync")){
+                CategorizeStocks::dispatchNow();
+            } else {
+                CategorizeStocks::dispatch();
+            }
         });
 
         Queue::after(function (JobProcessed $event) {

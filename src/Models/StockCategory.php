@@ -18,4 +18,8 @@ class StockCategory extends Model
             "stock_id"
         );
     }
+
+    public function location(){
+        return $this->hasOne(Location::class, 'category_id', 'id');
+    }
 }
