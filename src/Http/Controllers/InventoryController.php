@@ -31,15 +31,58 @@ class InventoryController extends Controller
         return redirect()->route($redirect);
     }
 
-    public function main(){
+    public function main(Request $request){
+
+        $request->validate([
+            'location_filter' =>'nullable||integer'
+        ]);
+
         $categories = StockCategory::with("stocks")->get();
 
-        $categories = $categories->filter(function ($category){
-            return $category->stocks()->where("location_id",338)->exists();
+        $location_id = $request->location_filter;
+        if($location_id) { // 0 stands for all locations
+            $categories = $categories->filter(function ($category) use ($location_id) {
+                return $category->stocks()->where("location_id", $location_id)->exists();
+            });
+
+            $location = Location::find($location_id);
+        } else {
+            $location = new Location();
+            $location->name = "All Categories";
+            $location->id = 0;
+        }
+
+        return view("inventory::main",compact("categories","location"));
+    }
+
+    public function mainFilterLocationSuggestions(Request $request){
+        $request->validate([
+            "term"=>"nullable||string"
+        ]);
+
+        if($request->term==null){
+            $locations = Location::all();
+        } else {
+            $locations = Location::where("name","like","%$request->term%")->get();
+        }
+
+        $suggestions = $locations->map(function ($location){
+            return [
+                'id' => $location->id,
+                'text' => $location->name
+            ];
         });
 
-        return view("inventory::main",compact("categories"));
+        $suggestions = $suggestions->push([
+            'id' => 0,
+            'text' => "All Categories"
+        ]);
+
+        return response()->json([
+            'results'=>$suggestions
+        ]);
     }
+
 
     public function locationSuggestions(Request $request){
         $query = $request->q;

@@ -7,9 +7,13 @@
 @section('full')
     <div class="card">
         <div class="card-body">
-            <label for="locationFilter">Location</label>
-            <select class="form-control" id="locationFilter">
-            </select>
+            <form action="" method="GET" id="filterForm">
+                <label for="locationFilter">Location</label>
+                <select class="form-control" id="locationFilter" name="location_filter">
+                    <option selected value="{{$location->id}}">{{ $location->name }}</option>
+                </select>
+                <small class="text-muted">Only show categories containing stocks at a specific location.</small>
+            </form>
         </div>
     </div>
 
@@ -18,9 +22,8 @@
             <div class="card-body">
 
                 <div class="d-flex align-items-baseline">
-                    <h5 class="card-title mr-auto">{{ $category->name }}</h5>
-                    <button class="btn btn-primary" data-toggle="collapse"
-                            data-target="#categoryContent{{ $category->id }}">
+                    <h5 class="card-title mr-auto" data-toggle="collapse" data-target="#categoryContent{{ $category->id }}">{{ $category->name }}</h5>
+                    <button class="btn btn-primary" data-toggle="collapse" data-target="#categoryContent{{ $category->id }}">
                         Expand
                     </button>
                 </div>
@@ -34,6 +37,7 @@
                             @php($missing = $stock->amount - $available)
 
                             <div class="card m-1" style="width: 16rem;">
+{{--                            @if($location->id==$stock->location_id) background-color:red; @endif--}}
 
                                 <div class="card-header d-flex align-items-baseline">
                                     <h5 class="card-title mr-auto">
@@ -45,8 +49,8 @@
                                 <img src="{{ $stock->getIcon() }}" class="" alt="{{ $stock->name }} as image">
 
                                 <ul class="list-group list-group-flush">
-                                    <li class="list-group-item">Location
-
+                                    <li class="list-group-item @if($location->id==$stock->location_id) list-group-item-success @endif">
+                                        Location
                                         <b class="float-right" data-toggle="tooltip" data-placement="top"
                                            title="{{ $stock->location->name }}">
                                             @if(strlen($stock->location->name) > 20)
@@ -99,21 +103,20 @@
 
 @push("javascript")
     <script>
-        $("#locationFilter").select2({
+        const location_filter = $("#locationFilter")
+
+        location_filter.select2({
             placeholder: "All locations",
-            allowClear: true,
             ajax: {
-                url: "{{ route("inventory.locationSuggestions") }}",
-                processResults: function (data) {
-                    return {
-                        results: data.map(function (entry) {
-                            entry.id = entry.value
-                            return entry
-                        })
-                    }
-                }
+                url: "{{ route("inventory.mainFilterLocationSuggestions") }}"
             }
         })
+
+        location_filter.on('select2:select', function (e) {
+            $("#filterForm").submit()
+        });
+
+
         $(function () {
             $('[data-toggle="tooltip"]').tooltip()
         })

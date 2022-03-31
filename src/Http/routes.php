@@ -18,6 +18,12 @@ Route::group([
         'middleware' => 'can:inventory.view_inventory'
     ]);
 
+    Route::get('/dashboard/filter/location/suggestions', [
+        'as'   => 'inventory.mainFilterLocationSuggestions',
+        'uses' => 'InventoryController@mainFilterLocationSuggestions',
+        'middleware' => 'can:inventory.view_inventory'
+    ]);
+
     Route::get('/tracking', [
         'as'   => 'inventory.tracking',
         'uses' => 'TrackingController@tracking',
