@@ -190,7 +190,7 @@
                                     </i>
                                 </div>
 
-                                <img src="{{ $stock->getIcon() }}" class="" alt="{{ $stock->name }} as image">
+{{--                                <img src="{{ $stock->getIcon() }}" class="" alt="{{ $stock->name }} as image">--}}
 
                                 <ul class="list-group list-group-flush">
                                     <li class="list-group-item @if($location->id==$stock->location_id) list-group-item-success @endif">

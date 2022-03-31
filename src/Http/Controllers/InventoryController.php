@@ -624,4 +624,8 @@ class InventoryController extends Controller
 
         return $this->redirectWithStatus($request,'inventory.movingItems',"Marked item source as delivered!!", 'success');
     }
+
+    public function stockIcon(Request $request){
+
+    }
 }
