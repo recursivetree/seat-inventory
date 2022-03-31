@@ -34,7 +34,7 @@ class InventoryController extends Controller
     public function main(Request $request){
 
         $request->validate([
-            'location_filter' =>'nullable||integer'
+            'location_filter' =>'nullable|integer'
         ]);
 
         $categories = StockCategory::with("stocks")->get();
@@ -57,7 +57,7 @@ class InventoryController extends Controller
 
     public function mainFilterLocationSuggestions(Request $request){
         $request->validate([
-            "term"=>"nullable||string"
+            "term"=>"nullable|string"
         ]);
 
         if($request->term==null){
@@ -81,6 +81,24 @@ class InventoryController extends Controller
         return response()->json([
             'results'=>$suggestions
         ]);
+    }
+
+    public function saveCategory(Request $request){
+        $request->validate([
+            "name" => "required|string|max:64",
+            "id" => "nullable|integer"
+        ]);
+
+        $category = StockCategory::find($request->id);
+        if(!$category){
+            $category = new StockCategory();
+        }
+
+        $category->name = $request->name;
+
+        $category->save();
+
+        return $this->redirectWithStatus($request,'inventory.main',"Successfully modified category!", 'success');
     }
 
 

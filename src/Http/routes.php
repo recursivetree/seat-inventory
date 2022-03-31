@@ -24,6 +24,12 @@ Route::group([
         'middleware' => 'can:inventory.view_inventory'
     ]);
 
+    Route::post('/categories/save', [
+        'as'   => 'inventory.saveCategory',
+        'uses' => 'InventoryController@saveCategory',
+        'middleware' => 'can:inventory.edit_inventory'
+    ]);
+
     Route::get('/tracking', [
         'as'   => 'inventory.tracking',
         'uses' => 'TrackingController@tracking',

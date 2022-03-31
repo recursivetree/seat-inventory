@@ -5,6 +5,50 @@
 
 
 @section('full')
+    <div class="modal" id="editCategoryModal">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editCategoryModalTitle">Edit Category</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <form action="{{ route("inventory.saveCategory") }}" method="POST">
+                        @csrf
+
+                        <input type="hidden" name="id" value="" id="editCategoryModalCategoryId">
+
+                        <div class="form-group">
+                            <label for="editCategoryModalCategoryName">Category Name</label>
+
+                            <div data-toggle="tooltip"
+                                 data-placement="top"
+                                 title=""
+                                 id="editCategoryModalTooltip">
+
+                                <input
+                                        type="text"
+                                        class="form-control"
+                                        id="editCategoryModalCategoryName"
+                                        placeholder="Enter category name..."
+                                        name="name">
+                            </div>
+                        </div>
+
+                        <div class="float-right">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary" id="editCategoryModalSubmitButton">Create
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="card">
         <div class="card-body">
             <form action="" method="GET" id="filterForm">
@@ -17,13 +61,32 @@
         </div>
     </div>
 
+    <div class="d-flex flex-row align-items-center mb-3">
+        <button class="btn btn-primary ml-auto" id="createCategoryButton">
+            <i class="fas fa-plus"></i> Create Category
+        </button>
+    </div>
+
     @foreach($categories as $category)
         <div class="card">
             <div class="card-body">
 
                 <div class="d-flex align-items-baseline">
-                    <h5 class="card-title mr-auto" data-toggle="collapse" data-target="#categoryContent{{ $category->id }}">{{ $category->name }}</h5>
-                    <button class="btn btn-primary" data-toggle="collapse" data-target="#categoryContent{{ $category->id }}">
+                    <h5 class="card-title" data-toggle="collapse" data-target="#categoryContent{{ $category->id }}">
+                        {{ $category->name }}
+                    </h5>
+
+                    <div class="mr-auto"></div>
+
+                    <button class="btn btn-secondary mr-1 editCategoryButton"
+                            data-category-id="{{ $category->id }}"
+                            data-category-name="{{ $category->name }}"
+                            data-category-has-doctrine="{{$category->fitting_plugin_doctrine_id != null}}">
+                        <i class="fas fa-pen"></i>
+                    </button>
+
+                    <button class="btn btn-primary" data-toggle="collapse"
+                            data-target="#categoryContent{{ $category->id }}">
                         Expand
                     </button>
                 </div>
@@ -32,12 +95,16 @@
                     <hr>
                     <div class="d-flex flex-wrap">
 
+                        @if($category->stocks->isEmpty())
+                            <p>There are no stocks in this category.</p>
+                        @endif
+
                         @foreach($category->stocks as $stock)
                             @php($available = $stock->available_on_contracts + $stock->available_in_hangars)
                             @php($missing = $stock->amount - $available)
 
                             <div class="card m-1" style="width: 16rem;">
-{{--                            @if($location->id==$stock->location_id) background-color:red; @endif--}}
+                                {{--                            @if($location->id==$stock->location_id) background-color:red; @endif--}}
 
                                 <div class="card-header d-flex align-items-baseline">
                                     <h5 class="card-title mr-auto">
@@ -116,9 +183,44 @@
             $("#filterForm").submit()
         });
 
-
         $(function () {
             $('[data-toggle="tooltip"]').tooltip()
+        })
+
+        $('body').on('hidden.bs.modal', '.modal', function () {
+            $('.btn').blur();
+        });
+
+        function editCategory(name, id, hasDoctrine) {
+
+            hasDoctrine = hasDoctrine !== "" && hasDoctrine
+
+            $("#editCategoryModalTitle").text(name ? "Edit Category" : "Create Category")
+            $("#editCategoryModalSubmitButton").text(name ? "Save" : "Create")
+            $("#editCategoryModalCategoryId").val(id ? id : "")
+
+            const name_field = $("#editCategoryModalCategoryName")
+            name_field.val(name ? name : "")
+            name_field.attr("readonly", hasDoctrine)
+
+            $("#editCategoryModalTooltip")
+                .tooltip('hide')
+                .attr('data-original-title', hasDoctrine ? "Can not change category name, it is imported from a doctrine." : "")
+
+            $('#editCategoryModal').modal()
+        }
+
+        $("#createCategoryButton").click(function () {
+            editCategory(null, null, false)
+        })
+
+        $(".editCategoryButton").click(function () {
+            const btn = $(this)
+            editCategory(
+                btn.data("category-name"),
+                btn.data("category-id"),
+                btn.data("category-has-doctrine")
+            )
         })
     </script>
 @endpush
