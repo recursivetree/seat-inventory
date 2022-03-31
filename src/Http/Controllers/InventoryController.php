@@ -20,6 +20,7 @@ use Seat\Web\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Seat\Eveapi\Models\Sde\InvType;
+use Intervention\Image\Facades\Image;
 
 class InventoryController extends Controller
 {
@@ -625,7 +626,9 @@ class InventoryController extends Controller
         return $this->redirectWithStatus($request,'inventory.movingItems',"Marked item source as delivered!!", 'success');
     }
 
-    public function stockIcon(Request $request){
+    public function stockIcon($id){
+        $stock = Stock::findOrFail($id);
 
+        return Image::make($stock->getIcon())->response();
     }
 }

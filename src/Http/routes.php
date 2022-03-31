@@ -138,6 +138,12 @@ Route::group([
         'middleware' => 'can:inventory.edit_inventory'
     ]);
 
+    Route::get('/stocks/icon/{id}', [
+        'as'   => 'inventory.stockIcon',
+        'uses' => 'InventoryController@stockIcon',
+        'middleware' => 'can:inventory.view_inventory'
+    ]);
+
     Route::post('/stocks/delete/{id}', [
         'as'   => 'inventory.deleteStock',
         'uses' => 'InventoryController@deleteStockPost',
