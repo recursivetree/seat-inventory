@@ -141,7 +141,7 @@ Route::group([
     Route::get('/stocks/icon/{id}', [
         'as'   => 'inventory.stockIcon',
         'uses' => 'InventoryController@stockIcon',
-        'middleware' => 'can:inventory.view_inventory'
+        'middleware' => ['can:inventory.view_inventory','\Illuminate\Http\Middleware\SetCacheHeaders:public;max_age=604800;etag']
     ]);
 
     Route::post('/stocks/delete/{id}', [
