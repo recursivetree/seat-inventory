@@ -39,14 +39,13 @@
                                     <h5 class="card-title mr-auto">
                                         <a href="{{ route("inventory.viewStock",$stock->id) }}">{{ $stock->name }}</a>
                                     </h5>
-                                    <button class="btn btn-secondary">Modify</button>
+                                    <a class="btn btn-secondary" href="{{ route("inventory.viewStock",$stock->id) }}">Modify</a>
                                 </div>
 
-                                <img src="https://images.evetech.net/types/587/render" class="" alt="...">
+                                <img src="{{ $stock->getIcon() }}" class="" alt="{{ $stock->name }} as image">
 
                                 <ul class="list-group list-group-flush">
                                     <li class="list-group-item">Location
-
 
                                         <b class="float-right" data-toggle="tooltip" data-placement="top"
                                            title="{{ $stock->location->name }}">

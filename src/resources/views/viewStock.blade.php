@@ -16,6 +16,8 @@
         </div>
         <div class="card-body">
 
+            <img src="{{ $stock->getIcon() }}" class="mb-3" alt="{{ $stock->name }} as image" width="256px">
+
             <dl class="row">
                 <dt class="col-sm-3">Name</dt>
                 <dd class="col-sm-9">{{  $stock->name }}</dd>

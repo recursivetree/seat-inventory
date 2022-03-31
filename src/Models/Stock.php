@@ -4,8 +4,8 @@ namespace RecursiveTree\Seat\Inventory\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use RecursiveTree\Seat\Inventory\Helpers\FittingPluginHelper;
-use Seat\Eveapi\Models\Universe\UniverseStation;
-use Seat\Eveapi\Models\Universe\UniverseStructure;
+use Intervention\Image\Facades\Image;
+use RecursiveTree\Seat\Inventory\Jobs\GenerateStockIcon;
 
 class Stock extends Model
 {
@@ -41,5 +41,29 @@ class Stock extends Model
             "stock_id",
             "category_id"
         );
+    }
+
+    public function getIcon(){
+        if($this->icon){
+            return $this->icon;
+        } else {
+            $image = $this->generateImage();
+            GenerateStockIcon::dispatch($this->id,null);
+            return $image->encode("data-url");
+        }
+    }
+
+    public function setIcon($image){
+        $this->icon = $image->encode("data-url");
+    }
+
+    private function generateImage(){
+        $image = Image::canvas(256,256,"#eee");
+        $image->text($this->name,10,10,function ($font){
+            $font->file(2);
+            $font->valign("top");
+            $font->size(48);
+        });
+        return $image;
     }
 }
