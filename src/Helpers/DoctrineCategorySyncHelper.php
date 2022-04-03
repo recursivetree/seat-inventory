@@ -12,39 +12,46 @@ class DoctrineCategorySyncHelper
     }
 
     public static function sync(){
-        $stocks = Stock::where("fitting_plugin_fitting_id","!=",null)->get();
-        foreach ($stocks as $stock){
-            self::syncStock($stock);
+        if(FittingPluginHelper::pluginIsAvailable()) {
+            $stocks = Stock::where("fitting_plugin_fitting_id", "!=", null)->get();
+            foreach ($stocks as $stock) {
+                self::syncStock($stock);
+            }
         }
     }
 
     public static function syncDoctrine($doctrine){
-        //generate category for doctrine if it doesn't exist
-        $category = self::getOrCreateDoctrineCategory($doctrine);
+        if(FittingPluginHelper::pluginIsAvailable()) {
+            //generate category for doctrine if it doesn't exist
+            $category = self::getOrCreateDoctrineCategory($doctrine);
 
-        //the name might have changed
-        $category->name = self::categoryNameForDoctrine($doctrine);
-        $category->save();
+            //the name might have changed
+            $category->name = self::categoryNameForDoctrine($doctrine);
+            $category->save();
 
-        //I'm to lazy to only update affected stock, so update all
-        self::sync();
+            //I'm to lazy to only update affected stock, so update all
+            self::sync();
+        }
     }
 
     public static function syncStock($stock){
-        $fitting = FittingPluginHelper::$FITTING_PLUGIN_FITTING_MODEL::find($stock->fitting_plugin_fitting_id);
-        if($fitting){
-            $doctrines = $fitting->doctrines;
-            $categories = $stock->categories;
+        if(FittingPluginHelper::pluginIsAvailable()) {
 
-            $to_remove = $categories->whereNotIn("fitting_plugin_doctrine_id",$doctrines->pluck("id"));
-            foreach ($to_remove as $category){
-                $stock->categories()->detach($category->id);
-            }
+            $fitting = FittingPluginHelper::$FITTING_PLUGIN_FITTING_MODEL::find($stock->fitting_plugin_fitting_id);
+            if ($fitting) {
+                $doctrines = $fitting->doctrines;
+                $categories = $stock->categories;
 
-            $to_add = $doctrines->whereNotIn("id",$categories->pluck("fitting_plugin_doctrine_id"));
-            foreach ($to_add as $doctrine){
-                $category = self::getOrCreateDoctrineCategory($doctrine);
-                $category->stocks()->attach($stock->id);
+                $to_remove = $categories->whereNotIn("fitting_plugin_doctrine_id", $doctrines->pluck("id"));
+                foreach ($to_remove as $category) {
+                    $stock->categories()->detach($category->id);
+                }
+
+                $to_add = $doctrines->whereNotIn("id", $categories->pluck("fitting_plugin_doctrine_id"));
+                foreach ($to_add as $doctrine) {
+                    $category = self::getOrCreateDoctrineCategory($doctrine);
+                    $category->stocks()->attach($stock->id);
+                }
             }
         }
     }

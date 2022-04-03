@@ -4,6 +4,7 @@ namespace RecursiveTree\Seat\Inventory;
 
 use Exception;
 use RecursiveTree\Seat\Inventory\Jobs\CategorizeStocks;
+use RecursiveTree\Seat\Inventory\Jobs\GenerateStockIcon;
 use RecursiveTree\Seat\Inventory\Jobs\UpdateInventory;
 use RecursiveTree\Seat\Inventory\Jobs\UpdateLocations;
 use RecursiveTree\Seat\Inventory\Jobs\UpdateStockLevels;
@@ -105,6 +106,10 @@ class InventoryServiceProvider extends AbstractSeatPlugin
             } else {
                 CategorizeStocks::dispatch();
             }
+        });
+
+        Artisan::command('inventory:test', function () {
+            GenerateStockIcon::dispatchNow(61);
         });
 
         Queue::after(function (JobProcessed $event) {
