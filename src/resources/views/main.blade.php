@@ -39,15 +39,20 @@
                         </div>
                     </form>
 
-                    <form id="editCategoryModalDeleteForm" action="{{ route("inventory.deleteCategory") }}" method="POST">
+                    <form id="editCategoryModalDeleteForm" action="{{ route("inventory.deleteCategory") }}"
+                          method="POST">
                         @csrf
                         <input type="hidden" value="" name="id" id="editCategoryModalDeleteCategoryId">
                     </form>
 
                     <div class="d-flex">
-                        <button type="submit" class="btn btn-danger" id="editCategoryModalDeleteButton" form="editCategoryModalDeleteForm">Delete Category</button>
+                        <button type="submit" class="btn btn-danger" id="editCategoryModalDeleteButton"
+                                form="editCategoryModalDeleteForm">Delete Category
+                        </button>
                         <button type="button" class="btn btn-secondary ml-auto mr-1" data-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary" id="editCategoryModalSubmitButton" form="editCategoryModalSaveForm">Create</button>
+                        <button type="submit" class="btn btn-primary" id="editCategoryModalSubmitButton"
+                                form="editCategoryModalSaveForm">Create
+                        </button>
                     </div>
 
                 </div>
@@ -66,21 +71,172 @@
                 </div>
 
                 <div class="modal-body">
-                    <form action="{{ route("inventory.addStockToCategory") }}" method="POST">
-                        @csrf
+                    <ul class="nav nav-pills mb-3">
+                        <li class="nav-item">
+                            <a class="nav-link active" data-toggle="tab" href="#addStockModalExistingStock">Existing</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-toggle="tab" href="#addStockModalNewStock">New</a>
+                        </li>
+                    </ul>
 
-                        <input type="hidden" name="category" value="" id="addStockModalCategoryId">
+                    <div class="tab-content">
+                        <div class="tab-pane show active" id="addStockModalExistingStock">
+                            <div class="card mb-0">
+                                <div class="card-body">
+                                    <h5 class="card-title mb-2">Add Existing Stock</h5>
+                                    <div class="card-text">
+                                        <form action="{{ route("inventory.addStockToCategory") }}" method="POST">
+                                            @csrf
 
-                        <div class="form-group">
-                            <label for="addStockModalStockSelect">Select Stock</label>
-                            <select id="addStockModalStockSelect" name="stock"></select>
+                                            <input type="hidden" name="category" value="" id="addStockModalCategoryId">
+
+                                            <div class="form-group">
+                                                <label for="addStockModalStockSelect">Select Stock</label>
+                                                <select id="addStockModalStockSelect" name="stock"></select>
+                                            </div>
+
+                                            <button type="submit" class="btn btn-primary btn-block">Add</button>
+
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="d-flex">
-                            <button type="button" class="btn btn-secondary ml-auto mr-1" data-dismiss="modal">Close</button>
-                            <button type="submit" class="btn btn-primary">Add</button>
+
+                        <div class="tab-pane" id="addStockModalNewStock">
+                            <div class="card mb-0">
+                                <div class="card-body">
+                                    <h5 class="card-title mb-2">Add New Stock</h5>
+                                    <div class="card-text">
+                                        <form action="{{ route("inventory.saveStock") }}" method="POST">
+                                            @csrf
+
+                                            <input type="hidden" name="category" value="" id="addStockModalCategoryId4new">
+
+                                            <ul class="nav nav-pills mb-3">
+                                                <li class="nav-item">
+                                                    <a class="nav-link active" data-toggle="tab" href="#addStockModalNewStockFit">Fit</a>
+                                                </li>
+                                                <li class="nav-item">
+                                                    <a class="nav-link" data-toggle="tab" href="#addStockModalNewStockMultibuy">Multibuy</a>
+                                                </li>
+                                                @if($has_fitting_plugin)
+                                                    <li class="nav-item">
+                                                        <a class="nav-link" data-toggle="tab" href="#addStockModalNewStockPlugin">Fitting Plugin</a>
+                                                    </li>
+                                                @endif
+                                            </ul>
+
+                                            <div class="tab-content">
+                                                <div class="tab-pane show active" id="addStockModalNewStockFit">
+                                                    <div class="form-group">
+                                                        <label for="addStockModalNewStockFitLabel">Fit</label>
+                                                        <textarea id="addStockModalNewStockFitLabel"
+                                                                  class="form-control monospace-font text-sm"
+                                                                  rows="10"
+                                                                  name="fit_text"
+                                                                  placeholder="{{ "[Pacifier, 2022 Scanner]\n\nCo-Processor II\nCo-Processor II\nType-D Restrained Inertial Stabilizers\nInertial Stabilizers II" }}"></textarea>
+                                                    </div>
+                                                </div>
+                                                <div class="tab-pane" id="addStockModalNewStockMultibuy">
+                                                    <div class="form-group">
+                                                        <label for="addStockModalNewStockMultibuyLabel">Multibuy</label>
+                                                        <textarea id="addStockModalNewStockMultibuyLabel" class="form-control monospace-font text-sm" rows="10" name="multibuy_text" placeholder="{{"Co-Processor II 10\nType-D Restrained Inertial Stabilizers 2\nInertial Stabilizers II 5"}}"></textarea>
+                                                    </div>
+
+                                                    <div class="form-group">
+                                                        <label for="addStockModalNewStockMultibuyNameLabel">Name</label>
+                                                        <input type="text"
+                                                               id="addStockModalNewStockMultibuyNameLabel"
+                                                               class="form-control"
+                                                               name="name"
+                                                               placeholder="Enter a name...">
+                                                    </div>
+                                                </div>
+                                                @if($has_fitting_plugin)
+                                                    <div class="tab-pane" id="addStockModalNewStockPlugin">
+                                                        <div class="form-group">
+                                                            <label for="addStockModalNewStockPluginLabel">Fit</label>
+                                                            <select
+                                                                    class="form-control basicAutoComplete" type="text"
+                                                                    autocomplete="off"
+                                                                    id="addStockModalNewStockPluginLabel"
+                                                                    data-url="{{ route("inventory.fittingPluginFittingsSuggestions") }}"
+                                                                    name="fit_plugin_id">
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                @endif
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="fit-amount">Amount</label>
+                                                <input type="number" id="fit-amount" class="form-control" name="amount"
+                                                       value="1">
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="fit-warning-threshold">Warning Threshold</label>
+                                                <input type="number" id="fit-warning-threshold" class="form-control"
+                                                       name="warning_threshold" value="1">
+                                                <small class="text-muted">When the stock level falls below this value, a
+                                                    warning is raised.</small>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="fit-location">Location</label>
+                                                <select
+                                                        placeholder="enter the name of a location"
+                                                        class="form-control basicAutoComplete" type="text"
+                                                        autocomplete="off"
+                                                        id="fit-location"
+                                                        data-url="{{ route("inventory.locationSuggestions") }}"
+                                                        name="location_id">
+                                                </select>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="fit_priority">Priority</label>
+                                                <select name="priority" id="fit_priority" class="form-control">
+                                                    <option value="0">Very Low</option>
+                                                    <option value="1">Low</option>
+                                                    <option value="2" selected>Normal</option>
+                                                    <option value="3">Preferred</option>
+                                                    <option value="4">Important</option>
+                                                    <option value="5">Critical</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="form-check">
+                                                <input
+                                                        type="checkbox"
+                                                        id="fit_check-corporation-hangars"
+                                                        class="form-check-input"
+                                                        name="check_corporation_hangars"
+                                                        checked>
+                                                <label for="fit_check-corporation-hangars">Check in corporation
+                                                    hangars</label>
+                                            </div>
+
+                                            <div class="form-check">
+                                                <input
+                                                        type="checkbox"
+                                                        id="fit_check-contracts"
+                                                        class="form-check-input"
+                                                        name="check_contracts"
+                                                        checked>
+                                                <label for="fit_check-contracts">Check contracts</label>
+                                            </div>
+
+                                            <button type="submit" class="btn btn-primary m-1">Submit</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -106,7 +262,8 @@
                         <p>Do you really want to remove the stock <i id="removeStockModalStockName"></i>?</p>
 
                         <div class="d-flex">
-                            <button type="button" class="btn btn-primary ml-auto mr-1" data-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary ml-auto mr-1" data-dismiss="modal">Close
+                            </button>
                             <button type="submit" class="btn btn-danger">Remove</button>
                         </div>
                     </form>
@@ -138,7 +295,8 @@
             <div class="card-body">
 
                 <div class="d-flex align-items-baseline">
-                    <h5 class="card-title flex-grow-1" data-toggle="collapse" data-target="#categoryContent{{ $category->id }}">
+                    <h5 class="card-title flex-grow-1" data-toggle="collapse"
+                        data-target="#categoryContent{{ $category->id }}">
                         {{ $category->name }}
                     </h5>
 
@@ -186,14 +344,15 @@
                                     </a>
 
                                     <i class="fas fa-unlink text-danger unlinkStockFromCategory"
-                                            style="cursor: pointer;"
-                                            data-stock-id="{{ $stock->id }}"
-                                            data-category-id="{{ $category->id }}"
-                                            data-stock-name="{{ $stock->name }}">
+                                       style="cursor: pointer;"
+                                       data-stock-id="{{ $stock->id }}"
+                                       data-category-id="{{ $category->id }}"
+                                       data-stock-name="{{ $stock->name }}">
                                     </i>
                                 </div>
 
-                                <img src="{{ route("inventory.stockIcon",$stock->id) }}" alt="{{ $stock->name }} as image" loading="lazy">
+                                <img src="{{ route("inventory.stockIcon",$stock->id) }}"
+                                     alt="{{ $stock->name }} as image" loading="lazy">
 
                                 <ul class="list-group list-group-flush">
                                     <li class="list-group-item @if($location->id==$stock->location_id) list-group-item-success @endif">
@@ -251,6 +410,17 @@
 @stop
 
 @push("javascript")
+    <script src="@inventoryVersionedAsset('inventory/js/bootstrap-autocomplete.js')"></script>
+
+    <script>
+        $('.basicAutoComplete').autoComplete({
+            resolverSettings: {
+                requestThrottling: 50
+            },
+            minLength: 1,
+        });
+    </script>
+
     <script>
         const location_filter = $("#locationFilter")
         location_filter.select2({
@@ -293,7 +463,7 @@
             $("#editCategoryModalDeleteCategoryId").val(id ? id : "")
 
             const delete_button = $("#editCategoryModalDeleteButton")
-            if(allowDelete){
+            if (allowDelete) {
                 delete_button.removeClass("invisible")
             } else {
                 delete_button.addClass("invisible")
@@ -327,10 +497,11 @@
             )
         })
 
-        $(".addStockModalButton").click(function (){
+        $(".addStockModalButton").click(function () {
             const btn = $(this)
 
             $("#addStockModalCategoryId").val(btn.data("category-id"))
+            $("#addStockModalCategoryId4new").val(btn.data("category-id"))
             $('#addStockModal').modal()
         })
 
@@ -348,7 +519,7 @@
 
 @push("head")
     <style>
-        .stock-list-entry:hover{
+        .stock-list-entry:hover {
             background-color: #eee;
         }
     </style>

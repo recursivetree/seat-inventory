@@ -29,7 +29,7 @@ class Parser
         }
 
         $matches = [];
-        $res = preg_match("/\[([\w '-]+),[\w '-*]+]/",$fit,$matches);
+        $res = preg_match("/\[([\w '-]+),[\w '-*&]+]/",$fit,$matches);
         if($res!=1) {
             throw new Exception("Missing ship type!");
         }
@@ -39,7 +39,7 @@ class Parser
         $items['item_amount'][] = 1;
 
         $matches = [];
-        $res = preg_match("/\[[\w '-]+,([\w '-*]+)]/",$fit, $matches);
+        $res = preg_match("/\[[\w '-]+,([\w '-*&]+)]/",$fit, $matches);
         if($res!=1) {
             throw new Exception("Missing ship name!");
         }

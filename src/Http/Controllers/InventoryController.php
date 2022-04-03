@@ -54,7 +54,9 @@ class InventoryController extends Controller
             $location->id = 0;
         }
 
-        return view("inventory::main",compact("categories","location"));
+        $has_fitting_plugin = FittingPluginHelper::pluginIsAvailable();
+
+        return view("inventory::main",compact("categories","location", "has_fitting_plugin"));
     }
 
     public function mainFilterLocationSuggestions(Request $request){
@@ -295,6 +297,7 @@ class InventoryController extends Controller
             "name" => "nullable|string",
             "priority" => "required|integer",
             "warning_threshold" => "required|integer",
+            "category"=>"nullable|integer"
         ]);
 
         //TODO clean up this mess
@@ -309,6 +312,7 @@ class InventoryController extends Controller
         $check_corporation_hangars = $request->check_corporation_hangars != null;
         $priority = $request->priority ?: 0;
         $warning_threshold = $request->warning_threshold ?: $amount;
+        $category = $request->category;
 
         if($warning_threshold < 0){
             $warning_threshold = 0;
@@ -422,6 +426,15 @@ class InventoryController extends Controller
 
         //generate a new icon
         GenerateStockIcon::dispatch($stock->id,null);
+
+        if($category){
+            $category = StockCategory::find($category);
+            if(!$category){
+                return $this->redirectWithStatus($request,'inventory.stocks',"Added stock definition, but couldn't add category!", 'warning');
+            }
+
+            $stock->categories()->syncWithoutDetaching($category->id);
+        }
 
         return $this->redirectWithStatus($request,'inventory.stocks',"Added stock definition!", 'success');
     }
