@@ -54,6 +54,12 @@
                             </div>
 
                             <div class="form-group">
+                                <label for="fit-warning-threshold">Warning Threshold</label>
+                                <input type="number" id="fit-warning-threshold" class="form-control" name="warning_threshold" value="1">
+                                <small class="text-muted">When the stock level falls below this value, a warning is raised.</small>
+                            </div>
+
+                            <div class="form-group">
                                 <label for="fit-location">Location</label>
                                 <select
                                         placeholder="enter the name of a location"
@@ -125,6 +131,12 @@
                         <div class="form-group">
                             <label for="stock-amount">Amount</label>
                             <input type="number" id="stock-amount" class="form-control" name="amount" value="1">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="stock-warning-threshold">Warning Threshold</label>
+                            <input type="number" id="stock-warning-threshold" class="form-control" name="warning_threshold" value="1">
+                            <small class="text-muted">When the stock level falls below this value, a warning is raised.</small>
                         </div>
 
                         <div class="form-group">
@@ -200,6 +212,12 @@
                             <div class="form-group">
                                 <label for="fit-amount">Amount</label>
                                 <input type="number" id="fit-amount" class="form-control" name="amount" value="1">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="fit-warning-threshold">Warning Threshold</label>
+                                <input type="number" id="fit-warning-threshold" class="form-control" name="warning_threshold" value="1">
+                                <small class="text-muted">When the stock level falls below this value, a warning is raised.</small>
                             </div>
 
                             <div class="form-group">

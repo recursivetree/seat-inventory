@@ -7,6 +7,7 @@ use RecursiveTree\Seat\Inventory\Helpers\DoctrineCategorySyncHelper;
 use RecursiveTree\Seat\Inventory\Helpers\FittingPluginHelper;
 use RecursiveTree\Seat\Inventory\Helpers\LocationHelper;
 use RecursiveTree\Seat\Inventory\Helpers\StockHelper;
+use RecursiveTree\Seat\Inventory\Jobs\GenerateStockIcon;
 use RecursiveTree\Seat\Inventory\Jobs\UpdateStockLevels;
 use RecursiveTree\Seat\Inventory\Models\InventorySource;
 use RecursiveTree\Seat\Inventory\Models\Location;
@@ -285,6 +286,19 @@ class InventoryController extends Controller
     }
 
     public function saveStockPost(Request $request){
+        $request->validate([
+            "fit_plugin_id" => "nullable|integer",
+            "fit_text" => "nullable|string",
+            "multibuy_text" => "nullable|string",
+            "amount" => "required|integer",
+            "location_id" => "required|integer",
+            "name" => "nullable|string",
+            "priority" => "required|integer",
+            "warning_threshold" => "required|integer",
+        ]);
+
+        //TODO clean up this mess
+
         $fit_plugin_id = $request->fit_plugin_id;
         $fit_text = $request->fit_text;
         $multibuy_text = $request->multibuy_text;
@@ -294,6 +308,13 @@ class InventoryController extends Controller
         $check_contracts = $request->check_contracts != null;
         $check_corporation_hangars = $request->check_corporation_hangars != null;
         $priority = $request->priority ?: 0;
+        $warning_threshold = $request->warning_threshold ?: $amount;
+
+        if($warning_threshold < 0){
+            $warning_threshold = 0;
+        } elseif ($warning_threshold > $amount){
+            $warning_threshold = $amount;
+        }
 
         //check if always required data is there
         if($location_id==null || $amount==null){
@@ -363,6 +384,7 @@ class InventoryController extends Controller
         $stock->check_corporation_hangars = $check_corporation_hangars;
         $stock->location_id = $location->id;
         $stock->priority = $priority;
+        $stock->warning_threshold = $warning_threshold;
 
         //if there is a link to the fitting plugin, save it
         if($fit_plugin_id!=null){
@@ -397,6 +419,9 @@ class InventoryController extends Controller
 
         //if it is in a doctrine, we have to add categories
         DoctrineCategorySyncHelper::syncStock($stock);
+
+        //generate a new icon
+        GenerateStockIcon::dispatch($stock->id,null);
 
         return $this->redirectWithStatus($request,'inventory.stocks',"Added stock definition!", 'success');
     }

@@ -37,6 +37,12 @@
                     </div>
 
                     <div class="form-group">
+                        <label for="warning-threshold">Warning Threshold</label>
+                        <input type="number" id="warning-threshold" class="form-control" name="warning_threshold" value="{{ $stock->warning_threshold }}">
+                        <small class="text-muted">When the stock level falls below this value, a warning is raised.</small>
+                    </div>
+
+                    <div class="form-group">
                         <label for="fit-location">Location</label>
                         <select
                                 placeholder="enter the name of a location"

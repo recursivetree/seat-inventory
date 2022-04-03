@@ -47,23 +47,14 @@ class Stock extends Model
         if($this->icon){
             return $this->icon;
         } else {
-            $image = $this->generateImage();
-            GenerateStockIcon::dispatch($this->id,null);
+            GenerateStockIcon::dispatch($this->id,null); //schedule the image to be generated
+
+            $image = Image::make(__DIR__."/../resources/images/generating.png"); //return a default in the meantime
             return $image->encode("data-url");
         }
     }
 
     public function setIcon($image){
         $this->icon = $image->encode("data-url");
-    }
-
-    private function generateImage(){
-        $image = Image::canvas(256,256,"#eee");
-        $image->text($this->name,10,10,function ($font){
-            $font->file(2);
-            $font->valign("top");
-            $font->size(48);
-        });
-        return $image;
     }
 }

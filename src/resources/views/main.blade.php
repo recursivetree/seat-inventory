@@ -172,7 +172,6 @@
 
                         @foreach($category->stocks as $stock)
                             @php($available = $stock->available_on_contracts + $stock->available_in_hangars)
-                            @php($missing = $stock->amount - $available)
 
                             <div class="card m-1" style="width: 16rem;">
                                 {{--                            @if($location->id==$stock->location_id) background-color:red; @endif--}}
@@ -208,31 +207,33 @@
                                             @endif
                                         </b>
                                     </li>
-                                    <li class="list-group-item">Planned <b class="float-right">{{ $stock->amount }}</b>
-                                    </li>
 
                                     <li class="list-group-item">Priority <b
                                                 class="float-right">@include("inventory::includes.priority",["priority"=>$stock->priority])</b>
                                     </li>
 
-                                    @if($available === 0)
-                                        <li class="list-group-item list-group-item-danger">Available <b
-                                                    class="float-right">{{ $available }}</b></li>
-                                    @elseif($available <= ceil($stock->amount / 10.0))
-                                        <li class="list-group-item list-group-item-warning">Available <b
-                                                    class="float-right">{{ $available }}</b></li>
-                                    @else
-                                        <li class="list-group-item">Available <b
-                                                    class="float-right">{{ $available }}</b></li>
-                                    @endif
+                                    <li class="list-group-item">
+                                        Planned <b class="float-right">{{ $stock->amount }}</b>
+                                    </li>
 
-                                    @if($missing > 0)
-                                        <li class="list-group-item list-group-item-warning">Missing <b
-                                                    class="float-right">{{ $missing }}</b></li>
+                                    <li class="list-group-item">
+                                        Warning Threshold <b class="float-right">{{ $stock->warning_threshold }}</b>
+                                    </li>
+
+                                    @if($available === 0)
+                                        <li class="list-group-item list-group-item-danger">
+                                            Available <b class="float-right">{{ $available }}</b>
+                                        </li>
+                                    @elseif($available <= $stock->warning_threshold)
+                                        <li class="list-group-item list-group-item-warning">
+                                            Available <b class="float-right">{{ $available }}</b>
+                                        </li>
                                     @else
-                                        <li class="list-group-item">Missing <b class="float-right">{{ $missing }}</b>
+                                        <li class="list-group-item">
+                                            Available <b class="float-right">{{ $available }}</b>
                                         </li>
                                     @endif
+
 
                                     <li class="list-group-item">Contracts <b
                                                 class="float-right">{{ $stock->available_on_contracts }}</b></li>

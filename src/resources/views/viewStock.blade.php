@@ -25,8 +25,11 @@
                 <dt class="col-sm-3">Location</dt>
                 <dd class="col-sm-9"><a href="{{ route("inventory.stockAvailability",["location_id"=>$stock->location->id,"location_id_text"=>$stock->location->name]) }}"> {{ $stock->location->name }}</a></dd>
 
-                <dt class="col-sm-3">Minimum stock level</dt>
+                <dt class="col-sm-3">Minimum stock targer</dt>
                 <dd class="col-sm-9">{{ $stock->amount }}</dd>
+
+                <dt class="col-sm-3">Stock level warning threshold</dt>
+                <dd class="col-sm-9">{{ $stock->warning_threshold }}</dd>
 
                 <dt class="col-sm-3">Minimum stock level fulfilled</dt>
                 <dd class="col-sm-9">
