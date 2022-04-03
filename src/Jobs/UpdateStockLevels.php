@@ -13,8 +13,7 @@ use RecursiveTree\Seat\Inventory\Helpers\ItemHelper;
 use RecursiveTree\Seat\Inventory\Models\InventoryItem;
 use RecursiveTree\Seat\Inventory\Models\InventorySource;
 use RecursiveTree\Seat\Inventory\Models\Stock;
-use Seat\Eveapi\Models\Assets\CorporationAsset;
-use Seat\Eveapi\Models\Contracts\CorporationContract;
+use Illuminate\Support\Facades\Redis;
 
 use Illuminate\Support\Facades\DB;
 
@@ -36,6 +35,18 @@ class UpdateStockLevels implements ShouldQueue
 
     public function handle()
     {
+        Redis::funnel("seat-inventory-update-stock-level-lock-$this->location_id")->limit(1)->then(
+            function (){
+                $this->updateStockLevels();
+            },
+            function (){
+                //update already in progress, delete the job
+                $this->delete();
+            }
+        );
+    }
+
+    private function updateStockLevels(){
 
         $stocks = Stock::with("items")->where("location_id",$this->location_id)->orderBy("priority","desc")->get();
 

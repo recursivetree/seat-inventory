@@ -51,7 +51,7 @@ class UpdateInventory implements ShouldQueue
                 UpdateStockLevels::dispatch($id)->onQueue('default');
             }
         }, function () {
-            //ignore
+            $this->delete(); // update is already in progress
         });
     }
 

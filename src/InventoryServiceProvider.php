@@ -108,10 +108,6 @@ class InventoryServiceProvider extends AbstractSeatPlugin
             }
         });
 
-        Artisan::command('inventory:test', function () {
-            GenerateStockIcon::dispatchNow(61);
-        });
-
         Queue::after(function (JobProcessed $event) {
             $class = $event->job->resolveName();
             if ($class == Assets::class){
