@@ -383,7 +383,7 @@
                                         <li class="list-group-item list-group-item-danger">
                                             Available <b class="float-right">{{ $available }}</b>
                                         </li>
-                                    @elseif($available <= $stock->warning_threshold && $stock->warning_threshold !== $stock->amount)
+                                    @elseif($available < $stock->warning_threshold)
                                         <li class="list-group-item list-group-item-warning">
                                             Available <b class="float-right">{{ $available }}</b>
                                         </li>
