@@ -31,7 +31,6 @@
 
                                 <input
                                         type="text"
-                                        class="form-control"
                                         id="editCategoryModalCategoryName"
                                         placeholder="Enter category name..."
                                         name="name">
@@ -427,7 +426,7 @@
             placeholder: "All locations",
             ajax: {
                 url: "{{ route("inventory.mainFilterLocationSuggestions") }}"
-            }
+            },
         })
         location_filter.on('select2:select', function (e) {
             $("#filterForm").submit()
@@ -444,7 +443,6 @@
                     }
                 }
             },
-            width: '100%'
         })
 
         $(function () {
@@ -521,6 +519,9 @@
     <style>
         .stock-list-entry:hover {
             background-color: #eee;
+        }
+        .select2-container{
+            width: 100%!important;
         }
     </style>
 @endpush
