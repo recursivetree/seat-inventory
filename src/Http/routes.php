@@ -98,43 +98,43 @@ Route::group([
 
     Route::get('/locations/suggestions', [
         'as'   => 'inventory.locationSuggestions',
-        'uses' => 'InventoryController@locationSuggestions',
+        'uses' => 'LegacyController@locationSuggestions',
         'middleware' => 'can:inventory.view_inventory'
     ]);
 
     Route::get('/stocks/plugin/fittings/suggestions', [
         'as'   => 'inventory.fittingPluginFittingsSuggestions',
-        'uses' => 'InventoryController@fittingPluginFittingsSuggestions',
+        'uses' => 'LegacyController@fittingPluginFittingsSuggestions',
         'middleware' => 'can:inventory.view_inventory'
     ]);
 
     Route::get('/stocks', [
         'as'   => 'inventory.stocks',
-        'uses' => 'InventoryController@stocks',
+        'uses' => 'LegacyController@stocks',
         'middleware' => 'can:inventory.view_inventory'
     ]);
 
     Route::post('/stocks/save', [
         'as'   => 'inventory.saveStock',
-        'uses' => 'InventoryController@saveStockPost',
+        'uses' => 'LegacyController@saveStockPost',
         'middleware' => 'can:inventory.edit_inventory'
     ]);
 
     Route::get('/stocks/view/{id}', [
         'as'   => 'inventory.viewStock',
-        'uses' => 'InventoryController@viewStock',
+        'uses' => 'LegacyController@viewStock',
         'middleware' => 'can:inventory.view_inventory'
     ]);
 
     Route::get('/stocks/edit/{id}', [
         'as'   => 'inventory.editStock',
-        'uses' => 'InventoryController@editStock',
+        'uses' => 'LegacyController@editStock',
         'middleware' => 'can:inventory.edit_inventory'
     ]);
 
     Route::get('/stocks/new', [
         'as'   => 'inventory.newStock',
-        'uses' => 'InventoryController@newStock',
+        'uses' => 'LegacyController@newStock',
         'middleware' => 'can:inventory.edit_inventory'
     ]);
 
@@ -146,49 +146,49 @@ Route::group([
 
     Route::post('/stocks/delete/{id}', [
         'as'   => 'inventory.deleteStock',
-        'uses' => 'InventoryController@deleteStockPost',
+        'uses' => 'LegacyController@deleteStockPost',
         'middleware' => 'can:inventory.edit_inventory'
     ]);
 
     Route::get('/stocks/availability', [
         'as'   => 'inventory.stockAvailability',
-        'uses' => 'InventoryController@stockAvailability',
+        'uses' => 'LegacyController@stockAvailability',
         'middleware' => 'can:inventory.view_inventory'
     ]);
 
     Route::get('/stocks/suggestions', [
         'as'   => 'inventory.stockSuggestions',
-        'uses' => 'InventoryController@stockSuggestions',
+        'uses' => 'LegacyController@stockSuggestions',
         'middleware' => 'can:inventory.view_inventory'
     ]);
 
     Route::get('/itembrowser', [
         'as'   => 'inventory.itemBrowser',
-        'uses' => 'InventoryController@itemBrowser',
+        'uses' => 'LegacyController@itemBrowser',
         'middleware' => 'can:inventory.view_inventory'
     ]);
 
     Route::get('/items/suggestions', [
         'as'   => 'inventory.itemTypeSuggestions',
-        'uses' => 'InventoryController@itemTypeSuggestions',
+        'uses' => 'LegacyController@itemTypeSuggestions',
         'middleware' => 'can:inventory.view_inventory'
     ]);
 
     Route::get('/sources/moving', [
         'as'   => 'inventory.movingItems',
-        'uses' => 'InventoryController@getMovingItems',
+        'uses' => 'LegacyController@getMovingItems',
         'middleware' => 'can:inventory.view_inventory'
     ]);
 
     Route::post('/sources/moving/add', [
         'as'   => 'inventory.addMovingItems',
-        'uses' => 'InventoryController@addMovingItems',
+        'uses' => 'LegacyController@addMovingItems',
         'middleware' => 'can:inventory.edit_inventory'
     ]);
 
     Route::post('/sources/moving/remove', [
         'as'   => 'inventory.removeMovingItems',
-        'uses' => 'InventoryController@removeMovingItems',
+        'uses' => 'LegacyController@removeMovingItems',
         'middleware' => 'can:inventory.edit_inventory'
     ]);
 });
