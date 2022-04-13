@@ -13,8 +13,14 @@ Route::group([
     ]);
 
     Route::get('/dashboard', [
-        'as'   => 'inventory.main',
-        'uses' => 'InventoryController@main',
+        'as'   => 'inventory.dashboard',
+        'uses' => 'InventoryController@dashboard',
+        'middleware' => 'can:inventory.view_inventory'
+    ]);
+
+    Route::get('/dashboard/categories', [
+        'as'   => 'inventory.getCategories',
+        'uses' => 'InventoryController@getCategories',
         'middleware' => 'can:inventory.view_inventory'
     ]);
 
@@ -36,21 +42,15 @@ Route::group([
         'middleware' => 'can:inventory.edit_inventory'
     ]);
 
-    Route::post('/categories/stocks/add', [
-        'as'   => 'inventory.addStockToCategory',
-        'uses' => 'InventoryController@addStockToCategory',
-        'middleware' => 'can:inventory.edit_inventory'
-    ]);
-
     Route::post('/categories/stocks/remove', [
         'as'   => 'inventory.removeStockFromCategory',
         'uses' => 'InventoryController@removeStockFromCategory',
         'middleware' => 'can:inventory.edit_inventory'
     ]);
 
-    Route::get('/dashboard/category/edit/stocks/suggestions', [
-        'as'   => 'inventory.mainEditCategoryAddStockSuggestion',
-        'uses' => 'InventoryController@mainEditCategoryAddStockSuggestion',
+    Route::get('/dashboard/stocks/suggestions', [
+        'as'   => 'inventory.addStockSuggestion',
+        'uses' => 'InventoryController@addStockSuggestion',
         'middleware' => 'can:inventory.view_inventory'
     ]);
 

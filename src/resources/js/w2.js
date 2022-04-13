@@ -17,6 +17,8 @@ const W2 = function () {
                 const node = document.getElementById(info)
 
                 if(node) return node
+            } else if(info.domNode && this.isDOMNode(info.domNode)){
+                return info.domNode
             }
 
             throw new W2Error("Could not find element!")
@@ -68,7 +70,7 @@ const W2 = function () {
                 } else if(arg instanceof Number || typeof arg === "number"){
                     this.#addChildNode(document.createTextNode(arg.toString()))
                 } else if(arg instanceof Function || typeof arg === "function"){
-                    this.content(arg())
+                    arg(this)
                 } else if(arg instanceof Array){
                     this.content(...arg)
                 } else if(arg && arg.toString) {
@@ -79,15 +81,35 @@ const W2 = function () {
             return this
         }
 
+        contentIf(condition,...args){
+            if(condition){
+                this.content(...args)
+            }
+
+            return this
+        }
+
         class(...names){
             if (this.domNode instanceof Element){
                 for (const name of names) {
-                    this.domNode.classList.add(name)
+                    const classes = name.split(" ")
+                    for (const clazz of classes) {
+                        this.domNode.classList.add(clazz)
+                    }
                 }
             }
 
             return this
         }
+
+        classIf(condition, ...args){
+            if(condition){
+                this.class(...args)
+            }
+
+            return this
+        }
+
 
         style(property, value){
             this.domNode.style.setProperty(property,value)
@@ -95,9 +117,28 @@ const W2 = function () {
             return this
         }
 
+        attribute(name,value){
+            this.domNode.setAttribute(name,value)
+
+            return this
+        }
+
+        attributeIf(condition, name, value){
+            if(condition){
+                this.attribute(name, value)
+            }
+
+            return this
+        }
+
+        id(id){
+            this.attribute("id",id)
+
+            return this
+        }
+
         addInto(target){
             const node = W2HtmlUtils.getExistingNode(target)
-            W2HtmlUtils.clearContent(node)
 
             node.appendChild(this.domNode)
 
@@ -115,50 +156,95 @@ const W2 = function () {
     }
 
     class W2Mount {
-        render
-        anchor
-        last
+        #render
+        #anchor
+        #last
         domNode
+        state
 
-        constructor(render,domNode,anchor,last) {
-            this.render = render
-            this.domNode = domNode
-            this.anchor = anchor
-            this.last = last
+        constructor(render,state) {
+            if(state instanceof W2MountState){
+                state.setMount(this)
+            }
+
+            this.#render = render
+            this.state = state
+
+            this.#anchor = document.createComment("mount anchor")
+
+            const root = W2HtmlNode.empty()
+            this.#render(root,this,this.state)
+
+            this.#last = root.domNode.lastChild
+            this.domNode = W2HtmlNode.empty().content(this.#anchor).content(root).domNode
         }
 
-        update(){
-            if(this.last) {
-                //remove old dom
-                let currentNode = this.anchor.nextSibling
+        #removeContent(){
+            if(this.#last) {
+                let currentNode = this.#anchor.nextSibling
                 while (currentNode) {
                     currentNode.parentNode.removeChild(currentNode)
 
-                    if (currentNode === this.last) break
+                    if (currentNode === this.#last) break
 
-                    currentNode = currentNode.nextSibling
+                    currentNode = this.#anchor.nextSibling
                 }
             }
+        }
+
+        update(){
+            //remove old content
+            this.#removeContent()
 
             const newTree = W2HtmlNode.empty()
-            this.render(newTree)
+            this.#render(newTree, this, this.state)
 
-            this.last = newTree.domNode.lastChild
+            this.#last = newTree.domNode.lastChild
 
-            this.anchor.parentNode.insertBefore(newTree.domNode,this.anchor.nextSibling)
+            this.#anchor.parentNode.insertBefore(newTree.domNode,this.#anchor.nextSibling)
+        }
+
+        unmount(){
+            this.#removeContent()
+            //remove anchor
+            this.#anchor.parentNode.removeChild(this.#anchor)
+        }
+
+        addInto(target){
+            const node = W2HtmlUtils.getExistingNode(target)
+
+            node.appendChild(this.domNode)
+
+            return this
         }
     }
 
-    const mount = (render)=>{
-        const anchor = document.createComment("mount anchor")
+    const mount = (a,b)=>{
+        let state, render
 
-        const root = W2HtmlNode.empty()
-        render(root)
+        if(typeof a === "function"){
+            render = a
+            state = b || {}
+        } else {
+            render = b
+            state = a
+        }
 
-        const last = root.domNode.lastChild
-        const container = W2HtmlNode.empty().content(anchor).content(root)
+        return new W2Mount(render,state)
+    }
 
-        return new W2Mount(render,container.domNode,anchor,last)
+    class W2MountState {
+        #mount
+
+        setMount(mount){
+            this.#mount = mount
+        }
+
+        stateChanged(){
+            if(this.#mount){
+                this.#mount.update()
+            }
+        }
     }
 
     class W2Component {
@@ -181,12 +267,28 @@ const W2 = function () {
         }
     }
 
+    const tempIDMap = {}
+    let idCounter = 0
+    function getID(name,createNew) {
+        if(!createNew){
+            const id = tempIDMap[name]
+            if (id) return id
+        }
+
+        const id = `w2id_${name}_${idCounter++}`
+        tempIDMap[name] = id
+        return  id
+    }
+
     return {
         html: W2HtmlNode.new,
+        emptyHtml: W2HtmlNode.empty,
         mount,
         W2HtmlUtils,
         W2Error,
-        W2Component
+        W2Component,
+        W2MountState,
+        getID,
     }
 }()
 
@@ -210,29 +312,3 @@ class TestButtonComponent extends W2.W2Component{
         )
     }
 }
-
-let counter = 0
-let buttonComponent = new TestButtonComponent()
-
-const h1 = W2.html("h1")
-    .content("Title","text",[" ","!"])
-
-const testMount = W2.mount((container)=>{
-    container.content(W2.html("p").content(counter))
-})
-
-const button = W2.html("button")
-    .content("click")
-    .event("click",()=>{
-        console.log("asd")
-        counter++
-        testMount.update()
-    })
-
-const div = W2.html("div")
-    .content(h1)
-    // .content(W2.html("p").content("paragraph"))
-    .content(testMount)
-    .content(button)
-    .content(buttonComponent.mount())
-    .addInto("target")

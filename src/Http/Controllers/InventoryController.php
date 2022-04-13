@@ -24,30 +24,27 @@ class InventoryController extends Controller
         return redirect()->route($redirect);
     }
 
-    public function main(Request $request){
+    public function dashboard(Request $request){
 
+
+        return view("inventory::dashboard");
+    }
+
+    public function getCategories(Request $request){
         $request->validate([
-            'location_filter' =>'nullable|integer'
+            'location' =>'nullable|integer'
         ]);
 
-        $categories = StockCategory::with("stocks")->get();
+        $categories = StockCategory::with("stocks","stocks.location")->get();
 
-        $location_id = $request->location_filter;
+        $location_id = $request->location;
         if($location_id) { // 0 stands for all locations
             $categories = $categories->filter(function ($category) use ($location_id) {
                 return $category->stocks()->where("location_id", $location_id)->exists();
             });
-
-            $location = Location::find($location_id);
-        } else {
-            $location = new Location();
-            $location->name = "All Categories";
-            $location->id = 0;
         }
 
-        $has_fitting_plugin = FittingPluginHelper::pluginIsAvailable();
-
-        return view("inventory::main",compact("categories","location", "has_fitting_plugin"));
+        return response()->json($categories->values());
     }
 
     public function mainFilterLocationSuggestions(Request $request){
@@ -68,20 +65,14 @@ class InventoryController extends Controller
             ];
         });
 
-        $suggestions = $suggestions->push([
-            'id' => 0,
-            'text' => "All Categories"
-        ]);
-
         return response()->json([
             'results'=>$suggestions
         ]);
     }
 
-    public function mainEditCategoryAddStockSuggestion(Request $request){
+    public function addStockSuggestion(Request $request){
         $request->validate([
             "term"=>"nullable|string",
-            "category"=>"nullable|integer"
         ]);
 
         $location_ids = null;
@@ -89,13 +80,7 @@ class InventoryController extends Controller
             $location_ids = Location::where("name","like","%$request->term%")->pluck("id");
         }
 
-        if($request->category) {
-            $query = Stock::whereDoesntHave("categories", function ($query) use ($request) {
-                $query->where("recursive_tree_seat_inventory_stock_categories.id", $request->category);
-            });
-        } else {
-            $query = Stock::query();
-        }
+        $query = Stock::query();
         if($request->term){
             $query->where("name", "like", "%$request->term%");
         }
@@ -108,7 +93,7 @@ class InventoryController extends Controller
             ->map(function ($stock){
                 $location = $stock->location->name;
                 return [
-                    'id' => $stock->id,
+                    'id' => $stock,
                     'text' => "$stock->name --- $location"
                 ];
             });
@@ -121,7 +106,9 @@ class InventoryController extends Controller
     public function saveCategory(Request $request){
         $request->validate([
             "name" => "required|string|max:64",
-            "id" => "nullable|integer"
+            "id" => "nullable|integer",
+            "stocks" => "required|array",
+            "stocks.*" => "integer"
         ]);
 
         $category = StockCategory::find($request->id);
@@ -129,11 +116,19 @@ class InventoryController extends Controller
             $category = new StockCategory();
         }
 
+        foreach ($request->stocks as $id){
+            $stock = Stock::find($id);
+            if(!$stock) {
+                return response()->json([],400);
+            }
+        }
+
+        $category->stocks()->sync($request->stocks);
         $category->name = $request->name;
 
         $category->save();
 
-        return $this->redirectWithStatus($request,'inventory.main',"Successfully modified category!", 'success');
+        return response()->json();
     }
 
     public function deleteCategory(Request $request){
@@ -151,30 +146,7 @@ class InventoryController extends Controller
         //actually delete it
         StockCategory::destroy($request->id);
 
-        //go back
-        return $this->redirectWithStatus($request,'inventory.main',"Successfully deleted category!", 'success');
-    }
-
-    public function addStockToCategory(Request $request){
-        $request->validate([
-            "stock"=>"required|integer",
-            "category"=>"required|integer"
-        ]);
-
-        $category = StockCategory::find($request->category);
-        if(!$category){
-            return $this->redirectWithStatus($request,'inventory.main',"Could not find category!", 'error');
-        }
-
-        $stock = Stock::find($request->stock);
-        if(!$stock){
-            return $this->redirectWithStatus($request,'inventory.main',"Could not find stock!", 'error');
-        }
-
-        $category->stocks()->attach($stock->id);
-
-        //go back
-        return $this->redirectWithStatus($request,'inventory.main',"Successfully added stock!", 'success');
+        return response()->json();
     }
 
     public function removeStockFromCategory(Request $request){
@@ -185,13 +157,13 @@ class InventoryController extends Controller
 
         $category = StockCategory::find($request->category);
         if(!$category){
-            return $this->redirectWithStatus($request,'inventory.main',"Could not find category!", 'error');
+            return response()->json([],400);
         }
 
         $category->stocks()->detach($request->stock);
 
         //go back
-        return $this->redirectWithStatus($request,'inventory.main',"Successfully removed stock!", 'success');
+        return response()->json();
     }
 
 

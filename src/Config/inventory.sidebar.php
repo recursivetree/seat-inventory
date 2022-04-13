@@ -7,9 +7,9 @@ return [
         'permission' => 'inventory.view_inventory',
         'entries'       => [
             [
-                'name'  => 'NewUI',
+                'name'  => 'Dashboard',
                 'icon'  => 'fas fa-space-shuttle',
-                'route' => 'inventory.main',
+                'route' => 'inventory.dashboard',
                 'permission' => 'inventory.view_inventory',
             ],
             [
