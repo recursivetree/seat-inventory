@@ -136,7 +136,6 @@
                     name: category.name || "",
                     message: null,
                     stocks: category.stocks,
-                    selectedStock: null
                 }
 
                 const mount = W2.mount(state,(container, mount, state)=>{
@@ -200,21 +199,11 @@
                                         id: W2.getID("editCategoryAddStockLabel"),
                                         selectionListeners: [
                                             (data) => {
-                                                state.selectedStock = data.id
+                                                state.stocks.push(data.id)
+                                                mount.update()
                                             }
                                         ]
                                     })
-                                )
-                                .content(
-                                    W2.html("button")
-                                        .class("btn btn-secondary btn-block mt-2")
-                                        .content("Add Stock")
-                                        .event("click",()=>{
-                                            if(state.selectedStock) {
-                                                state.stocks.push(state.selectedStock)
-                                                mount.update()
-                                            }
-                                        })
                                 )
                                 .content((container)=>{
                                     if(state.stocks.length > 0){
