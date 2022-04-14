@@ -15,6 +15,38 @@
 
 
     <script>
+
+        //TODO: load them from the server
+        async function getStockPriorities(){
+            return [
+                {
+                    priority:5,
+                    name:"Critical"
+                },
+                {
+                    priority:4,
+                    name:"Important"
+                },
+                {
+                    priority:3,
+                    name:"Preferred"
+                },
+                {
+                    priority:2,
+                    name:"Normal"
+                },
+                {
+                    priority:1,
+                    name:"Low"
+                },
+                {
+                    priority:0,
+                    name:"Very Low"
+                },
+            ]
+        }
+
+
         async function jsonPostAction(url,data){
             return await fetch(url, {
                 method: "POST",
@@ -66,7 +98,7 @@
                                     select2: {
                                         placeholder: "All locations",
                                         ajax: {
-                                            url: "{{ route("inventory.mainFilterLocationSuggestions") }}"
+                                            url: "{{ route("inventory.locationSuggestions") }}"
                                         },
                                         allowClear: true,
                                     },
@@ -135,7 +167,7 @@
                 const state = {
                     name: category.name || "",
                     message: null,
-                    stocks: category.stocks,
+                    stocks: category.stocks || [],
                 }
 
                 const mount = W2.mount(state,(container, mount, state)=>{
@@ -451,6 +483,9 @@
                                     W2.html("div")
                                         .class("d-flex flex-wrap")
                                         .content((container)=>{
+                                            if(category.stocks.length < 1){
+                                                container.content(W2.html("span").content("You haven't added any stock to this category."))
+                                            }
                                             for (const stock of category.stocks) {
                                                 container.content(stockCardComponent(app,stock,category))
                                             }
@@ -548,6 +583,474 @@
             })
         }
 
+        //stock creation and edit button
+        async function editStockPopUp(app,stock) {
+            const priorities = await getStockPriorities()
+
+            const multibuy_placeholder = "Co - Processor II 2\nDrone Damage Amplifier II 1\nTristan 3"
+            const fit_placeholder = "[Pacifier, 2022 Scanner]\n\nCo-Processor II\nCo-Processor II\nType-D Restrained Inertial Stabilizers\nInertial Stabilizers II"
+
+            //create popup
+            BootstrapPopUp.open(stock.name || "New Stock",(container,popup)=>{
+
+                let location = null
+                if(stock.location){
+                    location = {
+                        id: stock.location.id || null,
+                        name: stock.location.name || null
+                    }
+                }
+
+                //ui state
+                const state = {
+                    type: "multibuy",
+                    amount: 1,
+                    warning_threshold:1,
+                    location,
+                    selectLocation: false,
+                    priority: 1,
+                    checkHangars: true,
+                    checkContracts: true,
+                    multibuy: "",
+                    fit: "",
+                    invalidLocation: false,
+                    invalidFit: false,
+                    name:"",
+                    invalidName: false
+                }
+
+                //render stock creation popup content in a mount
+                container.content(W2.mount(state,(container, mount, state)=>{
+
+                    //type selection
+                    container.content(
+                        W2.html("div")
+                            .class("form-group")
+                            .content(
+                                W2.html("label")
+                                    .attribute("for",W2.getID("editStockSelectType",true))
+                                    .content("Stock Type"),
+                                W2.html("select")
+                                    .class("form-control")
+                                    .content(
+                                        //add type options
+                                        W2.html("option")
+                                            .content("Multibuy")
+                                            .attribute("value","multibuy")
+                                            .attributeIf(state.type==="multibuy","selected",true),
+                                        W2.html("option")
+                                            .content("Fit")
+                                            .attribute("value","fit")
+                                            .attributeIf(state.type==="fit","selected",true),
+                                        W2.html("option")
+                                            .content("Fitting Plugin (requires seat-fitting to be installed)")
+                                            .attribute("value","plugin")
+                                            .attributeIf(state.type==="plugin","selected",true)
+                                    )
+                                    .event("change",(e)=>{
+                                        //update the state and rerender
+                                        state.type = e.target.value
+                                        mount.update()
+                                    })
+                            )
+                    )
+
+                    //we have a multibuy
+                    if(state.type === "multibuy"){
+                        container.content(
+                            //textarea
+                            W2.html("div")
+                                .class("form-group")
+                                .content(
+                                    W2.html("label")
+                                        .attribute("for",W2.getID("editStockMultibuy",true))
+                                        .content("Multibuy"),
+                                    W2.html(
+                                        W2.html("textarea")
+                                            .class("form-control")
+                                            .id(W2.getID("editStockMultibuy"))
+                                            .attribute("placeholder",multibuy_placeholder)
+                                            .attribute("rows",8)
+                                            .content(state.multibuy)
+                                            .event("change",(e)=>{
+                                                state.multibuy = e.target.value
+                                                //no need to update the ui
+                                            })
+                                    )
+                                ),
+                            //name
+                            W2.html("div")
+                                .class("form-group")
+                                .content(
+                                    W2.html("label")
+                                        .attribute("for",W2.getID("editStockName",true))
+                                        .content("Name"),
+                                    W2.html(
+                                        W2.html("input")
+                                            .class("form-control")
+                                            .classIf(state.invalidName,"is-invalid")
+                                            .id(W2.getID("editStockName"))
+                                            .attribute("type","text")
+                                            .attribute("placeholder","Enter a name...")
+                                            .attribute("value",state.name)
+                                            .event("change",(e)=>{
+                                                state.name = e.target.value
+                                                //update UI if it is valid now
+                                                if(state.name.length>0){
+                                                    state.invalidname = false
+                                                    mount.update()
+                                                }
+                                            })
+                                    )
+                                )
+                        )
+                    }
+                    //it is a fit
+                    else if(state.type === "fit"){
+                        container.content(
+                            W2.html("div")
+                                .class("form-group")
+                                .content(
+                                    W2.html("label")
+                                        .attribute("for",W2.getID("editStockFit",true))
+                                        .content("Fit"),
+                                    W2.html(
+                                        W2.html("textarea")
+                                            .class("form-control")
+                                            .classIf(state.invalidFit,"is-invalid")
+                                            .id(W2.getID("editStockFit"))
+                                            .attribute("placeholder",fit_placeholder)
+                                            .attribute("rows",8)
+                                            .content(state.fit)
+                                            .event("change",(e)=>{
+                                                state.fit = e.target.value
+
+                                                if(state.fit.length > 0) {
+                                                    state.invalidFit = false
+                                                }
+
+                                                mount.update()
+                                            })
+                                    )
+                                )
+                        )
+                    }
+                    //it is a fit from the fitting plugin
+                    else if(state.type === "plugin"){
+                        container.content(
+                            W2.html("div")
+                                .class("form-group")
+                                .content(
+                                    W2.html("label")
+                                        .attribute("for",W2.getID("editStockFit",true))
+                                        .content("Fitting Plugin"),
+                                    "TODO: add stuff"
+                                )
+                        )
+                    }
+
+                    //data required for any kind of stock
+                    //amount
+                    container.content(
+                        W2.html("div")
+                            .class("form-group")
+                            .content(
+                                W2.html("label")
+                                    .attribute("for",W2.getID("editStockAmount",true))
+                                    .content("Amount"),
+                                W2.html("input")
+                                    .class("form-control")
+                                    .id(W2.getID("editStockAmount"))
+                                    .attribute("type","number")
+                                    .attribute("value",state.amount)
+                                    .event("change",(e)=>{
+                                        //update the state and rerender
+                                        state.amount = e.currentTarget.value
+                                        //no need to update the ui
+                                    })
+                            )
+                    )
+                    //warning threshold
+                    container.content(
+                        W2.html("div")
+                            .class("form-group")
+                            .content(
+                                W2.html("label")
+                                    .attribute("for",W2.getID("editStockWarningThreshold",true))
+                                    .content("Warning Threshold"),
+                                W2.html("input")
+                                    .class("form-control")
+                                    .id(W2.getID("editStockWarningThreshold"))
+                                    .attribute("type","number")
+                                    .attribute("value",state.warning_threshold)
+                                    .event("change",(e)=>{
+                                        //update the state and rerender
+                                        state.warning_threshold = e.currentTarget.value
+                                        //no need to update the ui
+                                    })
+                            )
+                    )
+                    //location
+                    container.content(
+                        W2.html("div")
+                            .class("form-group")
+                            .content(
+                                //label
+                                W2.html("label")
+                                    .attribute("for",W2.getID("editStockLocation",true))
+                                    .content("Location"),
+                            )
+                            //select2 selector
+                            .contentIf(state.selectLocation,
+                                select2Component({
+                                    select2: {
+                                        placeholder: "All locations",
+                                        ajax: {
+                                            url: "{{ route("inventory.locationSuggestions") }}"
+                                        },
+                                        allowClear: true,
+                                    },
+                                    selectionListeners: [
+                                        (selection) => {
+                                            if(selection) {
+                                                //set location
+                                                state.location = {
+                                                    id: selection.id,
+                                                    name: selection.text
+                                                }
+                                            }
+                                            state.selectLocation = false
+                                            state.invalidLocation = false
+                                            //update ui to switch location selection stage
+                                            mount.update()
+                                        }
+                                    ],
+                                    id: W2.getID("editStockLocation"),
+                                    open: true
+                                }),
+                            )
+                            //change button
+                            .contentIf(!state.selectLocation,
+                                W2.html("div")
+                                    .class("input-group mb-3")
+                                    .content(
+                                        W2.html("input")
+                                            .attribute("value",state.location ? state.location.name : "No location selected")
+                                            .attribute("type","text")
+                                            .attribute("readonly",true)
+                                            .classIf(state.invalidLocation,"is-invalid")
+                                            .class("form-control"),
+                                        W2.html("div")
+                                            .class("input-group-append")
+                                            .content(
+                                                W2.html("button")
+                                                    .class("btn btn-secondary")
+                                                    .content("Change")
+                                                    .event("click",()=>{
+                                                        state.selectLocation = true
+                                                        //update ui to switch location selection stage
+                                                        mount.update()
+                                                    })
+                                            )
+                                    )
+                            )
+                    )
+                    //priority
+                    container.content(
+                        W2.html("div")
+                            .class("form-group")
+                            .content(
+                                W2.html("label")
+                                    .attribute("for",W2.getID("editStockPriority",true))
+                                    .content("Priority"),
+                                W2.html("select")
+                                    .class("form-control")
+                                    .id(W2.getID("editStockPriority"))
+                                    //add options
+                                    .content((container)=>{
+                                        //add one entry for each option
+                                        for (const priority of priorities) {
+                                            container.content(
+                                                W2.html("option")
+                                                    .content(priority.name)
+                                                    .attribute("value",priority.priority)
+                                                    .attributeIf(state.priority===priority.priority,"selected",true)
+                                            )
+                                        }
+                                    }),
+                            )
+                            .event("change",(e)=>{
+                                //update the state and rerender
+                                state.priority = parseInt(e.target.value)
+                                //no need to update the ui
+                            })
+                    )
+                    //source checks
+                    container.content(
+                        W2.html("div")
+                            .class("form-group")
+                            .content(
+                                W2.html("label").content("Item Source Settings"),
+                                //check contracts
+                                W2.html("div")
+                                    .class("form-check")
+                                    .content(
+                                        W2.html("input")
+                                            .attribute("type","checkbox")
+                                            .id(W2.getID("editStockCheckContracts",true))
+                                            .class("form-check-input")
+                                            .attributeIf(state.checkContracts,"checked",true)
+                                            .event("change",(e)=>{
+                                                state.checkContracts = e.target.checked
+                                                //no need to update the ui
+                                            }),
+                                        W2.html("label")
+                                            .attribute("for",W2.getID("editStockCheckContracts"))
+                                            .class("form-check-label")
+                                            .content("Check Contracts")
+                                    ),
+                                //check hangars
+                                W2.html("div")
+                                    .class("form-check")
+                                    .content(
+                                        W2.html("input")
+                                            .attribute("type","checkbox")
+                                            .id(W2.getID("editStockCheckHangars",true))
+                                            .class("form-check-input")
+                                            .attributeIf(state.checkHangars,"checked",true)
+                                            .event("change",(e)=>{
+                                                state.checkHangars = e.target.checked
+                                                //no need to update the ui
+                                            }),
+                                        W2.html("label")
+                                            .attribute("for",W2.getID("editStockCheckHangars"))
+                                            .class("form-check-label")
+                                            .content("Check Hangars")
+                                    )
+                            ),
+                    )
+
+                    //add bottom button bar
+                    container.content(
+                        //flexbox container for buttons
+                        W2.html("div")
+                            .class("d-flex")
+
+                            //delete button
+                            //only show the stock delete button if we edit one
+                            .contentIf(stock.state,
+                                confirmButtonComponent("Delete",async ()=>{
+
+                                    //make deletion request
+                                    const response = await jsonPostAction("{{ route("inventory.deleteStock") }}",{
+                                        id: stock.id
+                                    })
+
+                                    //check response status
+                                    if(response.ok){
+                                        BoostrapToast.open("Stock","Successfully deleted the stock")
+                                    } else {
+                                        BoostrapToast.open("Stock","Failed to delete the stock")
+                                    }
+
+                                    //reload categories
+                                    app.categoryList.state.loadData()
+                                })
+                            )
+
+                            //close button
+                            .content(
+                                W2.html("button")
+                                    .class("btn btn-secondary ml-auto")
+                                    .content("Close")
+                                    .event("click",()=>{
+                                        //close popup when close button is pressed
+                                        popup.close()
+                                    })
+                            )
+
+                            //save button
+                            .content(
+                                W2.html("button")
+                                    .class("btn btn-primary ml-1")
+                                    .content("Save")
+                                    .event("click",async ()=>{
+                                        //save the stock
+
+                                        let invalidData = false
+
+                                        if(state.location === null){
+                                            invalidData = true
+                                            state.invalidLocation = true
+                                        } else {
+                                            state.invalidLocation = false
+                                        }
+
+                                        if(state.type==="fit"&&state.fit.length===0){
+                                            state.invalidFit = true
+                                            invalidData = true
+                                        } else {
+                                            state.invalidFit = false
+                                        }
+
+                                        if(state.type==="multibuy"&&state.name.length===0){
+                                            state.invalidName = true
+                                            invalidData = true
+                                        } else {
+                                            state.invalidName = false
+                                        }
+
+                                        //update for validation
+                                        mount.update()
+
+                                        if(invalidData){
+                                            return
+                                        }
+
+                                        const data = {
+                                            id: stock.id,
+                                            location: state.location.id,
+                                            amount: state.amount,
+                                            warning_threshold: state.warning_threshold,
+                                            priority: state.priority,
+                                            check_contracts: state.checkContracts,
+                                            check_hangars: state.checkHangars
+                                        }
+                                        if(state.type==="fit"){
+                                            data.fit = state.fit
+                                        } else if(state.type==="multibuy"){
+                                            data.multibuy = state.multibuy
+                                            data.name = state.name
+                                        }
+
+                                        const data2 = JSON.stringify(data,null,4)
+                                        console.log(data2,data)
+
+                                        const response = await jsonPostAction("{{ route("inventory.saveStock") }}",data)
+
+                                        //check response status
+                                        if(response.ok){
+                                            BoostrapToast.open("Stock","Successfully saved the stock")
+                                        } else {
+                                            BoostrapToast.open("Stock","Failed to safe the stock")
+                                        }
+
+                                        //reload categories
+                                        app.categoryList.state.loadData()
+
+                                        //if it is saved, close the popup
+                                        if(response.ok) {
+                                            popup.close()
+                                        } else {
+                                            mount.update()
+                                        }
+                                    })
+                            )
+                    )
+                }))
+            })
+        }
+
         function toolButtonPanelComponent(app) {
             return W2.html("div")
                 .class("d-flex flex-row align-items-center mb-3")
@@ -572,7 +1075,18 @@
                         .class("btn btn-primary ml-1")
                         .content(
                             W2.html("i").class("fas fa-plus"),
-                            " Create Category"
+                            " Stock"
+                        )
+                        .event("click", () => {
+                            editStockPopUp(app,{})
+                        })
+                )
+                .content(
+                    W2.html("button")
+                        .class("btn btn-primary ml-1")
+                        .content(
+                            W2.html("i").class("fas fa-plus"),
+                            " Category"
                         )
                         .event("click", () => {
                             editCategoryPopUp(app,{})

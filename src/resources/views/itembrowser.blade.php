@@ -70,7 +70,7 @@
                             class="form-control basicAutoComplete"
                             autocomplete="off"
                             id="stock-location"
-                            data-url="{{ route("inventory.locationSuggestions") }}"
+                            data-url="{{ route("inventory.legacyLocationSuggestions") }}"
                             name="location_id">
                     </select>
                 </div>

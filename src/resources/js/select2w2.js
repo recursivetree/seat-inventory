@@ -83,5 +83,25 @@ function select2Component(options) {
                 selectionListener(null)
             }
         })
+
+        state.jQueryElement.on("select2:close",(e)=>{
+            const selection = state.jQueryElement.select2('data')
+
+            if(selection.length > 0) {
+                for (const element of selection) {
+                    for (const selectionListener of selectionListeners) {
+                        selectionListener(element)
+                    }
+                }
+            } else {
+                for (const selectionListener of selectionListeners) {
+                    selectionListener(null)
+                }
+            }
+        })
+
+        if(options.open){
+            state.jQueryElement.select2('open');
+        }
     })
 }

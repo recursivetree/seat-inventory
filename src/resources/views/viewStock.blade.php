@@ -114,7 +114,7 @@
             <div class="btn-group">
                 <a href="{{ route("inventory.stocks") }}" class="btn btn-primary">Back</a>
 
-                <form id="delete-button" class="btn btn-danger" action="{{ route("inventory.deleteStock", $stock->id) }}" method="POST">
+                <form id="delete-button" class="btn btn-danger" action="{{ route("inventory.deleteStockLegacy", $stock->id) }}" method="POST">
                     @csrf
                     <span type="submit">Delete</span>
                 </form>

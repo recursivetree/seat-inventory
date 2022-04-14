@@ -38,7 +38,7 @@
 
                     {{-- EFT Fits --}}
                     <div class="tab-pane" id="fit-text-tab-content">
-                        <form action="{{ route("inventory.saveStock") }}" method="POST">
+                        <form action="{{ route("inventory.saveStockLegacy") }}" method="POST">
                             @csrf
 
                             <div class="form-group">
@@ -66,7 +66,7 @@
                                         class="form-control basicAutoComplete" type="text"
                                         autocomplete="off"
                                         id="fit-location"
-                                        data-url="{{ route("inventory.locationSuggestions") }}"
+                                        data-url="{{ route("inventory.legacyLocationSuggestions") }}"
                                         name="location_id">
                                 </select>
                             </div>
@@ -113,7 +113,7 @@
 
                 {{-- Multibuy --}}
                 <div class="tab-pane show active" id="multibuy-text-tab-content">
-                    <form action="{{ route("inventory.saveStock") }}" method="POST">
+                    <form action="{{ route("inventory.saveStockLegacy") }}" method="POST">
                         @csrf
 
                         <div class="form-group">
@@ -146,7 +146,7 @@
                                     class="form-control basicAutoComplete" type="text"
                                     autocomplete="off"
                                     id="fit-location"
-                                    data-url="{{ route("inventory.locationSuggestions") }}"
+                                    data-url="{{ route("inventory.legacyLocationSuggestions") }}"
                                     name="location_id">
                             </select>
                         </div>
@@ -194,7 +194,7 @@
                 {{-- Plugin --}}
                 @if($has_fitting_plugin)
                     <div class="tab-pane" id="fit-plugin-tab-content">
-                        <form action="{{ route("inventory.saveStock") }}" method="POST">
+                        <form action="{{ route("inventory.saveStockLegacy") }}" method="POST">
                             @csrf
 
                             <div class="form-group">
@@ -227,7 +227,7 @@
                                         class="form-control basicAutoComplete" type="text"
                                         autocomplete="off"
                                         id="fit-location"
-                                        data-url="{{ route("inventory.locationSuggestions") }}"
+                                        data-url="{{ route("inventory.legacyLocationSuggestions") }}"
                                         name="location_id">
                                 </select>
                             </div>

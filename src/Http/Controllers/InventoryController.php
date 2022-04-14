@@ -2,13 +2,19 @@
 
 namespace RecursiveTree\Seat\Inventory\Http\Controllers;
 
+use RecursiveTree\Seat\Inventory\Helpers\DoctrineCategorySyncHelper;
 use RecursiveTree\Seat\Inventory\Helpers\FittingPluginHelper;
+use RecursiveTree\Seat\Inventory\Helpers\ItemHelper;
 use RecursiveTree\Seat\Inventory\Helpers\LocationHelper;
+use RecursiveTree\Seat\Inventory\Helpers\Parser;
 use RecursiveTree\Seat\Inventory\Helpers\StockHelper;
+use RecursiveTree\Seat\Inventory\Jobs\GenerateStockIcon;
+use RecursiveTree\Seat\Inventory\Jobs\UpdateStockLevels;
 use RecursiveTree\Seat\Inventory\Models\Location;
 use RecursiveTree\Seat\Inventory\Models\Stock;
 use RecursiveTree\Seat\Inventory\Models\StockCategory;
 
+use RecursiveTree\Seat\Inventory\Models\StockItem;
 use Seat\Web\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -47,7 +53,7 @@ class InventoryController extends Controller
         return response()->json($categories->values());
     }
 
-    public function mainFilterLocationSuggestions(Request $request){
+    public function locationSuggestions(Request $request){
         $request->validate([
             "term"=>"nullable|string"
         ]);
@@ -123,10 +129,11 @@ class InventoryController extends Controller
             }
         }
 
-        $category->stocks()->sync($request->stocks);
         $category->name = $request->name;
-
         $category->save();
+
+        //save stocks after category so the category has an id when creating a new category
+        $category->stocks()->sync($request->stocks);
 
         return response()->json();
     }
@@ -166,6 +173,113 @@ class InventoryController extends Controller
         return response()->json();
     }
 
+    public function deleteStock(Request $request,$id){
+        $request->validate([
+            "id"=>"required|integer"
+        ]);
+
+        $stock = Stock::find($id);
+
+        if(!$stock){
+            return response()->json([],400);
+        }
+
+        //delete categories
+        $stock->categories()->detach();
+        //delete items
+        StockItem::where("stock_id", $id)->delete();
+        //delete the stock itself
+        Stock::destroy($id);
+
+        return response()->json();
+    }
+
+    public function saveStock(Request $request){
+
+        //validation
+        $request->validate([
+            "id"=>"nullable|integer",
+            "location"=>"required|integer",
+            "amount"=>"required|integer|gt:0",
+            "warning_threshold"=>"required|integer|gte:0",
+            "priority"=>"required|integer|gte:0|lte:5",
+            "check_contracts"=>"required|boolean",
+            "check_hangars"=>"required|boolean",
+            "fit"=>"nullable|string",
+            "multibuy"=>"nullable|string",
+            "name"=>"required_with:multibuy|string"
+        ]);
+
+        //additional fields
+        $name = $request->name ?: "unnamed";
+        $items = [];
+
+        //validate location
+        $location = Location::find($request->location);
+        if(!$location) return response()->json(["message"=>"location not found"],400);
+
+        //validate type
+        if($request->multibuy === null && $request->fit===null) return response()->json(["message"=>"neither fit nor multibuy found"],400);
+
+        //validate fit/get items
+        if($request->fit){
+            try {
+                $fit = Parser::parseFit($request->fit);
+            } catch (Exception $e){
+                $message = $e->getMessage();
+                return response()->json(["message"=>"Failed to parse fit: $message"],400);
+            }
+            $name = $fit["name"];
+            $items = $fit["items"];
+        }
+
+        //validate multibuy
+        if($request->multibuy){
+            $items = Parser::parseMultiBuy($request->multibuy);
+        }
+
+        //data filling stage
+
+        //make sure there aren't any duplicate item stacks
+        $items = ItemHelper::simplifyItemList($items);
+
+        //get the stock
+        $stock = Stock::findOrNew($request->id);
+
+        //use a transaction to roll it back if anything fails
+        DB::transaction(function () use ($stock, $items, $name, $request) {
+            $stock->name = $name;
+            $stock->location_id = $request->location;
+            $stock->amount = $request->amount;
+            $stock->warning_threshold = $request->warning_threshold;
+            $stock->priority = $request->priority;
+            $stock->check_contracts = $request->check_contracts;
+            $stock->check_corporation_hangars = $request->check_hangars;
+
+            //make sure we get an id
+            $stock->save();
+
+            //remove old items
+            $stock->items()->delete();
+
+            $stock->items()->saveMany(array_map(function ($item) use ($stock) {
+                return $item->asStockItem($stock->id);
+            },$items));
+        });
+
+        //data update phase
+
+        //update stock levels for new stock
+        UpdateStockLevels::dispatch($location->id)->onQueue('default');
+
+        //if it is in a doctrine, we have to add categories
+        DoctrineCategorySyncHelper::syncStock($stock);
+
+        //generate a new icon
+        GenerateStockIcon::dispatch($stock->id,null);
+
+        return response()->json();
+    }
 
     public function about(){
         return view("inventory::about");

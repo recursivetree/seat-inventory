@@ -25,10 +25,13 @@ class ItemHelper
         }
     }
 
-    public function asStockItem(){
+    public function asStockItem($stock_id=null){
         $item = new StockItem();
         $item->type_id = $this->type_id;
         $item->amount = $this->amount;
+        if($stock_id!==null){
+            $item->stock_id = $stock_id;
+        }
         return $item;
     }
 
