@@ -800,9 +800,8 @@
                                     .attribute("for",W2.getID("editStockLocation",true))
                                     .content("Location"),
                             )
-                            //select2 selector
-                            .contentIf(state.selectLocation,
-                                select2Component({
+                            .content(popupSelect2Component(
+                                {
                                     select2: {
                                         placeholder: "All locations",
                                         ajax: {
@@ -826,34 +825,66 @@
                                         }
                                     ],
                                     id: W2.getID("editStockLocation"),
-                                    open: true
-                                }),
-                            )
-                            //change button
-                            .contentIf(!state.selectLocation,
-                                W2.html("div")
-                                    .class("input-group mb-3")
-                                    .content(
-                                        W2.html("input")
-                                            .attribute("value",state.location ? state.location.name : "No location selected")
-                                            .attribute("type","text")
-                                            .attribute("readonly",true)
-                                            .classIf(state.invalidLocation,"is-invalid")
-                                            .class("form-control"),
-                                        W2.html("div")
-                                            .class("input-group-append")
-                                            .content(
-                                                W2.html("button")
-                                                    .class("btn btn-secondary")
-                                                    .content("Change")
-                                                    .event("click",()=>{
-                                                        state.selectLocation = true
-                                                        //update ui to switch location selection stage
-                                                        mount.update()
-                                                    })
-                                            )
-                                    )
-                            )
+                                    markInvalid: state.invalidLocation,
+                                    currentSelection: state.location? state.location.name : null
+                                }
+                            ))
+
+
+                            {{--//select2 selector--}}
+                            {{--.contentIf(state.selectLocation,--}}
+                            {{--    select2Component({--}}
+                            {{--        select2: {--}}
+                            {{--            placeholder: "All locations",--}}
+                            {{--            ajax: {--}}
+                            {{--                url: "{{ route("inventory.locationSuggestions") }}"--}}
+                            {{--            },--}}
+                            {{--            allowClear: true,--}}
+                            {{--        },--}}
+                            {{--        selectionListeners: [--}}
+                            {{--            (selection) => {--}}
+                            {{--                if(selection) {--}}
+                            {{--                    //set location--}}
+                            {{--                    state.location = {--}}
+                            {{--                        id: selection.id,--}}
+                            {{--                        name: selection.text--}}
+                            {{--                    }--}}
+                            {{--                }--}}
+                            {{--                state.selectLocation = false--}}
+                            {{--                state.invalidLocation = false--}}
+                            {{--                //update ui to switch location selection stage--}}
+                            {{--                mount.update()--}}
+                            {{--            }--}}
+                            {{--        ],--}}
+                            {{--        id: W2.getID("editStockLocation"),--}}
+                            {{--        open: true--}}
+                            {{--    }),--}}
+                            {{--)--}}
+                            {{--//change button--}}
+                            {{--.contentIf(!state.selectLocation,--}}
+                            {{--    W2.html("div")--}}
+                            {{--        .class("input-group mb-3")--}}
+                            {{--        .content(--}}
+                            {{--            W2.html("input")--}}
+                            {{--                .attribute("value",state.location ? state.location.name : "No location selected")--}}
+                            {{--                .attribute("type","text")--}}
+                            {{--                .attribute("readonly",true)--}}
+                            {{--                .classIf(state.invalidLocation,"is-invalid")--}}
+                            {{--                .class("form-control"),--}}
+                            {{--            W2.html("div")--}}
+                            {{--                .class("input-group-append")--}}
+                            {{--                .content(--}}
+                            {{--                    W2.html("button")--}}
+                            {{--                        .class("btn btn-secondary")--}}
+                            {{--                        .content("Change")--}}
+                            {{--                        .event("click",()=>{--}}
+                            {{--                            state.selectLocation = true--}}
+                            {{--                            //update ui to switch location selection stage--}}
+                            {{--                            mount.update()--}}
+                            {{--                        })--}}
+                            {{--                )--}}
+                            {{--        )--}}
+                            {{--)--}}
                     )
                     //priority
                     container.content(
