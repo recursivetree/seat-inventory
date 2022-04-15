@@ -193,15 +193,17 @@ const W2 = function () {
         }
 
         update(){
-            //remove old content
-            this.#removeContent()
+            restoreScrollPosition(()=>{
+                //remove old content
+                this.#removeContent()
 
-            const newTree = W2HtmlNode.empty()
-            this.#render(newTree, this, this.state)
+                const newTree = W2HtmlNode.empty()
+                this.#render(newTree, this, this.state)
 
-            this.#last = newTree.domNode.lastChild
+                this.#last = newTree.domNode.lastChild
 
-            this.#anchor.parentNode.insertBefore(newTree.domNode,this.#anchor.nextSibling)
+                this.#anchor.parentNode.insertBefore(newTree.domNode,this.#anchor.nextSibling)
+            })
         }
 
         unmount(){
@@ -280,6 +282,16 @@ const W2 = function () {
         return  id
     }
 
+    function restoreScrollPosition(action,element=null){
+        if(!element){
+            element = document.body
+        }
+
+        const position = element.scrollTop
+        action()
+        element.scrollTop = position
+    }
+
     return {
         html: W2HtmlNode.new,
         emptyHtml: W2HtmlNode.empty,
@@ -289,6 +301,7 @@ const W2 = function () {
         W2Component,
         W2MountState,
         getID,
+        restoreScrollPosition
     }
 }()
 
