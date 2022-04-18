@@ -67,7 +67,17 @@ function select2Component(options) {
     const closeListeners = options.closeListeners || []
 
     return W2.mount(state, (container, mount, state) => {
-        const select = W2.html("select").id(id)
+        const select = W2.html("select")
+            .id(id)
+            .contentIf(options.selection,(container)=> {
+                    container.content(
+                        W2.html("option")
+                            .content(options.selection.text)
+                            .attribute("selected", true)
+                            .attribute("value", options.selection.id)
+                    )
+                }
+            )
         container.content(select)
 
         state.jQueryElement = $(select.domNode)
@@ -94,75 +104,5 @@ function select2Component(options) {
         if (options.open) {
             state.jQueryElement.select2('open');
         }
-    })
-}
-
-function popupSelect2Component(options) {
-    const state = {
-        selectStage: false,
-        selection:options.currentSelection || null,
-        invalid: options.markInvalid || false
-    }
-
-    let injectListener = true
-
-    options.open = true
-
-    return W2.mount(state, (container, mount, state) => {
-
-        //only do it on the first mount, but we need to do it in the mount
-        if(injectListener){
-            injectListener = false
-            if(!options.selectionListeners) options.selectionListeners = []
-            options.selectionListeners.push(
-                (selection)=>{
-                    state.selection = selection ? selection.text : null
-                    state.selectStage = false
-                    if(selection){
-                        state.invalid = false
-                    }
-                    mount.update()
-                }
-            )
-            if(!options.closeListeners) options.closeListeners = []
-            options.closeListeners.push(
-                ()=>{
-                    state.selectStage = false
-                    mount.update()
-                }
-            )
-        }
-
-        //select2 selector
-        container.contentIf(state.selectStage,
-            select2Component(options),
-        )
-
-        //change button
-        .contentIf(!state.selectStage,
-            W2.html("div")
-                .class("input-group mb-3")
-                .content(
-                    W2.html("input")
-                        .attribute("value", state.selection ? state.selection : "Nothing selected")
-                        .attribute("type", "text")
-                        .attribute("readonly", true)
-                        .classIf(state.invalid, "is-invalid")
-                        .class("form-control"),
-                    W2.html("div")
-                        .class("input-group-append")
-                        .content(
-                            W2.html("button")
-                                .class("btn btn-secondary")
-                                .content("Change")
-                                .event("click", () => {
-                                    state.selectStage = true
-                                    //update ui to switch location selection stage
-                                    mount.update()
-                                })
-                        )
-                )
-        )
-
     })
 }
