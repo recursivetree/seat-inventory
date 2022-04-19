@@ -2,6 +2,7 @@
 
 namespace RecursiveTree\Seat\Inventory\Http\Controllers;
 
+use Exception;
 use RecursiveTree\Seat\Inventory\Helpers\FittingPluginHelper;
 use RecursiveTree\Seat\Inventory\Helpers\ItemHelper;
 use RecursiveTree\Seat\Inventory\Helpers\Parser;
@@ -227,6 +228,7 @@ class InventoryController extends Controller
             "check_hangars"=>"required|boolean",
             "fit"=>"nullable|string",
             "multibuy"=>"nullable|string",
+            "plugin_fitting_id"=>"nullable|integer",
             "name"=>"required_with:multibuy|string"
         ]);
 
@@ -239,12 +241,25 @@ class InventoryController extends Controller
         if(!$location) return response()->json(["message"=>"location not found"],400);
 
         //validate type
-        if($request->multibuy === null && $request->fit===null) return response()->json(["message"=>"neither fit nor multibuy found"],400);
+        if($request->multibuy === null && $request->fit===null && $request->plugin_fitting_id===null) return response()->json(["message"=>"neither fit nor multibuy found"],400);
+
+        $fit = null;
+        if($request->fit){
+            $fit = $request->fit;
+        } else if ($request->plugin_fitting_id && FittingPluginHelper::pluginIsAvailable()){
+            $fitting = FittingPluginHelper::$FITTING_PLUGIN_FITTING_MODEL::find($request->plugin_fitting_id);
+
+            if(!$fitting){
+                return response()->json(["message"=>"Fitting not found"],400);
+            }
+
+            $fit = $fitting->eftfitting;
+        }
 
         //validate fit/get items
-        if($request->fit){
+        if($fit){
             try {
-                $fit = Parser::parseFit($request->fit);
+                $fit = Parser::parseFit($fit);
             } catch (Exception $e){
                 $message = $e->getMessage();
                 return response()->json(["message"=>"Failed to parse fit: $message"],400);
@@ -275,6 +290,7 @@ class InventoryController extends Controller
             $stock->priority = $request->priority;
             $stock->check_contracts = $request->check_contracts;
             $stock->check_corporation_hangars = $request->check_hangars;
+            $stock->fitting_plugin_fitting_id = $request->plugin_fitting_id;
 
             //make sure we get an id
             $stock->save();
@@ -328,6 +344,40 @@ class InventoryController extends Controller
                 return [
                     'id' => $doctrine->id,
                     'text' => "$doctrine->name"
+                ];
+            });
+
+        return response()->json([
+            'results'=>$suggestions
+        ]);
+    }
+
+    public function fittingsLookup(Request $request){
+        $request->validate([
+            "term"=>"nullable|string",
+            "id"=>"nullable|integer"
+        ]);
+
+        if(!FittingPluginHelper::pluginIsAvailable()){
+            return response()->json(["results"=>[]]);
+        }
+
+        $query = FittingPluginHelper::$FITTING_PLUGIN_FITTING_MODEL::query();
+
+        if($request->term){
+            $query = $query->where("fitname","like","%$request->term%");
+        }
+
+        if($request->id){
+            $query = $query->where("id",$request->id);
+        }
+
+        $suggestions = $query->get();
+        $suggestions = $suggestions
+            ->map(function ($fitting){
+                return [
+                    'id' => $fitting->id,
+                    'text' => "$fitting->fitname"
                 ];
             });
 

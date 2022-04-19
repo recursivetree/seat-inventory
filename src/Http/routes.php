@@ -95,6 +95,12 @@ Route::group([
         'middleware' => 'can:inventory.view_inventory'
     ]);
 
+    Route::get('/fittings/lookup', [
+        'as'   => 'inventory.fittingsLookup',
+        'uses' => 'InventoryController@fittingsLookup',
+        'middleware' => 'can:inventory.view_inventory'
+    ]);
+
     //tracking routes
 
     Route::get('/tracking', [

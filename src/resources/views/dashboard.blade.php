@@ -901,7 +901,9 @@
                     invalidLocation: false,
                     invalidFit: false,
                     name: "",
-                    invalidName: false
+                    invalidName: false,
+                    pluginFit: null,
+                    invalidPluginFit: false
                 }
 
                 //render stock creation popup content in a mount
@@ -1027,9 +1029,32 @@
                                 .class("form-group")
                                 .content(
                                     W2.html("label")
-                                        .attribute("for", W2.getID("editStockFit", true))
+                                        .attribute("for", W2.getID("editStockPlugin", true))
                                         .content("Fitting Plugin"),
-                                    "TODO: add stuff"
+                                    select2Component({
+                                        select2: {
+                                            placeholder: "Select a fit",
+                                            ajax: {
+                                                url: "{{ route("inventory.fittingsLookup") }}"
+                                            },
+                                            allowClear: true,
+                                            dropdownParent: popup.jQuery
+                                        },
+                                        selectionListeners: [
+                                            (selection) => {
+                                                state.pluginFit = selection
+                                                state.invalidPluginFit = false
+                                                mount.update()
+                                            }
+                                        ],
+                                        id: W2.getID("editStockPlugin"),
+                                        selection: state.pluginFit
+                                    }),
+                                )
+                                .contentIf(state.invalidPluginFit,
+                                    W2.html("small")
+                                        .class("text-danger")
+                                        .content("Please select a fit")
                                 )
                         )
                     }
@@ -1262,6 +1287,13 @@
                                             state.invalidName = false
                                         }
 
+                                        if(state.type === "plugin" && !state.pluginFit){
+                                            state.invalidPluginFit = true
+                                            invalidData = true
+                                        } else {
+                                            state.invalidPluginFit = false
+                                        }
+
                                         //update for validation
                                         mount.update()
 
@@ -1283,6 +1315,8 @@
                                         } else if (state.type === "multibuy") {
                                             data.multibuy = state.multibuy
                                             data.name = state.name
+                                        } else if(state.type === "plugin"){
+                                            data.plugin_fitting_id = state.pluginFit.id
                                         }
 
                                         const data2 = JSON.stringify(data, null, 4)
