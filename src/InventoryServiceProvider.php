@@ -101,7 +101,7 @@ class InventoryServiceProvider extends AbstractSeatPlugin
             $this->info("Deleted floating stock items!");
         });
 
-        Artisan::command('inventory:test {--sync}', function () {
+        Artisan::command('inventory:categories {--sync}', function () {
             if ($this->option("sync")){
                 $this->info("processing...");
                 UpdateCategoryMembers::dispatchNow();
