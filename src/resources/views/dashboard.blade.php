@@ -336,7 +336,13 @@
                                                     processResults: (data) => {
                                                         return {
                                                             results: data.results.filter((data) => {
-                                                                const includedIDs = state.stocks.map((entry) => entry.id)
+
+                                                                const includedIDs = state.stocks
+                                                                    //remove automatically added stock so that they still can be added
+                                                                    .filter((entry)=>entry.pivot.manually_added)
+                                                                    //only get the id
+                                                                    .map((entry) => entry.id)
+
                                                                 return !includedIDs.includes(data.id.id)
                                                             })
                                                         }
@@ -344,10 +350,30 @@
                                                 },
                                                 allowClear: true,
                                             },
-                                            //id: W2.getID("editCategoryAddStockLabel"),
                                             selectionListeners: [
                                                 (data) => {
-                                                    state.stocks.push(data.id)
+                                                    const stock = data.id
+
+                                                    //if it is an automated stock that being added, we have to change instead of add it
+                                                    const existingStocks = state.stocks.filter((entry)=>entry.id === stock.id)
+                                                    if(existingStocks.length > 0){
+                                                        //it's a automated stock, switch it to a manual one
+                                                        for (const existingStock of existingStocks) {
+                                                            existingStock.pivot = {
+                                                                manually_added: true
+                                                            }
+                                                        }
+                                                    } else {
+                                                        //its a new stock
+
+                                                        //the api doesn't include the pivots, add them
+                                                        stock.pivot = {
+                                                            manually_added: true
+                                                        }
+
+                                                        state.stocks.push(stock)
+                                                    }
+
                                                     mount.update()
                                                 }
                                             ]
@@ -357,7 +383,7 @@
                                                 if (state.stocks.length > 0) {
                                                     container.content(
                                                         W2.html("ul")
-                                                            .class("list-group list-group-flush")
+                                                            .class("list-group list-group-flush mt-2")
                                                             .content((container) => {
                                                                 for (const stock of state.stocks) {
                                                                     container.content(
@@ -365,13 +391,25 @@
                                                                             .class("list-group-item d-flex align-items-baseline justify-content-between")
                                                                             .style("padding-right", "0")
                                                                             .content(stock.name)
-                                                                            .content(
+
+                                                                            //remove button
+                                                                            .contentIf(stock.pivot.manually_added,
                                                                                 W2.html("button")
-                                                                                    .class("float-right btn btn-danger")
-                                                                                    .content("×")
+                                                                                    .class("btn btn-outline-danger")
+                                                                                    .content("Remove")
                                                                                     .event("click", () => {
-                                                                                        const index = state.stocks.indexOf(stock)
-                                                                                        state.stocks.splice(index, 1)
+                                                                                        state.stocks = state.stocks.filter((e)=>e.id !== stock.id)
+                                                                                        mount.update()
+                                                                                    })
+                                                                            )
+
+                                                                            //automated message
+                                                                            .contentIf(!stock.pivot.manually_added,
+                                                                                W2.html("button")
+                                                                                    .class("btn btn-outline-secondary")
+                                                                                    .content("Make Permanent")
+                                                                                    .event("click",()=>{
+                                                                                        stock.pivot.manually_added = true
                                                                                         mount.update()
                                                                                     })
                                                                             )
@@ -383,7 +421,7 @@
                                                     container.content(
                                                         W2.html("p")
                                                             .class("mt-3")
-                                                            .content("You haven't added any stock to this category")
+                                                            .content("You haven't added any stock to this category or the filters didn't get applied yet")
                                                     )
                                                 }
                                             }
@@ -561,7 +599,12 @@
                                             const data = {
                                                 id: category.id,
                                                 name: state.name,
-                                                stocks: state.stocks.map((e) => e.id),
+                                                stocks: state.stocks.map((e) => {
+                                                    return {
+                                                        id: e.id,
+                                                        manually_added: e.pivot.manually_added
+                                                    }
+                                                }),
                                                 filters: filters,
                                             }
 

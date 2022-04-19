@@ -16,12 +16,16 @@ class ManuallyAddedStock extends Migration
 {
     public function up()
     {
-        
+        Schema::table('recursive_tree_seat_inventory_stock_category_mapping', function (Blueprint $table) {
+            $table->boolean("manually_added")->default(true);
+        });
     }
 
     public function down()
     {
-        //there is no way to undo this
+        Schema::table('recursive_tree_seat_inventory_stock_category_mapping', function (Blueprint $table) {
+            $table->dropColumn("manually_added");
+        });
     }
 }
 

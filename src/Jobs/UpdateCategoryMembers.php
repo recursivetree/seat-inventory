@@ -30,12 +30,8 @@ class UpdateCategoryMembers implements ShouldQueue
         //get stocks
         $stocks = Stock::all();
         foreach ($categories as $category){
-
-            $eligible = $stocks->filter(function ($stock) use ($category) {
-                return $stock->isEligibleForCategory($category->filters);
-            })->pluck("id");
-
-            $category->stocks()->sync($eligible);
+            $x=0;
+            $category->updateMembers($stocks);
         }
     }
 }

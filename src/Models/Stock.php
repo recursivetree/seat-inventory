@@ -13,7 +13,7 @@ class Stock extends Model
 
     protected $table = 'recursive_tree_seat_inventory_stock_definitions';
 
-    protected $hidden = ['icon','pivot'];
+    protected $hidden = ['icon'];
 
     public function location(){
         return $this->hasOne(Location::class, 'id', 'location_id');
@@ -42,7 +42,7 @@ class Stock extends Model
             "recursive_tree_seat_inventory_stock_category_mapping",
             "stock_id",
             "category_id"
-        );
+        )->withPivot('manually_added');
     }
 
     public function getIcon(){

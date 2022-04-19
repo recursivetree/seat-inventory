@@ -119,7 +119,8 @@ class InventoryController extends Controller
             "name" => "required|string",
             "id" => "nullable|integer",
             "stocks" => "nullable|array",
-            "stocks.*" => "integer",
+            "stocks.*.id" => "required|integer",
+            "stocks.*.manually_added"=>"required|boolean",
             "filters" => "nullable|array",
         ];
 
@@ -145,9 +146,14 @@ class InventoryController extends Controller
         $category->save();
 
         //save stocks after category so the category has an id when creating a new category
-        $category->stocks()->sync($request->stocks);
+        $syncData = [];
+        foreach ($request->stocks as $stock){
+            $syncData[$stock['id']] = ["manually_added"=>$stock['manually_added']];
+        }
+        $category->stocks()->sync($syncData);
 
-        UpdateCategoryMembers::dispatch();
+        //manually update members for this category synchronously. This means we don't have to trigger a complete update
+        $category->updateMembers(Stock::all());
 
         return response()->json();
     }
@@ -289,7 +295,7 @@ class InventoryController extends Controller
         //generate a new icon
         GenerateStockIcon::dispatch($stock->id,null);
 
-        //categorize the stock
+        //categorize the stock. We have to update every category, as it might fulfil any condition
         UpdateCategoryMembers::dispatch();
 
         return response()->json();
