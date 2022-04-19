@@ -1317,7 +1317,16 @@
                 .class("d-flex flex-row align-items-center mb-3")
                 .content(
                     W2.html("button")
-                        .class("btn btn-secondary ml-auto")
+                        .class("btn btn-success ml-auto")
+                        .content(W2.html("i").class("fas fa-sync")," Update")
+                        .event("click", (e) => {
+                            e.target.blur()
+                            app.categoryList.state.loadData()
+                        })
+                )
+                .content(
+                    W2.html("button")
+                        .class("btn btn-secondary ml-1")
                         .content("Collapse All")
                         .event("click", () => {
                             app.categoryList.state.collapseAll()
