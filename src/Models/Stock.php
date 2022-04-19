@@ -58,5 +58,39 @@ class Stock extends Model
 
     public function setIcon($image){
         $this->icon = $image->encode("data-url");
+
+    }
+
+    public function isEligibleForCategory($filters){
+        $filters = json_decode($filters);
+
+        $has_location = false;
+        $location_fulfilled = false;
+
+        $has_doctrine = false;
+        $doctrine_fulfilled = false;
+
+        foreach ($filters as $filter){
+            if($filter->type === "location"){
+                $has_location = true;
+                if($this->location_id === $filter->id) $location_fulfilled = true;
+
+            } else if($filter->type === "doctrine"){
+                $has_doctrine = true;
+                if(!FittingPluginHelper::pluginIsAvailable()){
+                    $doctrine_fulfilled = true;
+                } else {
+                    $fitting = FittingPluginHelper::$FITTING_PLUGIN_FITTING_MODEL::find($this->fitting_plugin_fitting_id);
+                    if ($fitting) {
+                        if ($fitting->doctrines()->where("id", $filter->id)->exists()) $doctrine_fulfilled = true;
+                    }
+                }
+            }
+        }
+
+        return
+            ($has_location || $has_doctrine) //only eligible if we have filters
+            &&(!$has_location || $location_fulfilled) //location
+            && (!$has_doctrine || $doctrine_fulfilled); //doctrine
     }
 }

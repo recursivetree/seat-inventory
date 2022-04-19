@@ -2,13 +2,11 @@
 
 namespace RecursiveTree\Seat\Inventory\Http\Controllers;
 
-use RecursiveTree\Seat\Inventory\Helpers\DoctrineCategorySyncHelper;
 use RecursiveTree\Seat\Inventory\Helpers\FittingPluginHelper;
 use RecursiveTree\Seat\Inventory\Helpers\ItemHelper;
-use RecursiveTree\Seat\Inventory\Helpers\LocationHelper;
 use RecursiveTree\Seat\Inventory\Helpers\Parser;
-use RecursiveTree\Seat\Inventory\Helpers\StockHelper;
 use RecursiveTree\Seat\Inventory\Jobs\GenerateStockIcon;
+use RecursiveTree\Seat\Inventory\Jobs\UpdateCategoryMembers;
 use RecursiveTree\Seat\Inventory\Jobs\UpdateStockLevels;
 use RecursiveTree\Seat\Inventory\Models\Location;
 use RecursiveTree\Seat\Inventory\Models\Stock;
@@ -31,8 +29,6 @@ class InventoryController extends Controller
     }
 
     public function dashboard(Request $request){
-
-
         return view("inventory::dashboard");
     }
 
@@ -117,13 +113,20 @@ class InventoryController extends Controller
     }
 
     public function saveCategory(Request $request){
-        $request->validate([
-            "name" => "required|string|max:64",
+        //dd($request);
+
+        $rules = [
+            "name" => "required|string",
             "id" => "nullable|integer",
-            "stocks" => "required|array",
+            "stocks" => "nullable|array",
             "stocks.*" => "integer",
-            "filters" => "required|array",
-        ]);
+            "filters" => "nullable|array",
+        ];
+
+        $validator = validator($request->all(),$rules);
+        if($validator->fails()){
+            return response()->json($validator->errors(),400);
+        }
 
         $category = StockCategory::find($request->id);
         if(!$category){
@@ -143,6 +146,8 @@ class InventoryController extends Controller
 
         //save stocks after category so the category has an id when creating a new category
         $category->stocks()->sync($request->stocks);
+
+        UpdateCategoryMembers::dispatch();
 
         return response()->json();
     }
@@ -281,11 +286,11 @@ class InventoryController extends Controller
         //update stock levels for new stock
         UpdateStockLevels::dispatch($location->id)->onQueue('default');
 
-        //if it is in a doctrine, we have to add categories
-        DoctrineCategorySyncHelper::syncStock($stock);
-
         //generate a new icon
         GenerateStockIcon::dispatch($stock->id,null);
+
+        //categorize the stock
+        UpdateCategoryMembers::dispatch();
 
         return response()->json();
     }

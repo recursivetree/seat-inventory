@@ -3,11 +3,9 @@
 namespace RecursiveTree\Seat\Inventory\Http\Controllers;
 
 use Exception;
-use RecursiveTree\Seat\Inventory\Helpers\DoctrineCategorySyncHelper;
 use RecursiveTree\Seat\Inventory\Helpers\FittingPluginHelper;
-use RecursiveTree\Seat\Inventory\Helpers\LocationHelper;
-use RecursiveTree\Seat\Inventory\Helpers\StockHelper;
 use RecursiveTree\Seat\Inventory\Jobs\GenerateStockIcon;
+use RecursiveTree\Seat\Inventory\Jobs\UpdateCategoryMembers;
 use RecursiveTree\Seat\Inventory\Jobs\UpdateStockLevels;
 use RecursiveTree\Seat\Inventory\Models\InventorySource;
 use RecursiveTree\Seat\Inventory\Models\Location;
@@ -252,7 +250,9 @@ class LegacyController extends Controller
         UpdateStockLevels::dispatch($location->id)->onQueue('default');
 
         //if it is in a doctrine, we have to add categories
-        DoctrineCategorySyncHelper::syncStock($stock);
+        //DoctrineCategorySyncHelper::syncStock($stock);
+        //categorize the stock
+        UpdateCategoryMembers::dispatch();
 
         //generate a new icon
         GenerateStockIcon::dispatch($stock->id,null);
@@ -314,6 +314,8 @@ class LegacyController extends Controller
     public function deleteStockPost(Request $request,$id){
 
         $stock = Stock::find($id);
+
+        $stock->categories()->detach();
 
         if($stock !== null) {
 
