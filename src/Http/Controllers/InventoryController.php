@@ -53,16 +53,23 @@ class InventoryController extends Controller
         return response()->json($categories->values());
     }
 
-    public function locationSuggestions(Request $request){
+    public function locationLookup(Request $request){
         $request->validate([
-            "term"=>"nullable|string"
+            "term"=>"nullable|string",
+            "id"=>"nullable|integer"
         ]);
 
-        if($request->term==null){
-            $locations = Location::all();
-        } else {
-            $locations = Location::where("name","like","%$request->term%")->get();
+        $query = Location::query();
+
+        if($request->term){
+            $query = $query->where("name","like","%$request->term%");
         }
+
+        if($request->id){
+            $query = $query->where("id",$request->id);
+        }
+
+        $locations = $query->get();
 
         $suggestions = $locations->map(function ($location){
             return [
@@ -76,7 +83,7 @@ class InventoryController extends Controller
         ]);
     }
 
-    public function addStockSuggestion(Request $request){
+    public function stockSuggestion(Request $request){
         $request->validate([
             "term"=>"nullable|string",
         ]);
@@ -114,7 +121,8 @@ class InventoryController extends Controller
             "name" => "required|string|max:64",
             "id" => "nullable|integer",
             "stocks" => "required|array",
-            "stocks.*" => "integer"
+            "stocks.*" => "integer",
+            "filters" => "required|array",
         ]);
 
         $category = StockCategory::find($request->id);
@@ -130,6 +138,7 @@ class InventoryController extends Controller
         }
 
         $category->name = $request->name;
+        $category->filters = json_encode($request->filters);
         $category->save();
 
         //save stocks after category so the category has an id when creating a new category
@@ -279,6 +288,41 @@ class InventoryController extends Controller
         GenerateStockIcon::dispatch($stock->id,null);
 
         return response()->json();
+    }
+
+    public function doctrineLookup(Request $request){
+        $request->validate([
+            "term"=>"nullable|string",
+            "id"=>"nullable|integer"
+        ]);
+
+        if(!FittingPluginHelper::pluginIsAvailable()){
+            return response()->json(["results"=>[]]);
+        }
+
+        $query = FittingPluginHelper::$FITTING_PLUGIN_DOCTRINE_MODEL::query();
+
+        if($request->term){
+            $query = $query->where("name","like","%$request->term%");
+        }
+
+        if($request->id){
+            $query = $query->where("id",$request->id);
+        }
+
+        $suggestions = $query->get();
+
+        $suggestions = $suggestions
+            ->map(function ($doctrine){
+                return [
+                    'id' => $doctrine->id,
+                    'text' => "$doctrine->name"
+                ];
+            });
+
+        return response()->json([
+            'results'=>$suggestions
+        ]);
     }
 
     public function about(){

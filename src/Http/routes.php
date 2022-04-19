@@ -28,17 +28,11 @@ Route::group([
         'middleware' => 'can:inventory.view_inventory'
     ]);
 
-    Route::get('/dashboard/stocks/suggestions', [
-        'as'   => 'inventory.addStockSuggestion',
-        'uses' => 'InventoryController@addStockSuggestion',
-        'middleware' => 'can:inventory.view_inventory'
-    ]);
-
 
     //locations
-    Route::get('/location/suggestions', [
-        'as'   => 'inventory.locationSuggestions',
-        'uses' => 'InventoryController@locationSuggestions',
+    Route::get('/location/lookup', [
+        'as'   => 'inventory.locationLookup',
+        'uses' => 'InventoryController@locationLookup',
         'middleware' => 'can:inventory.view_inventory'
     ]);
 
@@ -86,7 +80,20 @@ Route::group([
         'middleware' => 'can:inventory.edit_inventory'
     ]);
 
+    Route::get('/stocks/lookup', [
+        'as'   => 'inventory.stockSuggestion',
+        'uses' => 'InventoryController@stockSuggestion',
+        'middleware' => 'can:inventory.view_inventory'
+    ]);
 
+
+
+    //seat-fitting related routes
+    Route::get('/doctrines/lookup', [
+        'as'   => 'inventory.doctrineLookup',
+        'uses' => 'InventoryController@doctrineLookup',
+        'middleware' => 'can:inventory.view_inventory'
+    ]);
 
     //tracking routes
 

@@ -65,23 +65,46 @@ function select2Component(options) {
 
     const selectionListeners = options.selectionListeners || []
     const closeListeners = options.closeListeners || []
+    const unselectListeners = options.unselectListeners || []
+
+    function optionComponent(text, value, select) {
+        return W2.html("option")
+            .content(text)
+            .attributeIf(select,"selected", "selected")
+            .attribute("value", value)
+    }
+
+    const selectionIsMultiple = options.selection instanceof Array
+    if(selectionIsMultiple) {
+        options.multiple = true
+    }
 
     return W2.mount(state, (container, mount, state) => {
         const select = W2.html("select")
             .id(id)
             .contentIf(options.selection,(container)=> {
-                    container.content(
-                        W2.html("option")
-                            .content(options.selection.text)
-                            .attribute("selected", true)
-                            .attribute("value", options.selection.id)
-                    )
+                    if(selectionIsMultiple){
+                        for (const selectionElement of options.selection) {
+                            container.content(
+                                optionComponent(selectionElement.text, selectionElement.id)
+                            )
+                        }
+                    } else {
+                        container.content(
+                            optionComponent(options.selection.text, options.selection.id,true)
+                        )
+                    }
                 }
             )
         container.content(select)
 
         state.jQueryElement = $(select.domNode)
         state.jQueryElement.select2(options.select2)
+
+        if(selectionIsMultiple){
+            const ids = options.selection.map((e)=>e.id)
+            state.jQueryElement.val(ids).trigger('change')
+        }
 
         state.jQueryElement.on("select2:select", (e) => {
             for (const selectionListener of selectionListeners) {
@@ -92,6 +115,12 @@ function select2Component(options) {
         state.jQueryElement.on("select2:clear", (e) => {
             for (const selectionListener of selectionListeners) {
                 selectionListener(null)
+            }
+        })
+
+        state.jQueryElement.on("select2:unselect", (e) => {
+            for (const unselectListener of unselectListeners) {
+                unselectListener(e.params.data)
             }
         })
 
