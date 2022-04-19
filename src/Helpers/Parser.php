@@ -18,7 +18,7 @@ class Parser
 
 
         $matches=[];
-        preg_match_all('/^(?<item>[[:alnum:]\' -]+?)(?:, [[:alnum:]\' -]+?)?(?: x(?<amount>\d+))?$/mu', $fit, $matches, PREG_SET_ORDER, 0);
+        preg_match_all('/^(?<item>[[:alnum:]\' \-]+?)(?:, [[:alnum:]\' \-]+?)?(?: x(?<amount>\d+))?$/mu', $fit, $matches, PREG_SET_ORDER, 0);
         foreach ($matches as $match){
             $items['item_names'][] = $match['item'];
             if(array_key_exists('amount',$match)){
@@ -29,7 +29,7 @@ class Parser
         }
 
         $matches = [];
-        $res = preg_match("/\[([\w '-]+),[\w '-*&]+]/",$fit,$matches);
+        $res = preg_match("/\[([\w '\-]+),[\w '\-*&]+]/",$fit,$matches);
         if($res!=1) {
             throw new Exception("Missing ship type!");
         }
@@ -39,7 +39,7 @@ class Parser
         $items['item_amount'][] = 1;
 
         $matches = [];
-        $res = preg_match("/\[[\w '-]+,([\w '-*&]+)]/",$fit, $matches);
+        $res = preg_match("/\[[\w '\-]+,([\w '\-*&]+)]/",$fit, $matches);
         if($res!=1) {
             throw new Exception("Missing ship name!");
         }
