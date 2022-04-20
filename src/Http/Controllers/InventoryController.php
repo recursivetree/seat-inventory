@@ -386,6 +386,22 @@ class InventoryController extends Controller
         ]);
     }
 
+    public function exportMultibuy(Request $request){
+        $request->validate([
+            "stocks" => "required|array",
+            "stocks.*" => "integer"
+        ]);
+
+        $items = StockItem::whereIn("stock_id",$request->stocks)->get();
+        //convert to the correct format, so it can be further processed
+        $item_list = ItemHelper::itemListFromQuery($items);
+
+        $item_list = ItemHelper::simplifyItemList($item_list);
+        $multibuy = ItemHelper::itemListToMultiBuy($item_list);
+
+        return response()->json(["multibuy"=>$multibuy]);
+    }
+
     public function about(){
         return view("inventory::about");
     }

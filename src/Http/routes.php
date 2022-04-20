@@ -86,6 +86,12 @@ Route::group([
         'middleware' => 'can:inventory.view_inventory'
     ]);
 
+    Route::post('/stocks/multibuy/export', [
+        'as'   => 'inventory.exportMultibuy',
+        'uses' => 'InventoryController@exportMultibuy',
+        'middleware' => 'can:inventory.view_inventory'
+    ]);
+
 
 
     //seat-fitting related routes

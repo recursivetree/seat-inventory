@@ -669,7 +669,7 @@
                 )
         }
 
-        function stockCardComponent(app, stock, category) {
+        function stockCardComponent(app, stock) {
             const available = stock.available_on_contracts + stock.available_in_hangars
 
             let availabilityColor = null
@@ -697,28 +697,11 @@
                                 )
                         )
                         .content(
-                            W2.html("a")
-                                .class("mr-2")
-                                .attribute("href", `/inventory/stocks/edit/${stock.id}`)
-                                .content(W2.html("i").class("fas fa-pen"))
-                        )
-                        .content(
                             W2.html("i")
-                                .class("fas fa-unlink text-danger")
-                                .style("cursor", "pointer")
-                                .event("click", async () => {
-                                    const response = await jsonPostAction("{{ route("inventory.removeStockFromCategory") }}", {
-                                        category: category.id,
-                                        stock: stock.id
-                                    })
-
-                                    if (!response.ok) {
-                                        BoostrapToast.open("Category", "Failed to remove the stock from the category")
-                                    } else {
-                                        BoostrapToast.open("Category", "Successfully removed the stock from the category")
-                                    }
-
-                                    app.categoryList.state.loadData()
+                                .class("fas fa-pen text-primary")
+                                .style("cursor","pointer")
+                                .event("click",()=>{
+                                    editStockPopUp(app,stock)
                                 })
                         )
                 )
@@ -787,7 +770,7 @@
                                         container.content(W2.html("span").content("You haven't added any stock to this category."))
                                     }
                                     for (const stock of category.stocks) {
-                                        container.content(stockCardComponent(app, stock, category))
+                                        container.content(stockCardComponent(app, stock))
                                     }
                                 })
                         )
@@ -894,35 +877,39 @@
             BootstrapPopUp.open(stock.name || "New Stock", (container, popup) => {
 
                 let location = null
+                //convert the location to a select2 compatible object
                 if (stock.location) {
                     location = {
                         id: stock.location.id || null,
-                        name: stock.location.name || null
+                        text: stock.location.name || null
                     }
                 }
 
                 //ui state
                 const state = {
-                    type: "multibuy",
-                    amount: 1,
-                    warning_threshold: 1,
-                    location,
-                    selectLocation: false,
-                    priority: 1,
-                    checkHangars: true,
-                    checkContracts: true,
-                    multibuy: "",
+                    type: stock.fitting_plugin_fitting_id ? "plugin" : "multibuy",
+                    amount: stock.amount || 1,
+                    warning_threshold: stock.warning_threshold || 1,
+                    location, //conversion from json see above
+                    priority: stock.priority || 1,
+                    checkHangars: stock.check_corporation_hangars !== undefined ? Boolean(stock.check_corporation_hangars) : true,
+                    checkContracts: stock.check_contracts !== undefined ? Boolean(stock.check_contracts) : true,
+                    multibuy: "", //for existing stocks, the data is loaded after the ui code, as it needs access to the mount
                     fit: "",
+                    name: stock.name || "",
+                    pluginFit: stock.fitting_plugin_fitting_id ? {
+                        id: stock.fitting_plugin_fitting_id,
+                        text: stock.name // should be synchrnoized with the fitting name
+                    } : null,
+
                     invalidLocation: false,
                     invalidFit: false,
-                    name: "",
                     invalidName: false,
-                    pluginFit: null,
                     invalidPluginFit: false
                 }
 
                 //render stock creation popup content in a mount
-                container.content(W2.mount(state, (container, mount, state) => {
+                const mount = W2.mount(state, (container, mount, state) => {
 
                     //type selection
                     container.content(
@@ -1141,7 +1128,6 @@
                                                 //set location
                                                 state.location = selection
                                             }
-                                            state.selectLocation = false
                                             state.invalidLocation = false
                                             //update ui to switch location selection stage
                                             mount.update()
@@ -1334,8 +1320,6 @@
                                             data.plugin_fitting_id = state.pluginFit.id
                                         }
 
-                                        const data2 = JSON.stringify(data, null, 4)
-
                                         const response = await jsonPostAction("{{ route("inventory.saveStock") }}", data)
 
                                         //check response status
@@ -1357,7 +1341,29 @@
                                     })
                             )
                     )
-                }))
+                })
+
+                async function loadMultibuy(id) {
+                    const response = await jsonPostAction("{{ route("inventory.exportMultibuy") }}", {
+                        stocks: [id]
+                    })
+
+                    if(!response.ok){
+                        BoostrapToast.open("Stock","Failed to load items")
+                        return
+                    }
+
+                    const data = await response.json()
+                    state.multibuy = data.multibuy
+                    mount.update()
+                }
+
+                //load items as multibuy if it is an existing stock
+                if(stock.id){
+                    loadMultibuy(stock.id)
+                }
+
+                container.content(mount)
             })
         }
 
