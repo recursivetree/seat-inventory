@@ -235,7 +235,11 @@
                 const state = {
                     name: category.name || "",
                     message: null,
-                    stocks: category.stocks || [],
+                    stocks: category.stocks.map((stock)=>{
+                        stock.manually_added = stock.pivot.manually_added
+                        stock.category_eligible = stock.pivot.category_eligible
+                        return stock
+                    }) || [],
                     stocksExpanded: false,
                     filtersExpanded: false,
                     generalExpanded: true,
@@ -339,10 +343,11 @@
 
                                                                 const includedIDs = state.stocks
                                                                     //remove automatically added stock so that they still can be added
-                                                                    .filter((entry)=>entry.pivot.manually_added)
+                                                                    .filter((entry)=>entry.manually_added)
                                                                     //only get the id
                                                                     .map((entry) => entry.id)
 
+                                                                //not in manually added stocks
                                                                 return !includedIDs.includes(data.id.id)
                                                             })
                                                         }
@@ -359,17 +364,14 @@
                                                     if(existingStocks.length > 0){
                                                         //it's a automated stock, switch it to a manual one
                                                         for (const existingStock of existingStocks) {
-                                                            existingStock.pivot = {
-                                                                manually_added: true
-                                                            }
+                                                            existingStock.manually_added = true
                                                         }
                                                     } else {
                                                         //its a new stock
 
-                                                        //the api doesn't include the pivots, add them
-                                                        stock.pivot = {
-                                                            manually_added: true
-                                                        }
+                                                        //the api doesn't include the data from the pivots, add them
+                                                        stock.manually_added = true
+                                                        stock.category_eligible = false
 
                                                         state.stocks.push(stock)
                                                     }
@@ -393,23 +395,36 @@
                                                                             .content(stock.name)
 
                                                                             //remove button
-                                                                            .contentIf(stock.pivot.manually_added,
+                                                                            .contentIf(stock.manually_added,
                                                                                 W2.html("button")
                                                                                     .class("btn btn-outline-danger")
                                                                                     .content("Remove")
                                                                                     .event("click", () => {
-                                                                                        state.stocks = state.stocks.filter((e)=>e.id !== stock.id)
+                                                                                        //TODO reset to automtic
+                                                                                        state.stocks = state.stocks.filter((e)=>{
+                                                                                            //find the current stock
+                                                                                            if(e.id === stock.id){
+                                                                                                //if it was originally automatic, set it back to automatic
+                                                                                                if(e.category_eligible){
+                                                                                                    e.manually_added = false
+                                                                                                } else {
+                                                                                                    //originally manual, remove it form the list
+                                                                                                    return false
+                                                                                                }
+                                                                                            }
+                                                                                            return true
+                                                                                        })
                                                                                         mount.update()
                                                                                     })
                                                                             )
 
                                                                             //automated message
-                                                                            .contentIf(!stock.pivot.manually_added,
+                                                                            .contentIf(!stock.manually_added,
                                                                                 W2.html("button")
                                                                                     .class("btn btn-outline-secondary")
                                                                                     .content("Make Permanent")
                                                                                     .event("click",()=>{
-                                                                                        stock.pivot.manually_added = true
+                                                                                        stock.manually_added = true
                                                                                         mount.update()
                                                                                     })
                                                                             )
@@ -602,7 +617,7 @@
                                                 stocks: state.stocks.map((e) => {
                                                     return {
                                                         id: e.id,
-                                                        manually_added: e.pivot.manually_added
+                                                        manually_added: e.manually_added
                                                     }
                                                 }),
                                                 filters: filters,

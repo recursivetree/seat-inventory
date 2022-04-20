@@ -16,7 +16,7 @@ class StockCategory extends Model
             "recursive_tree_seat_inventory_stock_category_mapping",
             "category_id",
             "stock_id"
-        )->withPivot('manually_added');;
+        )->withPivot('manually_added','category_eligible');
     }
 
     public function location(){
@@ -29,7 +29,7 @@ class StockCategory extends Model
         //ensure manually added stocks stay that way
         $manually_added = $this->stocks()->wherePivot("manually_added",true)->pluck("recursive_tree_seat_inventory_stock_definitions.id");
         foreach ($manually_added as $stock){
-            $syncData[$stock] = ["manually_added"=>true];
+            $syncData[$stock] = ["manually_added"=>true,"category_eligible"=>false];
         }
 
         $filters = $this->filters;
@@ -40,7 +40,10 @@ class StockCategory extends Model
 
         foreach ($eligible as $stock){
             if(!array_key_exists($stock,$syncData)){
-                $syncData[$stock] = ["manually_added"=>false];
+                $syncData[$stock] = ["manually_added"=>false,"category_eligible"=>true];
+            } else {
+                //it's a manually added stock, only set category_eligible
+                $syncData[$stock]["category_eligible"] = true;
             }
         }
 

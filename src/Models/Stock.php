@@ -42,7 +42,7 @@ class Stock extends Model
             "recursive_tree_seat_inventory_stock_category_mapping",
             "stock_id",
             "category_id"
-        )->withPivot('manually_added');
+        )->withPivot('manually_added','category_eligible');
     }
 
     public function getIcon(){
