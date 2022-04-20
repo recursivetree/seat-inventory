@@ -194,12 +194,12 @@ class InventoryController extends Controller
         return response()->json();
     }
 
-    public function deleteStock(Request $request,$id){
+    public function deleteStock(Request $request){
         $request->validate([
             "id"=>"required|integer"
         ]);
 
-        $stock = Stock::find($id);
+        $stock = Stock::find($request->id);
 
         if(!$stock){
             return response()->json([],400);
@@ -208,9 +208,9 @@ class InventoryController extends Controller
         //delete categories
         $stock->categories()->detach();
         //delete items
-        StockItem::where("stock_id", $id)->delete();
+        StockItem::where("stock_id", $request->id)->delete();
         //delete the stock itself
-        Stock::destroy($id);
+        Stock::destroy($request->id);
 
         return response()->json();
     }

@@ -1226,7 +1226,7 @@
 
                             //delete button
                             //only show the stock delete button if we edit one
-                            .contentIf(stock.state,
+                            .contentIf(stock.id,
                                 confirmButtonComponent("Delete", async () => {
 
                                     //make deletion request
