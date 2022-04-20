@@ -11,10 +11,14 @@
         <div class="card-header">
             <h3 class="card-title w-100 d-flex justify-content-between align-items-baseline">
                 {{ $stock->name }}
-                <a href="{{ route("inventory.editStock",$stock->id) }}" class="btn btn-primary">Edit</a>
             </h3>
         </div>
         <div class="card-body">
+
+            <p class="alert alert-warning">
+                This part of the plugin is no longer maintained and only here because the new dashboard isn't fully functional yet.
+                Please start to use the new dashboard
+            </p>
 
             <img src="{{ $stock->getIcon() }}" class="mb-3" alt="{{ $stock->name }} as image" width="256px">
 

@@ -162,29 +162,10 @@ Route::group([
         'middleware' => 'can:inventory.view_inventory'
     ]);
 
-    Route::get('legacy/stocks/plugin/fittings/suggestions', [
-        'as'   => 'inventory.fittingPluginFittingsSuggestions',
-        'uses' => 'LegacyController@fittingPluginFittingsSuggestions',
-        'middleware' => 'can:inventory.view_inventory'
-    ]);
-
     Route::get('/legacy/stocks', [
         'as'   => 'inventory.stocks',
         'uses' => 'LegacyController@stocks',
         'middleware' => 'can:inventory.view_inventory'
-    ]);
-
-    Route::post('/legacy/stocks/save', [
-        'as'   => 'inventory.saveStockLegacy',
-        'uses' => 'LegacyController@saveStockPost',
-        'middleware' => 'can:inventory.edit_inventory'
-    ]);
-
-    //hard coded url, can't add /legacy
-    Route::get('/stocks/edit/{id}', [
-        'as'   => 'inventory.editStock',
-        'uses' => 'LegacyController@editStock',
-        'middleware' => 'can:inventory.edit_inventory'
     ]);
 
     //hard coded url, can't add /legacy
@@ -192,12 +173,6 @@ Route::group([
         'as'   => 'inventory.viewStock',
         'uses' => 'LegacyController@viewStock',
         'middleware' => 'can:inventory.view_inventory'
-    ]);
-
-    Route::get('/legacy/stocks/new', [
-        'as'   => 'inventory.newStock',
-        'uses' => 'LegacyController@newStock',
-        'middleware' => 'can:inventory.edit_inventory'
     ]);
 
     Route::post('/legacy/stocks/delete/{id}', [

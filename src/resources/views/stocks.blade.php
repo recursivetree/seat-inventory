@@ -11,10 +11,14 @@
         <div class="card-header">
             <h3 class="card-title w-100 d-flex justify-content-between align-items-baseline">
                 Stocks
-                <a href="{{ route("inventory.newStock") }}" class="btn btn-primary">New</a>
+                <a href="{{ route("inventory.dashboard") }}" class="btn btn-primary">Dashboard</a>
             </h3>
         </div>
         <div class="card-body">
+            <p class="alert alert-warning">
+                This part of the plugin is no longer maintained and only here because the new dashboard isn't fully functional yet.
+                Please start to use the new dashboard
+            </p>
 
             @if($fittings->isEmpty())
                 <div class="alert alert-primary">

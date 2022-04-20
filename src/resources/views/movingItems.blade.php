@@ -14,6 +14,11 @@
             </h3>
         </div>
         <div class="card-body">
+
+            <p class="alert alert-warning">
+                This part of the plugin is no longer maintained and only here because the new dashboard isn't fully functional yet.
+                Please start to use the new dashboard
+            </p>
             <form action="{{ route("inventory.addMovingItems") }}" method="POST">
                 @csrf
 
