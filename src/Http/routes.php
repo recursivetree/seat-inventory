@@ -86,9 +86,9 @@ Route::group([
         'middleware' => 'can:inventory.view_inventory'
     ]);
 
-    Route::post('/stocks/multibuy/export', [
-        'as'   => 'inventory.exportMultibuy',
-        'uses' => 'InventoryController@exportMultibuy',
+    Route::post('/stocks/items/', [
+        'as'   => 'inventory.exportItems',
+        'uses' => 'InventoryController@exportItems',
         'middleware' => 'can:inventory.view_inventory'
     ]);
 

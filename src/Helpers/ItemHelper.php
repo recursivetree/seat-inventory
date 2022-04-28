@@ -42,6 +42,14 @@ class ItemHelper
         return $item;
     }
 
+    public function toJson(){
+        return [
+            "type_id" => $this->type_id,
+            "amount" => $this->amount,
+            "name" => $this->name()
+        ];
+    }
+
     public static function prepareBulkInsertionSourceItems($item_list, $source){
         return array_map(function ($e) use ($source) {
             return [

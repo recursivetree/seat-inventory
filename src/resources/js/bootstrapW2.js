@@ -25,7 +25,7 @@ class BootstrapPopUp {
             .class("modal")
             .content(
                 W2.html("div")
-                    .class("modal-dialog modal-dialog-centered")
+                    .class("modal-dialog modal-dialog-centered modal-lg")
                     .content(
                         W2.html("div")
                             .class("modal-content")

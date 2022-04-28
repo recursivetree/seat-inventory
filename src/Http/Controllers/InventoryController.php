@@ -38,7 +38,7 @@ class InventoryController extends Controller
             'location' =>'nullable|integer'
         ]);
 
-        $categories = StockCategory::with("stocks","stocks.location")->get();
+        $categories = StockCategory::with("stocks","stocks.location", "stocks.categories")->get();
 
         $location_id = $request->location;
         if($location_id) { // 0 stands for all locations
@@ -386,20 +386,23 @@ class InventoryController extends Controller
         ]);
     }
 
-    public function exportMultibuy(Request $request){
+    public function exportItems(Request $request){
         $request->validate([
             "stocks" => "required|array",
-            "stocks.*" => "integer"
+            "stocks.*" => "integer",
         ]);
 
-        $items = StockItem::whereIn("stock_id",$request->stocks)->get();
+        $items = StockItem::with("type:typeName,typeID")->whereIn("stock_id",$request->stocks)->get();
         //convert to the correct format, so it can be further processed
         $item_list = ItemHelper::itemListFromQuery($items);
 
         $item_list = ItemHelper::simplifyItemList($item_list);
         $multibuy = ItemHelper::itemListToMultiBuy($item_list);
 
-        return response()->json(["multibuy"=>$multibuy]);
+        return response()->json([
+            "multibuy"=>$multibuy,
+            "items"=>$items
+        ]);
     }
 
     public function about(){

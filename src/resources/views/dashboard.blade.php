@@ -46,6 +46,9 @@
             ]
         }
 
+        function generateMultiBuy(items) {
+            return items.map(item => `${item.name} ${item.amount}`).join("\n")
+        }
 
         async function jsonPostAction(url, data) {
             return await fetch(url, {
@@ -172,18 +175,18 @@
             })
         }
 
-        async function lookupName(id,url) {
-            const response = await jsonGetAction(url,{
+        async function lookupName(id, url) {
+            const response = await jsonGetAction(url, {
                 id
             })
 
-            if(!response.ok){
+            if (!response.ok) {
                 throw new Error("Server responded with an error!")
             }
 
             const data = await response.json()
 
-            if(data.results.length < 1){
+            if (data.results.length < 1) {
                 throw new Error("Couldn't find the requested doctrine!")
             }
 
@@ -197,12 +200,12 @@
                     filters = JSON.parse(filters)
                 } catch (e) {
                     filters = []
-                    BoostrapToast.open("Category","Failed to parse complete category data")
+                    BoostrapToast.open("Category", "Failed to parse complete category data")
                 }
                 const filterLocations = []
                 const filterDoctrines = []
                 for (const filter of filters) {
-                    if(filter.type === "location"){
+                    if (filter.type === "location") {
                         const data = {
                             id: filter.id,
                             text: "Loading name..."
@@ -210,12 +213,12 @@
 
                         filterLocations.push(data)
 
-                        lookupName(filter.id,"{{ route("inventory.locationLookup") }}").then((name)=>{
+                        lookupName(filter.id, "{{ route("inventory.locationLookup") }}").then((name) => {
                             data.text = name
-                        }).catch((e)=>{
+                        }).catch((e) => {
                             data.text = "Failed to load name"
                         })
-                    } else if (filter.type === "doctrine"){
+                    } else if (filter.type === "doctrine") {
                         const data = {
                             id: filter.id,
                             text: "Loading name..."
@@ -223,23 +226,28 @@
 
                         filterDoctrines.push(data)
 
-                        lookupName(filter.id,"{{ route("inventory.doctrineLookup") }}").then((name)=>{
+                        lookupName(filter.id, "{{ route("inventory.doctrineLookup") }}").then((name) => {
                             data.text = name
-                        }).catch((e)=>{
+                        }).catch((e) => {
                             data.text = "Failed to load name"
                         })
                     }
+                }
+
+                let stocks = []
+                if (category.stocks) {
+                    stocks = category.stocks.map((stock) => {
+                        stock.manually_added = stock.pivot.manually_added
+                        stock.category_eligible = stock.pivot.category_eligible
+                        return stock
+                    })
                 }
 
 
                 const state = {
                     name: category.name || "",
                     message: null,
-                    stocks: category.stocks.map((stock)=>{
-                        stock.manually_added = stock.pivot.manually_added
-                        stock.category_eligible = stock.pivot.category_eligible
-                        return stock
-                    }) || [],
+                    stocks: stocks,
                     stocksExpanded: false,
                     filtersExpanded: false,
                     generalExpanded: true,
@@ -250,7 +258,6 @@
                 const mount = W2.mount(state, (container, mount, state) => {
                     container
                         .content(
-
                             //general settings
                             W2.html("div")
                                 .class("card")
@@ -266,9 +273,9 @@
                                                         .content("General"),
                                                     W2.html("button")
                                                         .class("btn btn-primary ml-auto")
-                                                        .contentIf(state.generalExpanded,"Collapse")
-                                                        .contentIf(!state.generalExpanded,"Expand")
-                                                        .event("click",()=>{
+                                                        .contentIf(state.generalExpanded, "Collapse")
+                                                        .contentIf(!state.generalExpanded, "Expand")
+                                                        .event("click", () => {
                                                             state.generalExpanded = !state.generalExpanded
                                                             mount.update()
                                                         })
@@ -314,9 +321,9 @@
                                                     .content("Stocks"),
                                                 W2.html("button")
                                                     .class("btn btn-primary ml-auto")
-                                                    .contentIf(state.stocksExpanded,"Collapse")
-                                                    .contentIf(!state.stocksExpanded,"Expand")
-                                                    .event("click",()=>{
+                                                    .contentIf(state.stocksExpanded, "Collapse")
+                                                    .contentIf(!state.stocksExpanded, "Expand")
+                                                    .event("click", () => {
                                                         state.stocksExpanded = !state.stocksExpanded
                                                         mount.update()
                                                     })
@@ -343,7 +350,7 @@
 
                                                                 const includedIDs = state.stocks
                                                                     //remove automatically added stock so that they still can be added
-                                                                    .filter((entry)=>entry.manually_added)
+                                                                    .filter((entry) => entry.manually_added)
                                                                     //only get the id
                                                                     .map((entry) => entry.id)
 
@@ -360,8 +367,8 @@
                                                     const stock = data.id
 
                                                     //if it is an automated stock that being added, we have to change instead of add it
-                                                    const existingStocks = state.stocks.filter((entry)=>entry.id === stock.id)
-                                                    if(existingStocks.length > 0){
+                                                    const existingStocks = state.stocks.filter((entry) => entry.id === stock.id)
+                                                    if (existingStocks.length > 0) {
                                                         //it's a automated stock, switch it to a manual one
                                                         for (const existingStock of existingStocks) {
                                                             existingStock.manually_added = true
@@ -382,64 +389,64 @@
                                         }),
                                         //stock list
                                         (container) => {
-                                                if (state.stocks.length > 0) {
-                                                    container.content(
-                                                        W2.html("ul")
-                                                            .class("list-group list-group-flush mt-2")
-                                                            .content((container) => {
-                                                                for (const stock of state.stocks) {
-                                                                    container.content(
-                                                                        W2.html("li")
-                                                                            .class("list-group-item d-flex align-items-baseline justify-content-between")
-                                                                            .style("padding-right", "0")
-                                                                            .content(stock.name)
+                                            if (state.stocks.length > 0) {
+                                                container.content(
+                                                    W2.html("ul")
+                                                        .class("list-group list-group-flush mt-2")
+                                                        .content((container) => {
+                                                            for (const stock of state.stocks) {
+                                                                container.content(
+                                                                    W2.html("li")
+                                                                        .class("list-group-item d-flex align-items-baseline justify-content-between")
+                                                                        .style("padding-right", "0")
+                                                                        .content(stock.name)
 
-                                                                            //remove button
-                                                                            .contentIf(stock.manually_added,
-                                                                                W2.html("button")
-                                                                                    .class("btn btn-outline-danger")
-                                                                                    .content("Remove")
-                                                                                    .event("click", () => {
-                                                                                        //TODO reset to automtic
-                                                                                        state.stocks = state.stocks.filter((e)=>{
-                                                                                            //find the current stock
-                                                                                            if(e.id === stock.id){
-                                                                                                //if it was originally automatic, set it back to automatic
-                                                                                                if(e.category_eligible){
-                                                                                                    e.manually_added = false
-                                                                                                } else {
-                                                                                                    //originally manual, remove it form the list
-                                                                                                    return false
-                                                                                                }
+                                                                        //remove button
+                                                                        .contentIf(stock.manually_added,
+                                                                            W2.html("button")
+                                                                                .class("btn btn-outline-danger")
+                                                                                .content("Remove")
+                                                                                .event("click", () => {
+                                                                                    //TODO reset to automtic
+                                                                                    state.stocks = state.stocks.filter((e) => {
+                                                                                        //find the current stock
+                                                                                        if (e.id === stock.id) {
+                                                                                            //if it was originally automatic, set it back to automatic
+                                                                                            if (e.category_eligible) {
+                                                                                                e.manually_added = false
+                                                                                            } else {
+                                                                                                //originally manual, remove it form the list
+                                                                                                return false
                                                                                             }
-                                                                                            return true
-                                                                                        })
-                                                                                        mount.update()
+                                                                                        }
+                                                                                        return true
                                                                                     })
-                                                                            )
+                                                                                    mount.update()
+                                                                                })
+                                                                        )
 
-                                                                            //automated message
-                                                                            .contentIf(!stock.manually_added,
-                                                                                W2.html("button")
-                                                                                    .class("btn btn-outline-secondary")
-                                                                                    .content("Make Permanent")
-                                                                                    .event("click",()=>{
-                                                                                        stock.manually_added = true
-                                                                                        mount.update()
-                                                                                    })
-                                                                            )
-                                                                    )
-                                                                }
-                                                            })
-                                                    )
-                                                } else {
-                                                    container.content(
-                                                        W2.html("p")
-                                                            .class("mt-3")
-                                                            .content("You haven't added any stock to this category or the filters didn't get applied yet")
-                                                    )
-                                                }
+                                                                        //automated message
+                                                                        .contentIf(!stock.manually_added,
+                                                                            W2.html("button")
+                                                                                .class("btn btn-outline-secondary")
+                                                                                .content("Make Permanent")
+                                                                                .event("click", () => {
+                                                                                    stock.manually_added = true
+                                                                                    mount.update()
+                                                                                })
+                                                                        )
+                                                                )
+                                                            }
+                                                        })
+                                                )
+                                            } else {
+                                                container.content(
+                                                    W2.html("p")
+                                                        .class("mt-3")
+                                                        .content("You haven't added any stock to this category or the filters didn't get applied yet")
+                                                )
                                             }
+                                        }
                                     )
                             )
                     )
@@ -459,9 +466,9 @@
                                                     .content("Filters"),
                                                 W2.html("button")
                                                     .class("btn btn-primary ml-auto")
-                                                    .contentIf(state.filtersExpanded,"Collapse")
-                                                    .contentIf(!state.filtersExpanded,"Expand")
-                                                    .event("click",()=>{
+                                                    .contentIf(state.filtersExpanded, "Collapse")
+                                                    .contentIf(!state.filtersExpanded, "Expand")
+                                                    .event("click", () => {
                                                         state.filtersExpanded = !state.filtersExpanded
                                                         mount.update()
                                                     })
@@ -483,7 +490,7 @@
                                             },
                                             selectionListeners: [
                                                 (selection) => {
-                                                    if(selection) {
+                                                    if (selection) {
                                                         const data = {
                                                             id: selection.id,
                                                             text: selection.text
@@ -497,9 +504,9 @@
                                                 }
                                             ],
                                             unselectListeners: [
-                                                (selection)=>{
+                                                (selection) => {
                                                     const id = parseInt(selection.id)
-                                                    state.filterLocations = state.filterLocations.filter((e)=>e.id!==id)
+                                                    state.filterLocations = state.filterLocations.filter((e) => e.id !== id)
                                                     mount.update()
                                                 }
                                             ],
@@ -521,7 +528,7 @@
                                             },
                                             selectionListeners: [
                                                 (selection) => {
-                                                    if(selection) {
+                                                    if (selection) {
                                                         const data = {
                                                             id: selection.id,
                                                             text: selection.text
@@ -535,9 +542,9 @@
                                                 }
                                             ],
                                             unselectListeners: [
-                                                (selection)=>{
+                                                (selection) => {
                                                     const id = parseInt(selection.id)
-                                                    state.filterDoctrines = state.filterDoctrines.filter((e)=>e.id!==id)
+                                                    state.filterDoctrines = state.filterDoctrines.filter((e) => e.id !== id)
                                                     mount.update()
                                                 }
                                             ],
@@ -548,7 +555,7 @@
                     )
 
 
-                        //button bar at the bottom
+                    //button bar at the bottom
                     container.content(
                         W2.html("div")
                             .class("d-flex flex-row")
@@ -699,9 +706,17 @@
                         .content(
                             W2.html("i")
                                 .class("fas fa-pen text-primary")
-                                .style("cursor","pointer")
-                                .event("click",()=>{
-                                    editStockPopUp(app,stock)
+                                .style("cursor", "pointer")
+                                .event("click", () => {
+                                    editStockPopUp(app, stock)
+                                })
+                        )
+                        .content(
+                            W2.html("i")
+                                .class("fas fa-info text-primary ml-2")
+                                .style("cursor", "pointer")
+                                .event("click", () => {
+                                    stockInfoPopUp(app, stock)
                                 })
                         )
                 )
@@ -1288,7 +1303,7 @@
                                             state.invalidName = false
                                         }
 
-                                        if(state.type === "plugin" && !state.pluginFit){
+                                        if (state.type === "plugin" && !state.pluginFit) {
                                             state.invalidPluginFit = true
                                             invalidData = true
                                         } else {
@@ -1316,7 +1331,7 @@
                                         } else if (state.type === "multibuy") {
                                             data.multibuy = state.multibuy
                                             data.name = state.name
-                                        } else if(state.type === "plugin"){
+                                        } else if (state.type === "plugin") {
                                             data.plugin_fitting_id = state.pluginFit.id
                                         }
 
@@ -1344,12 +1359,12 @@
                 })
 
                 async function loadMultibuy(id) {
-                    const response = await jsonPostAction("{{ route("inventory.exportMultibuy") }}", {
+                    const response = await jsonPostAction("{{ route("inventory.exportItems") }}", {
                         stocks: [id]
                     })
 
-                    if(!response.ok){
-                        BoostrapToast.open("Stock","Failed to load items")
+                    if (!response.ok) {
+                        BoostrapToast.open("Stock", "Failed to load items")
                         return
                     }
 
@@ -1359,11 +1374,241 @@
                 }
 
                 //load items as multibuy if it is an existing stock
-                if(stock.id){
+                if (stock.id) {
                     loadMultibuy(stock.id)
                 }
 
                 container.content(mount)
+            })
+        }
+
+        function stockItemsComponent(stockIds) {
+            const state = {
+                items: [],
+                showMultibuy: false,
+                showTypeTriState: 0
+            }
+
+            const getItems = (state)=>state.items.map(item=>{
+                return {
+                    type_id: item.type_id,
+                    amount: state.showTypeTriState===0 ? item.missing_items : item.amount,
+                    name: item.type.typeName
+                }
+            })
+
+            const mount = W2.mount(state, (container, mount, state) => {
+                container.content(
+                    W2.html("div")
+                        .class("d-flex flex-row justify-content-between")
+                        .content(
+                            W2.html("ul")
+                                .class("nav nav-pills m-2")
+                                .content(
+                                    W2.html("li")
+                                        .class("nav-item nav-link")
+                                        .classIf(!state.showMultibuy, "active")
+                                        .content(
+                                            W2.html("span")
+                                                .content("List")
+                                        ).event("click", () => {
+                                        state.showMultibuy = !state.showMultibuy
+                                        mount.update()
+                                    }),
+                                    W2.html("li")
+                                        .class("nav-item nav-link")
+                                        .classIf(state.showMultibuy, "active")
+                                        .content(
+                                            W2.html("span")
+                                                .content("Multibuy")
+                                        ).event("click", () => {
+                                        state.showMultibuy = !state.showMultibuy
+                                        mount.update()
+                                    }),
+                                ),
+
+                            W2.html("ul")
+                                .class("nav nav-pills m-2")
+                                .content(
+                                    W2.html("li")
+                                        .class("nav-item nav-link")
+                                        .classIf(state.showTypeTriState === 0, "active")
+                                        .content(
+                                            W2.html("span")
+                                                .content("Missing")
+                                        ).event("click", () => {
+                                        state.showTypeTriState = 0
+                                        mount.update()
+                                    }),
+                                    W2.html("li")
+                                        .class("nav-item nav-link")
+                                        .classIf(state.showTypeTriState === 1, "active")
+                                        .content(
+                                            W2.html("span")
+                                                .content("One")
+                                        ).event("click", () => {
+                                        state.showTypeTriState = 1
+                                        mount.update()
+                                    }),
+                                    // W2.html("li")
+                                    //     .class("nav-item nav-link")
+                                    //     .classIf(state.showTypeTriState === 2, "active")
+                                    //     .content(
+                                    //         W2.html("span")
+                                    //             .content("All")
+                                    //     ).event("click", () => {
+                                    //     state.showTypeTriState = 2
+                                    //     mount.update()
+                                    // }),
+                                ),
+                        )
+                ).contentIf(state.showMultibuy,
+                    W2.html("textarea")
+                        .class("form-control w-100 flex-grow-1")
+                        .style("resize", "none")
+                        .attribute("readonly","readonly")
+                        .content(
+                            generateMultiBuy(getItems(state))
+                        )
+                ).contentIf(!state.showMultibuy,
+                    W2.html("div")
+                        .content(
+                            W2.html("table")
+                                .class("table table-borderless table-striped")
+                                .content(
+                                    W2.html("tbody")
+                                        .content((container) => {
+                                            for (const item of getItems(state)) {
+                                                container.content(
+                                                    W2.html("tr")
+                                                        .content(
+                                                            W2.html("td")
+                                                                .content(
+                                                                    W2.html("img")
+                                                                        .attribute("src", `https://images.evetech.net/types/${item.type_id}/icon?size=32`)
+                                                                        .style("min-width","32px")
+                                                                ),
+                                                            W2.html("td")
+                                                                .content(item.name),
+                                                            W2.html("td")
+                                                                .content(item.amount),
+                                                        )
+                                                )
+                                            }
+                                        })
+                                )
+                        )
+                )
+            })
+
+            async function loadItems(stockIds) {
+                const request = await jsonPostAction("{{ route("inventory.exportItems") }}", {
+                    stocks: stockIds
+                })
+                if (!request.ok) {
+                    BoostrapToast.open("Items", "Failed to load items")
+                    return
+                }
+                const response = await request.json()
+                mount.state.items = response.items
+                mount.update()
+            }
+
+            loadItems(stockIds)
+
+            return mount
+        }
+
+        async function stockInfoPopUp(app, stock) {
+            function dataEntry(name, value) {
+                return W2.html("tr")
+                    .content(
+                        W2.html("td").content(name),
+                        W2.html("td").content(value)
+                    )
+            }
+
+            function booleanIcon(bool) {
+                if (bool) {
+                    return W2.html("i").class("fas fa-check text-success")
+                } else {
+                    return W2.html("i").class("fas fa-times text-danger")
+                }
+            }
+
+            const available = stock.available_on_contracts + stock.available_in_hangars
+
+            BootstrapPopUp.open(stock.name, (container) => {
+                container.content(
+                    W2.html("div")
+                        .class("d-flex flex-row")
+                        .content(
+                            W2.html("div")
+                                .class("card")
+                                .content(
+                                    W2.html("div")
+                                        .class("card-body")
+                                        .content(
+                                            W2.html("h5")
+                                                .content("Attributes"),
+                                            W2.html("table")
+                                                .class("table table-striped")
+                                                .content(
+                                                    W2.html("thead")
+                                                        .content(
+                                                            W2.html("tr")
+                                                                .content(
+                                                                    W2.html("th")
+                                                                        .content("Attribute"),
+                                                                        //.attribute("colspan",2),
+                                                                    W2.html("th")
+                                                                        .content("Value"),
+                                                                        //.attribute("colspan",2)
+                                                                )
+                                                        ),
+                                                    W2.html("tbody")
+                                                        .content(
+                                                            dataEntry("Name", stock.name),
+                                                            dataEntry("Location", stock.location.name),
+                                                            dataEntry("Last Updatet", stock.last_updated),
+                                                            dataEntry("Amount", stock.amount),
+                                                            dataEntry("Warning Threshold", stock.warning_threshold),
+                                                            dataEntry("Priority", stock.priority),
+                                                            dataEntry("Available", available),
+                                                            dataEntry("Contracts", stock.available_on_contracts),
+                                                            dataEntry("Hangars", stock.available_in_hangars),
+                                                            dataEntry("Minimal amount fulfilled", booleanIcon(available < stock.warning_threshold)),
+                                                            dataEntry("Check Contracts", booleanIcon(stock.check_contracts)),
+                                                            dataEntry("Check Hangars", booleanIcon(stock.check_corporation_hangars)),
+                                                            dataEntry("Linked to a fitting", booleanIcon(stock.fitting_plugin_fitting_id)),
+                                                            dataEntry("Categories", W2.emptyHtml().content((container) => {
+                                                                for (const category of stock.categories) {
+                                                                    container.content(
+                                                                        W2.html("span")
+                                                                            .class("badge badge-primary mr-1")
+                                                                            .content(category.name)
+                                                                    )
+                                                                }
+                                                            })),
+                                                        )
+                                                )
+                                        ),
+                                )
+                        )
+                        .content(
+                            W2.html("div")
+                                .class("card ml-2 flex-grow-1")
+                                .content(
+                                    W2.html("div")
+                                        .class("card-body d-flex flex-column")
+                                        .content(
+                                            W2.html("h5")
+                                                .content("Items"),
+                                            stockItemsComponent([stock.id])
+                                        )
+                                )
+                        )
+                )
             })
         }
 
@@ -1373,7 +1618,7 @@
                 .content(
                     W2.html("button")
                         .class("btn btn-success ml-auto")
-                        .content(W2.html("i").class("fas fa-sync")," Update")
+                        .content(W2.html("i").class("fas fa-sync"), " Update")
                         .event("click", (e) => {
                             e.target.blur()
                             app.categoryList.state.loadData()
