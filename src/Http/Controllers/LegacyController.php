@@ -71,70 +71,6 @@ class LegacyController extends Controller
         return response()->json($suggestions);
     }
 
-    public function stockSuggestions(Request $request){
-        $query = $request->q;
-        if($query==null){
-            $stocks = Stock::all();
-        } else {
-            $stocks = Stock::where("name", "like", "%$query%")->limit(100)->get();
-        }
-
-        $suggestions = [];
-        foreach ($stocks as $stock){
-
-            $suggestions[] = [
-                "text" => "$stock->name",
-                "value" => $stock->id,
-            ];
-        }
-
-        return response()->json($suggestions);
-    }
-
-    public function stocks(Request $request){
-        $fittings = Stock::all();
-
-        return view("inventory::stocks",compact("fittings" ));
-    }
-
-    public function viewStock(Request $request,$id){
-        $stock = Stock::find($id);
-
-        if($stock==null){
-            return $this->redirectWithStatus($request,'inventory.stocks',"Could not find stock definition!", 'error');
-        }
-
-        $items = ItemHelper::itemListFromQuery($stock->items);
-
-        $missing = ItemHelper::missingListFromQuery($stock->items);
-
-        //dd(json_encode($missing));
-
-        $missing_multibuy = ItemHelper::itemListToMultiBuy($missing);
-
-        $multibuy = ItemHelper::itemListToMultiBuy($items);
-
-        return view("inventory::viewStock", compact("stock","multibuy","missing_multibuy","missing"));
-    }
-
-    public function deleteStockPost(Request $request,$id){
-
-        $stock = Stock::find($id);
-
-        $stock->categories()->detach();
-
-        if($stock !== null) {
-
-            Stock::destroy($id);
-
-            StockItem::where("stock_id", $id)->delete();
-
-            return $this->redirectWithStatus($request, 'inventory.stocks', "Deleted stock definition!", 'success');
-        } else {
-            return $this->redirectWithStatus($request, 'inventory.stocks', "You are attempting to delete a non-existent stock. Try to refresh your page.", 'error');
-        }
-    }
-
     public function itemBrowser(Request $request){
         $location_id = $request->location_id;
         $location_id_text = $request->location_id_text;
@@ -211,24 +147,6 @@ class LegacyController extends Controller
             "filter_item_type_text",
             "show_results"
         ));
-    }
-
-    public function stockAvailability(Request $request){
-        $location_id = $request->location_id ?: null;
-        $location_id_text = $request->location_id_text ?: null;
-
-        if($location_id != null) {
-            $stocks = Stock::where("location_id", $location_id)->orderBy("priority","DESC")->get();
-            $stock_ids = $stocks->pluck("id");
-
-            $missing_items = ItemHelper::missingListFromQuery(StockItem::whereIn("stock_id",$stock_ids)->where("missing_items",">","0")->get());
-            $missing_items = ItemHelper::simplifyItemList($missing_items);
-            $missing_multibuy = ItemHelper::itemListToMultiBuy($missing_items);
-
-            return view("inventory::availability", compact("stocks", "location_id", "location_id_text", "missing_multibuy", "missing_items"));
-        } else {
-            return view("inventory::availability", compact( "location_id", "location_id_text"));
-        }
     }
 
     public function getMovingItems(Request $request){

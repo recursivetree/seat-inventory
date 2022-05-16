@@ -19,18 +19,6 @@ return [
                 'permission' => 'inventory.view_inventory',
             ],
             [
-                'name'  => 'Fits&Stocks',
-                'icon'  => 'fas fa-space-shuttle',
-                'route' => 'inventory.stocks',
-                'permission' => 'inventory.view_inventory',
-            ],
-            [
-                'name'  => 'Fits&Stocks Availability',
-                'icon'  => 'fas fa-clipboard',
-                'route' => 'inventory.stockAvailability',
-                'permission' => 'inventory.view_inventory',
-            ],
-            [
                 'name'  => 'Item Browser',
                 'icon'  => 'fas fa-list',
                 'route' => 'inventory.itemBrowser',

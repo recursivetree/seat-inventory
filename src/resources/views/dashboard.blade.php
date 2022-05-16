@@ -698,7 +698,8 @@
                             W2.html("h5")
                                 .class("card-title mr-auto")
                                 .content(
-                                    W2.html("a")
+                                    W2.html("span")
+                                        .class("text-primary")
                                         .attribute("href", `/inventory/stocks/view/${stock.id}`)
                                         .content(stock.name)
                                 )

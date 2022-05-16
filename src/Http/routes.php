@@ -162,37 +162,6 @@ Route::group([
         'middleware' => 'can:inventory.view_inventory'
     ]);
 
-    Route::get('/legacy/stocks', [
-        'as'   => 'inventory.stocks',
-        'uses' => 'LegacyController@stocks',
-        'middleware' => 'can:inventory.view_inventory'
-    ]);
-
-    //hard coded url, can't add /legacy
-    Route::get('/stocks/view/{id}', [
-        'as'   => 'inventory.viewStock',
-        'uses' => 'LegacyController@viewStock',
-        'middleware' => 'can:inventory.view_inventory'
-    ]);
-
-    Route::post('/legacy/stocks/delete/{id}', [
-        'as'   => 'inventory.deleteStockLegacy',
-        'uses' => 'LegacyController@deleteStockPost',
-        'middleware' => 'can:inventory.edit_inventory'
-    ]);
-
-    Route::get('/legacy/stocks/availability', [
-        'as'   => 'inventory.stockAvailability',
-        'uses' => 'LegacyController@stockAvailability',
-        'middleware' => 'can:inventory.view_inventory'
-    ]);
-
-    Route::get('/legacy/stocks/suggestions', [
-        'as'   => 'inventory.stockSuggestions',
-        'uses' => 'LegacyController@stockSuggestions',
-        'middleware' => 'can:inventory.view_inventory'
-    ]);
-
     Route::get('/legacy/itembrowser', [
         'as'   => 'inventory.itemBrowser',
         'uses' => 'LegacyController@itemBrowser',
