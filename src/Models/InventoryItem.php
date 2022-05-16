@@ -7,7 +7,7 @@ use Seat\Eveapi\Models\Universe\UniverseStation;
 use Seat\Eveapi\Models\Universe\UniverseStructure;
 use Seat\Eveapi\Models\Sde\InvType;
 
-class InventoryItem extends Model
+class InventoryItem extends Model implements ItemEntry
 {
     public $timestamps = false;
 
@@ -21,5 +21,15 @@ class InventoryItem extends Model
         return $this->hasOne(InvType::class, 'typeID', 'type_id')->withDefault([
             "typeName" => "Unknown"
         ]);
+    }
+
+    public function getTypeId()
+    {
+        return $this->type_id;
+    }
+
+    public function getAmount()
+    {
+        return $this->amount;
     }
 }

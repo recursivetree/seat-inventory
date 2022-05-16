@@ -9,6 +9,8 @@ use RecursiveTree\Seat\Inventory\Helpers\Parser;
 use RecursiveTree\Seat\Inventory\Jobs\GenerateStockIcon;
 use RecursiveTree\Seat\Inventory\Jobs\UpdateCategoryMembers;
 use RecursiveTree\Seat\Inventory\Jobs\UpdateStockLevels;
+use RecursiveTree\Seat\Inventory\Models\ItemEntryBasic;
+use RecursiveTree\Seat\Inventory\Models\ItemEntryList;
 use RecursiveTree\Seat\Inventory\Models\Location;
 use RecursiveTree\Seat\Inventory\Models\Stock;
 use RecursiveTree\Seat\Inventory\Models\StockCategory;
@@ -392,16 +394,26 @@ class InventoryController extends Controller
             "stocks.*" => "integer",
         ]);
 
-        $items = StockItem::with("type:typeName,typeID")->whereIn("stock_id",$request->stocks)->get();
-        //convert to the correct format, so it can be further processed
-        $item_list = ItemHelper::itemListFromQuery($items);
+        $items = StockItem::whereIn("stock_id",$request->stocks)
+            ->select("recursive_tree_seat_inventory_stock_items.*",DB::raw("(recursive_tree_seat_inventory_stock_items.amount * recursive_tree_seat_inventory_stock_definitions.amount) as full_amount"))
+            ->join("recursive_tree_seat_inventory_stock_definitions","stock_id","=","recursive_tree_seat_inventory_stock_definitions.id")
+            ->get();
 
-        $item_list = ItemHelper::simplifyItemList($item_list);
-        $multibuy = ItemHelper::itemListToMultiBuy($item_list);
+        //dd(json_encode($items, JSON_PRETTY_PRINT));
+
+        $item_list = ItemEntryList::fromItemEntries($items);
+        $item_list->simplify();
+
+        $missing_item_list = StockItem::fromAlternativeAmountColumn($items,"missing_items");
+        $missing_item_list->simplify();
+
+        $all_item_list = StockItem::fromAlternativeAmountColumn($items,"full_amount");
+        $all_item_list->simplify();
 
         return response()->json([
-            "multibuy"=>$multibuy,
-            "items"=>$items
+            "items"=>$item_list->asJsonStructure(),
+            "missing_items"=>$missing_item_list->asJsonStructure(),
+            "all"=>$all_item_list->asJsonStructure()
         ]);
     }
 

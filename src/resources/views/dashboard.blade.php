@@ -1369,7 +1369,7 @@
                     }
 
                     const data = await response.json()
-                    state.multibuy = data.multibuy
+                    state.multibuy = generateMultiBuy(data.items)
                     mount.update()
                 }
 
@@ -1386,16 +1386,20 @@
             const state = {
                 items: [],
                 showMultibuy: false,
-                showTypeTriState: 0
+                showTypeTriState: 0,
+                missing_items: [],
+                all_items:[]
             }
 
-            const getItems = (state)=>state.items.map(item=>{
-                return {
-                    type_id: item.type_id,
-                    amount: state.showTypeTriState===0 ? item.missing_items : item.amount,
-                    name: item.type.typeName
+            const getItems = (state)=> {
+                if(state.showTypeTriState===0){
+                    return state.missing_items
+                } else if(state.showTypeTriState===1) {
+                    return state.items
+                } else {
+                    return state.all_items
                 }
-            })
+            }
 
             const mount = W2.mount(state, (container, mount, state) => {
                 container.content(
@@ -1450,16 +1454,16 @@
                                         state.showTypeTriState = 1
                                         mount.update()
                                     }),
-                                    // W2.html("li")
-                                    //     .class("nav-item nav-link")
-                                    //     .classIf(state.showTypeTriState === 2, "active")
-                                    //     .content(
-                                    //         W2.html("span")
-                                    //             .content("All")
-                                    //     ).event("click", () => {
-                                    //     state.showTypeTriState = 2
-                                    //     mount.update()
-                                    // }),
+                                    W2.html("li")
+                                        .class("nav-item nav-link")
+                                        .classIf(state.showTypeTriState === 2, "active")
+                                        .content(
+                                            W2.html("span")
+                                                .content("All")
+                                        ).event("click", () => {
+                                        state.showTypeTriState = 2
+                                        mount.update()
+                                    }),
                                 ),
                         )
                 ).contentIf(state.showMultibuy,
@@ -1511,6 +1515,8 @@
                 }
                 const response = await request.json()
                 mount.state.items = response.items
+                mount.state.missing_items = response.missing_items
+                mount.state.all_items = response.all
                 mount.update()
             }
 
