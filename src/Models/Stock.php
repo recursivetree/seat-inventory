@@ -3,8 +3,8 @@
 namespace RecursiveTree\Seat\Inventory\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use RecursiveTree\Seat\Inventory\Helpers\FittingPluginHelper;
 use Intervention\Image\Facades\Image;
+use RecursiveTree\Seat\Inventory\Helpers\FittingPluginHelper;
 use RecursiveTree\Seat\Inventory\Jobs\GenerateStockIcon;
 
 class Stock extends Model

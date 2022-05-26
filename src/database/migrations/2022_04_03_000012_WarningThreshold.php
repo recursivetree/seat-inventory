@@ -1,14 +1,9 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
-
-
-use RecursiveTree\Seat\Inventory\Jobs\GenerateStockIcon;
-use RecursiveTree\Seat\Inventory\Models\Stock;
-
+use Illuminate\Support\Facades\Schema;
 
 
 class WarningThreshold extends Migration

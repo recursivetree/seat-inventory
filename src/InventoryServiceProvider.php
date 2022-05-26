@@ -2,31 +2,27 @@
 
 namespace RecursiveTree\Seat\Inventory;
 
-use Exception;
-use RecursiveTree\Seat\Inventory\Jobs\CategorizeStocks;
-use RecursiveTree\Seat\Inventory\Jobs\GenerateStockIcon;
+use Illuminate\Queue\Events\JobProcessed;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Queue;
+use RecursiveTree\Seat\Inventory\Helpers\FittingPluginHelper;
 use RecursiveTree\Seat\Inventory\Jobs\UpdateCategoryMembers;
 use RecursiveTree\Seat\Inventory\Jobs\UpdateInventory;
-use RecursiveTree\Seat\Inventory\Jobs\UpdateLocations;
 use RecursiveTree\Seat\Inventory\Jobs\UpdateStockLevels;
 use RecursiveTree\Seat\Inventory\Models\Location;
 use RecursiveTree\Seat\Inventory\Observers\AllianceMemberObserver;
 use RecursiveTree\Seat\Inventory\Observers\FittingPluginDoctrineObserver;
 use RecursiveTree\Seat\Inventory\Observers\FittingPluginFittingObserver;
-use RecursiveTree\Seat\Inventory\Helpers\FittingPluginHelper;
 use RecursiveTree\Seat\Inventory\Observers\UniverseStationObserver;
 use RecursiveTree\Seat\Inventory\Observers\UniverseStructureObserver;
+use Seat\Eveapi\Jobs\Assets\Corporation\Assets;
 use Seat\Eveapi\Models\Alliances\AllianceMember;
-use Seat\Services\AbstractSeatPlugin;
-use Illuminate\Support\Facades\Blade;
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Queue;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Queue\Events\JobProcessed;
 use Seat\Eveapi\Models\Universe\UniverseStation;
 use Seat\Eveapi\Models\Universe\UniverseStructure;
-use Seat\Eveapi\Jobs\Assets\Corporation\Assets;
-use Illuminate\Support\Facades\DB;
+use Seat\Services\AbstractSeatPlugin;
 
 class InventoryServiceProvider extends AbstractSeatPlugin
 {

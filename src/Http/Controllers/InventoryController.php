@@ -3,23 +3,21 @@
 namespace RecursiveTree\Seat\Inventory\Http\Controllers;
 
 use Exception;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Intervention\Image\Facades\Image;
 use RecursiveTree\Seat\Inventory\Helpers\FittingPluginHelper;
 use RecursiveTree\Seat\Inventory\Helpers\ItemHelper;
 use RecursiveTree\Seat\Inventory\Helpers\Parser;
 use RecursiveTree\Seat\Inventory\Jobs\GenerateStockIcon;
 use RecursiveTree\Seat\Inventory\Jobs\UpdateCategoryMembers;
 use RecursiveTree\Seat\Inventory\Jobs\UpdateStockLevels;
-use RecursiveTree\Seat\Inventory\Models\ItemEntryBasic;
 use RecursiveTree\Seat\Inventory\Models\ItemEntryList;
 use RecursiveTree\Seat\Inventory\Models\Location;
 use RecursiveTree\Seat\Inventory\Models\Stock;
 use RecursiveTree\Seat\Inventory\Models\StockCategory;
-
 use RecursiveTree\Seat\Inventory\Models\StockItem;
 use Seat\Web\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Intervention\Image\Facades\Image;
 
 class InventoryController extends Controller
 {
