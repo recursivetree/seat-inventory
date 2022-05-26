@@ -2,7 +2,6 @@
 
 namespace RecursiveTree\Seat\Inventory\Observers;
 
-use Exception;
 use Illuminate\Support\Facades\DB;
 use RecursiveTree\Seat\Inventory\Models\Location;
 

@@ -3,14 +3,14 @@
 namespace RecursiveTree\Seat\Inventory\Jobs;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Queue\SerializesModels;
-use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
-use RecursiveTree\Seat\Inventory\Models\Stock;
-use RecursiveTree\Seat\Inventory\Models\StockCategory;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
+use RecursiveTree\Seat\Inventory\Models\Stock;
+use RecursiveTree\Seat\Inventory\Models\StockCategory;
 
 
 class UpdateCategoryMembers implements ShouldQueue

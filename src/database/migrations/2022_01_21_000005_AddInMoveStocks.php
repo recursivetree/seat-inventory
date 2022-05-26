@@ -1,10 +1,9 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Support\Facades\Schema;
 use RecursiveTree\Seat\Inventory\Jobs\UpdateInventory;
 
 class AddInMoveStocks extends Migration

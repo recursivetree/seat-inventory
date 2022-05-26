@@ -3,20 +3,19 @@
 namespace RecursiveTree\Seat\Inventory\Jobs;
 
 use ErrorException;
-use Exception;
-use Illuminate\Bus\Queueable;
-use Illuminate\Queue\SerializesModels;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Bus\Dispatchable;
-use RecursiveTree\Seat\Inventory\Helpers\DescribeItems;
-use RecursiveTree\Seat\Inventory\Models\Stock;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Redis;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
-use Intervention\Image\Facades\Image;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redis;
 use Intervention\Image\Exception\NotReadableException;
+use Intervention\Image\Facades\Image;
+use RecursiveTree\Seat\Inventory\Helpers\DescribeItems;
+use RecursiveTree\Seat\Inventory\Models\Stock;
 
 
 class GenerateStockIcon implements ShouldQueue

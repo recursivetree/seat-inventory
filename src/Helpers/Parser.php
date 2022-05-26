@@ -3,7 +3,6 @@
 namespace RecursiveTree\Seat\Inventory\Helpers;
 
 use Exception;
-use RecursiveTree\Seat\Inventory\Models\StockItem;
 use Seat\Eveapi\Models\Sde\InvType;
 
 class Parser
