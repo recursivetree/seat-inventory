@@ -9,13 +9,16 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use RecursiveTree\Seat\Inventory\Helpers\FittingPluginHelper;
+use RecursiveTree\Seat\Inventory\Jobs\SendStockLevelNotifications;
 use RecursiveTree\Seat\Inventory\Jobs\UpdateCategoryMembers;
 use RecursiveTree\Seat\Inventory\Jobs\UpdateInventory;
 use RecursiveTree\Seat\Inventory\Jobs\UpdateStockLevels;
 use RecursiveTree\Seat\Inventory\Models\Location;
+use RecursiveTree\Seat\Inventory\Models\Stock;
 use RecursiveTree\Seat\Inventory\Observers\AllianceMemberObserver;
 use RecursiveTree\Seat\Inventory\Observers\FittingPluginDoctrineObserver;
 use RecursiveTree\Seat\Inventory\Observers\FittingPluginFittingObserver;
+use RecursiveTree\Seat\Inventory\Observers\StockObserver;
 use RecursiveTree\Seat\Inventory\Observers\UniverseStationObserver;
 use RecursiveTree\Seat\Inventory\Observers\UniverseStructureObserver;
 use Seat\Eveapi\Jobs\Assets\Corporation\Assets;
@@ -61,6 +64,10 @@ class InventoryServiceProvider extends AbstractSeatPlugin
         UniverseStation::observe(UniverseStationObserver::class);
         AllianceMember::observe(AllianceMemberObserver::class);
 
+        $this->mergeConfigFrom(
+            __DIR__ . '/Config/notifications.alerts.php', 'notifications.alerts'
+        );
+
         Artisan::command('inventory:assets {--sync}', function () {
             if ($this->option("sync")){
                 $this->info("processing...");
@@ -69,6 +76,17 @@ class InventoryServiceProvider extends AbstractSeatPlugin
             } else {
                 UpdateInventory::dispatch()->onQueue('default');
                 $this->info("Scheduled an inventory update!");
+            }
+        });
+
+        Artisan::command('inventory:notifications {--sync}', function () {
+            if ($this->option("sync")){
+                $this->info("processing...");
+                SendStockLevelNotifications::dispatchNow();
+                $this->info("Synchronously sent notification!");
+            } else {
+                SendStockLevelNotifications::dispatch()->onQueue('notifications');
+                $this->info("Scheduled notifications!");
             }
         });
 

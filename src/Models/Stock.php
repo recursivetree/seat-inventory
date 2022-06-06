@@ -58,7 +58,10 @@ class Stock extends Model
 
     public function setIcon($image){
         $this->icon = $image->encode("data-url");
+    }
 
+    public function getTotalAvailable(){
+        return $this->available_on_contracts + $this->available_in_hangars;
     }
 
     public function isEligibleForCategory($filters){
