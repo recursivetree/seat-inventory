@@ -761,6 +761,14 @@
                                     W2.html("button")
                                         .class("btn btn-secondary mx-1")
                                         .content(
+                                            W2.html("i").class("fas fa-info")
+                                        )
+                                        .event("click", () => categoryInfoPopup(category))
+                                )
+                                .content(
+                                    W2.html("button")
+                                        .class("btn btn-secondary mx-1")
+                                        .content(
                                             W2.html("i").class("fas fa-pen")
                                         )
                                         .event("click", () => editCategoryPopUp(app, category))
@@ -1383,7 +1391,7 @@
             })
         }
 
-        function stockItemsComponent(stockIds) {
+        function stockItemsComponent(stockIds, onlyMissing=false) {
             const state = {
                 items: [],
                 showMultibuy: false,
@@ -1444,7 +1452,9 @@
                                         ).event("click", () => {
                                         state.showTypeTriState = 0
                                         mount.update()
-                                    }),
+                                    })
+                                )
+                                .contentIf(!onlyMissing,
                                     W2.html("li")
                                         .class("nav-item nav-link")
                                         .classIf(state.showTypeTriState === 1, "active")
@@ -1619,6 +1629,91 @@
             })
         }
 
+        //deliveries popup
+        function deliveriesPopup() {
+            BootstrapPopUp.open("Deliveries",(container)=>{
+                const state = {
+                    addPanel: true,
+                    deliveryPreview: null
+                }
+
+                const mount = W2.mount(state, (container, mount, state)=>{
+                    container.content(
+                        W2.html("div")
+                            .class("d-flex flex-row w-100 h-100")
+                            .content(
+                                W2.html("h5").content("Please ignore"),
+
+                                //sidebar panel
+                                W2.html("div")
+                                    .class("d-flex flex-column mr-3")
+                                    .content(
+                                        //button to add a new delivery
+                                        W2.html("button")
+                                            .class("btn btn-primary btn-block")
+                                            .content("Add Delivery")
+                                            .event("click",(e)=>{
+                                                e.target.blur()
+                                                state.addPanel = true
+                                                mount.update()
+                                            })
+                                    ),
+                                //main panel
+                                (container)=>{
+                                    if(state.addPanel){
+                                        //panel to add a new stock
+                                        container.content(
+                                            W2.html("div")
+                                                .class("d-flex flex-fill")
+                                                .content(
+                                                    //textarea+label group
+                                                    W2.html("div")
+                                                        .class("form-group w-100")
+                                                        .content(
+                                                            W2.html("label")
+                                                                .content("Items"),
+                                                            W2.html("textarea")
+                                                                .class("form-control w-100")
+                                                                .style("resize","none")
+                                                                .attribute("placeholder","Co - Processor II 2\nDrone Damage Amplifier II 1\nTristan 3")
+                                                                .attribute("rows",10),
+                                                        ),
+                                                    //"Location",
+                                                    //submit button
+                                                    W2.html("button")
+                                                        .class("btn btn-primary btn-block")
+                                                        .content("Save")
+                                                )
+                                        )
+                                    } else if(state.deliveryPreview===null){
+                                        container.content("Please select a delivery")
+                                    } else {
+
+                                    }
+                                }
+                            )
+                    )
+                })
+
+                container.content(mount)
+            })
+        }
+
+        //popup to show missing items for a category
+        function categoryInfoPopup(category){
+            //open a popup
+            BootstrapPopUp.open(category.name,(container, popup)=>{
+                container.content(
+                    W2.html("h5")
+                        .content("Missing Items")
+                )
+
+                container.content(
+                    stockItemsComponent(category.stocks.map((stock)=>stock.id), true)
+                )
+            })
+        }
+
         function toolButtonPanelComponent(app) {
             return W2.html("div")
                 .class("d-flex flex-row align-items-center mb-3")
@@ -1629,6 +1724,15 @@
                         .event("click", (e) => {
                             e.target.blur()
                             app.categoryList.state.loadData()
+                        })
+                )
+                .content(
+                    W2.html("button")
+                        .class("btn btn-secondary ml-1")
+                        .content(W2.html("i").class("fas fa-truck"), " Deliveries")
+                        .event("click", (e) => {
+                            e.target.blur()
+                            deliveriesPopup()
                         })
                 )
                 .content(
