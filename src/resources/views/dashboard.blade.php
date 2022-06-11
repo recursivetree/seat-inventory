@@ -1482,6 +1482,7 @@
                         .class("form-control w-100 flex-grow-1")
                         .style("resize", "none")
                         .attribute("readonly","readonly")
+                        .attribute("rows",10)
                         .content(
                             generateMultiBuy(getItems(state))
                         )

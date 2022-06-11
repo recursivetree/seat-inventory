@@ -73,10 +73,10 @@ trait DescribeItems
             $categorized_item[] = [
                 "importance"=>$importance,
                 "item" => $item->type,
-                "price" => $item->type->price->adjusted_price
+                "price" => $item->type->price->adjusted_price,
             ];
         }
 
-        return collect($categorized_item)->sortByDesc("importance")->sortByDesc("price");
+        return collect($categorized_item)->sortByDesc("price")->sortByDesc("importance");
     }
 }
