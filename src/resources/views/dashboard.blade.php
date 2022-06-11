@@ -194,13 +194,13 @@
         }
 
         function editCategoryPopUp(app, category) {
-            BootstrapPopUp.open(category.id ? "Edit Category" : "Create Category", (container, popup) => {
+            BootstrapPopUp.open(category.id ? "Edit Group" : "Create Group", (container, popup) => {
                 let filters = category.filters || ""
                 try {
                     filters = JSON.parse(filters)
                 } catch (e) {
                     filters = []
-                    BoostrapToast.open("Category", "Failed to parse complete category data")
+                    BoostrapToast.open("Category", "Failed to parse complete group data")
                 }
                 const filterLocations = []
                 const filterDoctrines = []
@@ -285,12 +285,12 @@
                                         .contentIf(state.generalExpanded,
                                             W2.html("label")
                                                 .attribute("for", W2.getID("editCategoryNameLabel", true))
-                                                .content("Category Name"),
+                                                .content("Group Name"),
                                             W2.html("input")
                                                 .class("form-control")
                                                 .attribute("type", "text")
                                                 .id(W2.getID("editCategoryNameLabel"))
-                                                .attribute("placeholder", "Enter the category name")
+                                                .attribute("placeholder", "Enter the group name")
                                                 .attribute("value", state.name)
                                                 .event("change", (e) => {
                                                     state.name = e.target.value
@@ -443,7 +443,7 @@
                                                 container.content(
                                                     W2.html("p")
                                                         .class("mt-3")
-                                                        .content("You haven't added any stock to this category or the filters didn't get applied yet")
+                                                        .content("You haven't added any stock to this group or the filters didn't get applied yet")
                                                 )
                                             }
                                         }
@@ -572,9 +572,9 @@
                                                 })
 
                                                 if (!response.ok) {
-                                                    BoostrapToast.open("Category", "Failed to delete the category")
+                                                    BoostrapToast.open("Group", "Failed to delete the group")
                                                 } else {
-                                                    BoostrapToast.open("Category", "Successfully deleted the category")
+                                                    BoostrapToast.open("Group", "Successfully deleted the group")
                                                 }
 
                                                 app.categoryList.state.loadData()
@@ -633,9 +633,9 @@
                                             const response = await jsonPostAction("{{ route("inventory.saveCategory") }}", data)
 
                                             if (!response.ok) {
-                                                BoostrapToast.open("Category", "Failed to save the category")
+                                                BoostrapToast.open("Group", "Failed to save the group")
                                             } else {
-                                                BoostrapToast.open("Category", "Successfully saved category")
+                                                BoostrapToast.open("Group", "Successfully saved group")
                                             }
 
                                             app.categoryList.state.loadData()
@@ -791,7 +791,7 @@
                                 .class("d-flex flex-wrap")
                                 .content((container) => {
                                     if (category.stocks.length < 1) {
-                                        container.content(W2.html("span").content("You haven't added any stock to this category."))
+                                        container.content(W2.html("span").content("You haven't added any stock to this group."))
                                     }
                                     for (const stock of category.stocks) {
                                         container.content(stockCardComponent(app, stock))
@@ -860,7 +860,7 @@
 
                     const response = await fetch(url)
                     if (!response.ok) {
-                        BoostrapToast.open("Categories", "Failed to load category data")
+                        BoostrapToast.open("Groups", "Failed to load group data")
                         this.categoryData = null
                     }
 
@@ -1598,7 +1598,7 @@
                                                             dataEntry("Check Contracts", booleanIcon(stock.check_contracts)),
                                                             dataEntry("Check Hangars", booleanIcon(stock.check_corporation_hangars)),
                                                             dataEntry("Linked to a fitting", booleanIcon(stock.fitting_plugin_fitting_id)),
-                                                            dataEntry("Categories", W2.emptyHtml().content((container) => {
+                                                            dataEntry("Groups", W2.emptyHtml().content((container) => {
                                                                 for (const category of stock.categories) {
                                                                     container.content(
                                                                         W2.html("span")
@@ -1767,7 +1767,7 @@
                         .class("btn btn-primary ml-1")
                         .content(
                             W2.html("i").class("fas fa-plus"),
-                            " Category"
+                            " Group"
                         )
                         .event("click", () => {
                             editCategoryPopUp(app, {})
