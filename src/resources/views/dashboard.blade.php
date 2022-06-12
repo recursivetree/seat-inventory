@@ -1789,7 +1789,7 @@
                                                     W2.html("h5")
                                                         .content(state.deliveryPreview.location.name),
                                                     W2.html("textarea")
-                                                        .class("form-control w-100 flex-grow-1")
+                                                        .class("form-control w-100 flex-grow-1 mb-3")
                                                         .style("resize", "none")
                                                         .attribute("readonly","readonly")
                                                         .attribute("rows",10)
@@ -1801,24 +1801,22 @@
                                                                 }
                                                             }))
                                                         ),
-                                                    W2.html("button")
-                                                        .class("btn btn-danger btn-block mt-2")
-                                                        .content("Delete")
-                                                        .event("click",async (e)=>{
-                                                            e.target.blur()
-
-                                                            const response = await jsonPostAction("{{ route("inventory.deleteDeliveries") }}",{
-                                                                id: state.deliveryPreview.id
-                                                            })
-
-                                                            if(!response.ok){
-                                                                BoostrapToast.open("Deliveries","Failed to delete delivery!")
-                                                                await loadDeliveriesData()
-                                                            } else {
-                                                                BoostrapToast.open("Deliveries","Deleted delivery!")
-                                                                await loadDeliveriesData()
-                                                            }
+                                                    confirmButtonComponent("Delete",async ()=>{
+                                                        const response = await jsonPostAction("{{ route("inventory.deleteDeliveries") }}",{
+                                                            id: state.deliveryPreview.id
                                                         })
+
+                                                        if(!response.ok){
+                                                            BoostrapToast.open("Deliveries","Failed to delete delivery!")
+                                                        } else {
+                                                            BoostrapToast.open("Deliveries","Deleted delivery!")
+                                                        }
+
+                                                        await loadDeliveriesData()
+                                                        state.deliveryPreview = null
+                                                        state.addPanel = true
+                                                        mount.update()
+                                                    })
                                                 )
                                             }
                                         }
