@@ -153,6 +153,26 @@ Route::group([
 
 
 
+    //Delivery Routes
+    Route::post('/deliveries/add', [
+        'as'   => 'inventory.addDeliveries',
+        'uses' => 'DeliveriesController@addDeliveries',
+        'middleware' => 'can:inventory.edit_inventory'
+    ]);
+
+    Route::post('/deliveries/list', [
+        'as'   => 'inventory.listDeliveries',
+        'uses' => 'DeliveriesController@listDeliveries',
+        'middleware' => 'can:inventory.edit_inventory'
+    ]);
+
+    Route::post('/deliveries/remove', [
+        'as'   => 'inventory.deleteDeliveries',
+        'uses' => 'DeliveriesController@deleteDeliveries',
+        'middleware' => 'can:inventory.edit_inventory'
+    ]);
+
+
 
     //Legacy routes
 
@@ -172,23 +192,5 @@ Route::group([
         'as'   => 'inventory.itemTypeSuggestions',
         'uses' => 'LegacyController@itemTypeSuggestions',
         'middleware' => 'can:inventory.view_inventory'
-    ]);
-
-    Route::get('/legacy/sources/moving', [
-        'as'   => 'inventory.movingItems',
-        'uses' => 'LegacyController@getMovingItems',
-        'middleware' => 'can:inventory.view_inventory'
-    ]);
-
-    Route::post('/legacy/sources/moving/add', [
-        'as'   => 'inventory.addMovingItems',
-        'uses' => 'LegacyController@addMovingItems',
-        'middleware' => 'can:inventory.edit_inventory'
-    ]);
-
-    Route::post('/legacy/sources/moving/remove', [
-        'as'   => 'inventory.removeMovingItems',
-        'uses' => 'LegacyController@removeMovingItems',
-        'middleware' => 'can:inventory.edit_inventory'
     ]);
 });

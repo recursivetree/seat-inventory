@@ -1632,10 +1632,14 @@
 
         //deliveries popup
         function deliveriesPopup() {
-            BootstrapPopUp.open("Deliveries",(container)=>{
+            BootstrapPopUp.open("Deliveries",(container, popup)=>{
                 const state = {
                     addPanel: true,
-                    deliveryPreview: null
+                    deliveryPreview: null,
+                    location: null,
+                    items: "",
+                    message:"",
+                    deliveries: [],
                 }
 
                 const mount = W2.mount(state, (container, mount, state)=>{
@@ -1643,8 +1647,6 @@
                         W2.html("div")
                             .class("d-flex flex-row w-100 h-100")
                             .content(
-                                W2.html("h5").content("Please ignore"),
-
                                 //sidebar panel
                                 W2.html("div")
                                     .class("d-flex flex-column mr-3")
@@ -1657,16 +1659,34 @@
                                                 e.target.blur()
                                                 state.addPanel = true
                                                 mount.update()
-                                            })
+                                            }),
+
+                                        //different deliveries
+                                        (container)=>{
+                                            for (const delivery of state.deliveries){
+                                                container.content(
+                                                    //different deliveries
+                                                    W2.html("button")
+                                                        .class("btn btn-secondary btn-block")
+                                                        .content(delivery.location.name)
+                                                        .event("click",(e)=>{
+                                                            e.target.blur()
+                                                            state.deliveryPreview = delivery
+                                                            state.addPanel = false
+                                                            mount.update()
+                                                        }),
+                                                )
+                                            }
+                                        }
                                     ),
-                                //main panel
-                                (container)=>{
-                                    if(state.addPanel){
-                                        //panel to add a new stock
-                                        container.content(
-                                            W2.html("div")
-                                                .class("d-flex flex-fill")
-                                                .content(
+                                // main panel wrapper
+                                W2.html("div")
+                                    .class("d-flex flex-column flex-fill")
+                                    .content(
+                                        (container)=>{
+                                            if(state.addPanel){
+                                                //panel to add a new stock
+                                                container.content(
                                                     //textarea+label group
                                                     W2.html("div")
                                                         .class("form-group w-100")
@@ -1677,26 +1697,151 @@
                                                                 .class("form-control w-100")
                                                                 .style("resize","none")
                                                                 .attribute("placeholder","Co - Processor II 2\nDrone Damage Amplifier II 1\nTristan 3")
-                                                                .attribute("rows",10),
+                                                                .attribute("rows",10)
+                                                                .content(state.items)
+                                                                .event("change", (e) => {
+                                                                    state.items = e.target.value
+
+                                                                    mount.update()
+                                                                }),
                                                         ),
-                                                    //"Location",
+
+                                                    //Location selection
+                                                    W2.html("div")
+                                                        .class("form-group")
+                                                        .content(
+                                                            //location selection label
+                                                            W2.html("label")
+                                                                .attribute("for", W2.getID("deliveriesLocation", true))
+                                                                .content("Location"),
+                                                        )
+                                                        .content(
+                                                            select2Component({
+                                                                select2: {
+                                                                    placeholder: "Select Location",
+                                                                    ajax: {
+                                                                        url: "{{ route("inventory.locationLookup") }}"
+                                                                    },
+                                                                    dropdownParent: popup.jQuery
+                                                                },
+                                                                selectionListeners: [
+                                                                    (selection) => {
+                                                                        if (selection) {
+                                                                            //set location
+                                                                            state.location = selection
+                                                                        }
+                                                                        mount.update()
+                                                                    }
+                                                                ],
+                                                                id: W2.getID("deliveriesLocation"),
+                                                                selection: state.location
+                                                            })
+                                                        ),
+
+                                                    W2.html("p")
+                                                        .content(state.message)
+                                                        .class("text-danger"),
+
                                                     //submit button
                                                     W2.html("button")
                                                         .class("btn btn-primary btn-block")
                                                         .content("Save")
-                                                )
-                                        )
-                                    } else if(state.deliveryPreview===null){
-                                        container.content("Please select a delivery")
-                                    } else {
+                                                        .event("click",async ()=>{
+                                                            if(state.location == null){
+                                                                state.message = "Please select a location"
+                                                                mount.update()
+                                                                return
 
-                                    }
-                                }
+                                                            }
+                                                            if(state.items.length<1){
+                                                                state.message = "Please add items"
+                                                                mount.update()
+                                                                return
+                                                            }
+
+                                                            //reset message if ok
+                                                            state.message = "";
+
+                                                            mount.update()
+
+                                                            const data = {
+                                                                items: state.items,
+                                                                location: state.location.id
+                                                            }
+
+                                                            const response = await jsonPostAction("{{ route("inventory.addDeliveries") }}", data)
+                                                            if(!response.ok){
+                                                                state.message = "Failed to save the delivery"
+                                                                mount.update()
+                                                            } else {
+                                                                BoostrapToast.open("Delivery","Added delivery")
+                                                                await loadDeliveriesData()
+                                                            }
+
+                                                        })
+                                                )
+                                            } else if(state.deliveryPreview===null){
+                                                container.content("Please select a delivery")
+                                            } else {
+
+                                                //preview for a delivery
+                                                container.content(
+                                                    W2.html("h5")
+                                                        .content(state.deliveryPreview.location.name),
+                                                    W2.html("textarea")
+                                                        .class("form-control w-100 flex-grow-1")
+                                                        .style("resize", "none")
+                                                        .attribute("readonly","readonly")
+                                                        .attribute("rows",10)
+                                                        .content(
+                                                            generateMultiBuy(state.deliveryPreview.items.map((item)=>{
+                                                                return {
+                                                                    amount: item.amount,
+                                                                    name: item.type.typeName
+                                                                }
+                                                            }))
+                                                        ),
+                                                    W2.html("button")
+                                                        .class("btn btn-danger btn-block mt-2")
+                                                        .content("Delete")
+                                                        .event("click",async (e)=>{
+                                                            e.target.blur()
+
+                                                            const response = await jsonPostAction("{{ route("inventory.deleteDeliveries") }}",{
+                                                                id: state.deliveryPreview.id
+                                                            })
+
+                                                            if(!response.ok){
+                                                                BoostrapToast.open("Deliveries","Failed to delete delivery!")
+                                                                await loadDeliveriesData()
+                                                            } else {
+                                                                BoostrapToast.open("Deliveries","Deleted delivery!")
+                                                                await loadDeliveriesData()
+                                                            }
+                                                        })
+                                                )
+                                            }
+                                        }
+                                    ),
                             )
                     )
                 })
 
                 container.content(mount)
+
+                async function loadDeliveriesData() {
+                    const response = await jsonPostAction("{{ route("inventory.listDeliveries") }}",{})
+                    if(!response.ok){
+                        BoostrapToast.open("Deliveries","Failed to load deliveries")
+                        return
+                    }
+
+                    const data = await response.json()
+                    state.deliveries = data
+                    mount.update()
+                }
+
+                loadDeliveriesData()
             })
         }
 

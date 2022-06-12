@@ -25,12 +25,6 @@ return [
                 'permission' => 'inventory.view_inventory',
             ],
             [
-                'name'  => 'In Transport',
-                'icon'  => 'fas fa-truck',
-                'route' => 'inventory.movingItems',
-                'permission' => 'inventory.view_inventory',
-            ],
-            [
                 'name'  => 'About',
                 'icon'  => 'fas fa-info',
                 'route' => 'inventory.about',
