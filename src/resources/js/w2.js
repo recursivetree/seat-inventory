@@ -117,6 +117,14 @@ const W2 = function () {
             return this
         }
 
+        styleIf(condition, property, value){
+            if(condition) {
+                this.domNode.style.setProperty(property, value)
+            }
+
+            return this
+        }
+
         attribute(name,value){
             this.domNode.setAttribute(name,value)
 

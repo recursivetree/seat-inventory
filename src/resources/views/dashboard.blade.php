@@ -676,7 +676,7 @@
                 )
         }
 
-        function stockCardComponent(app, stock) {
+        function stockCardComponent(app, stock, location) {
             const available = stock.available_on_contracts + stock.available_in_hangars
 
             let availabilityColor = null
@@ -689,6 +689,7 @@
             return W2.html("div")
                 .class("card m-1")
                 .style("width", "16rem")
+                .styleIf(location !== null && location !== stock.location_id,"opacity","0.5")
                 .content(
                     //card header
                     W2.html("div")
@@ -742,7 +743,7 @@
                 )
         }
 
-        function categoryComponent(app, category, collapsed, toggleCollapse) {
+        function categoryComponent(app, category, collapsed, toggleCollapse,location) {
             return W2.html("div")
                 .class("card")
                 .content(
@@ -794,7 +795,7 @@
                                         container.content(W2.html("span").content("You haven't added any stock to this group."))
                                     }
                                     for (const stock of category.stocks) {
-                                        container.content(stockCardComponent(app, stock))
+                                        container.content(stockCardComponent(app, stock, location))
                                     }
                                 })
                         )
@@ -819,7 +820,7 @@
 
                 setLocation(location) {
                     this.location = location
-                    this.loadData()
+                    this.stateChanged()
                 }
 
                 toggleCollapse(id) {
@@ -854,9 +855,6 @@
 
                 async loadData() {
                     let url = "{{ route("inventory.getCategories") }}"
-                    if (this.location) {
-                        url = `{{ route("inventory.getCategories") }}?location=${this.location}`
-                    }
 
                     const response = await fetch(url)
                     if (!response.ok) {
@@ -880,7 +878,8 @@
                                 app,
                                 category,
                                 state.isCollapsed(category.id),
-                                (id) => state.toggleCollapse(id)
+                                (id) => state.toggleCollapse(id),
+                                state.location
                             )
                         )
                     }

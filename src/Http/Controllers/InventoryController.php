@@ -34,18 +34,8 @@ class InventoryController extends Controller
     }
 
     public function getCategories(Request $request){
-        $request->validate([
-            'location' =>'nullable|integer'
-        ]);
 
         $categories = StockCategory::with("stocks","stocks.location", "stocks.categories")->get();
-
-        $location_id = $request->location;
-        if($location_id) { // 0 stands for all locations
-            $categories = $categories->filter(function ($category) use ($location_id) {
-                return $category->stocks()->where("location_id", $location_id)->exists();
-            });
-        }
 
         return response()->json($categories->values());
     }
