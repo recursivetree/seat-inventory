@@ -29,14 +29,7 @@ class SendStockLevelNotifications implements ShouldQueue
 
     public function handle()
     {
-        $stocks = Stock::all();
-
-        $stocks = $stocks->filter(function ($stock){
-            if($stock->getTotalAvailable()<$stock->warning_threshold){
-                return true;
-            }
-            return false;
-        });
+        $stocks = Stock::where("available","<",DB::RAW("warning_threshold"))->get();
 
         if(!$stocks->isEmpty()){
             $this->dispatchNotification($stocks);

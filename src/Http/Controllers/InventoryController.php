@@ -21,21 +21,13 @@ use Seat\Web\Http\Controllers\Controller;
 
 class InventoryController extends Controller
 {
-    private function redirectWithStatus($request,$redirect,$message,$type){
-        $request->session()->flash('message', [
-            'message' => $message,
-            'type' => $type
-        ]);
-        return redirect()->route($redirect);
-    }
-
     public function dashboard(Request $request){
         return view("inventory::dashboard");
     }
 
     public function getCategories(Request $request){
 
-        $categories = StockCategory::with("stocks","stocks.location", "stocks.categories")->get();
+        $categories = StockCategory::with("stocks","stocks.location", "stocks.categories","stocks.levels")->get();
 
         return response()->json($categories->values());
     }
@@ -104,8 +96,6 @@ class InventoryController extends Controller
     }
 
     public function saveCategory(Request $request){
-        //dd($request);
-
         $rules = [
             "name" => "required|string",
             "id" => "nullable|integer",
@@ -156,7 +146,7 @@ class InventoryController extends Controller
 
         $category = StockCategory::find($request->id);
         if(!$category){
-            return $this->redirectWithStatus($request,'inventory.main',"Could not find category!", 'error');
+            return response()->json([],400);
         }
 
         //remove all linked stocks
@@ -180,7 +170,6 @@ class InventoryController extends Controller
 
         $category->stocks()->detach($request->stock);
 
-        //go back
         return response()->json();
     }
 
@@ -198,7 +187,8 @@ class InventoryController extends Controller
         //delete categories
         $stock->categories()->detach();
         //delete items
-        StockItem::where("stock_id", $request->id)->delete();
+        $stock->items()->delete();
+        $stock->levels()->delete();
         //delete the stock itself
         Stock::destroy($request->id);
 
@@ -281,6 +271,7 @@ class InventoryController extends Controller
             $stock->check_contracts = $request->check_contracts;
             $stock->check_corporation_hangars = $request->check_hangars;
             $stock->fitting_plugin_fitting_id = $request->plugin_fitting_id;
+            $stock->available = 0;
 
             //make sure we get an id
             $stock->save();

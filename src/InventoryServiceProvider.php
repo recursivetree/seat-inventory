@@ -51,6 +51,10 @@ class InventoryServiceProvider extends AbstractSeatPlugin
             __DIR__ . '/resources/js' => public_path('inventory/js')
         ]);
 
+        $this->publishes([
+            __DIR__.'/config/inventory.sources.php' => config_path('inventory.sources.php')],["config","seat"]
+        );
+
 
         Blade::directive('inventoryVersionedAsset', function($path) use ($version) {
             return "<?php echo asset({$path}) . '?v=$version'; ?>";

@@ -46,4 +46,10 @@ class ItemEntryList
             ];
         });
     }
+
+    public function asItemMap(){
+        return $this->items->mapWithKeys(function ($item){
+            return [$item->getTypeId() => $item->getAmount()];
+        });
+    }
 }

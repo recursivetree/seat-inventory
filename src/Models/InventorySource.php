@@ -18,4 +18,14 @@ class InventorySource extends Model
     {
         return $this->hasMany(InventoryItem::class,"source_id","id");
     }
+
+    public function getSourceType(){
+        $sources = config('inventory.sources');
+
+        if(array_key_exists($this->source_type,$sources)){
+            return $sources[$this->source_type];
+        }
+
+        return null;
+    }
 }

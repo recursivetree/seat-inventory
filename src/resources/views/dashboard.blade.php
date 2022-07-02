@@ -46,6 +46,19 @@
             ]
         }
 
+        class SourceTypeHelper {
+            static #source_types ={!! json_encode(config("inventory.sources")) !!}
+            //comments after blade things prevents syntax higliting errors
+
+            static getFullName(type_name){
+                return this.getData(type_name).name
+            }
+
+            static getData(type_name){
+                return this.#source_types[type_name] || {name:type_name,virtual:true,pooled:true}
+            }
+        }
+
         function generateMultiBuy(items) {
             return items.map(item => `${item.name} ${item.amount}`).join("\n")
         }
@@ -677,7 +690,7 @@
         }
 
         function stockCardComponent(app, stock, location) {
-            const available = stock.available_on_contracts + stock.available_in_hangars
+            const available = stock.available
 
             let availabilityColor = null
             if (available === 0) {
@@ -738,8 +751,12 @@
                         .content(stockCardPropertyEntry("Planned", stock.amount))
                         .content(stockCardPropertyEntry("Warning Threshold", stock.warning_threshold))
                         .content(stockCardPropertyEntry("Available", available, availabilityColor))
-                        .content(stockCardPropertyEntry("Contracts", stock.available_on_contracts))
-                        .content(stockCardPropertyEntry("Corporation Hangar", stock.available_in_hangars))
+                        .content((container)=>{
+                            for(const level of stock.levels){
+                                const fullName = SourceTypeHelper.getFullName(level.source_type)
+                                container.content(stockCardPropertyEntry(fullName, level.amount))
+                            }
+                        })
                 )
         }
 
@@ -1553,7 +1570,7 @@
                 }
             }
 
-            const available = stock.available_on_contracts + stock.available_in_hangars
+            const available = stock.available
 
             BootstrapPopUp.open(stock.name, (container) => {
                 container.content(
@@ -1577,10 +1594,8 @@
                                                                 .content(
                                                                     W2.html("th")
                                                                         .content("Attribute"),
-                                                                        //.attribute("colspan",2),
                                                                     W2.html("th")
                                                                         .content("Value"),
-                                                                        //.attribute("colspan",2)
                                                                 )
                                                         ),
                                                     W2.html("tbody")
@@ -1592,8 +1607,11 @@
                                                             dataEntry("Warning Threshold", stock.warning_threshold),
                                                             dataEntry("Priority", stock.priority),
                                                             dataEntry("Available", available),
-                                                            dataEntry("Contracts", stock.available_on_contracts),
-                                                            dataEntry("Hangars", stock.available_in_hangars),
+                                                            (container)=>{
+                                                                for (const level of stock.levels){
+                                                                    container.content(dataEntry(SourceTypeHelper.getFullName(level.source_type),level.amount))
+                                                                }
+                                                            },
                                                             dataEntry("Minimal amount fulfilled", booleanIcon(available < stock.warning_threshold)),
                                                             dataEntry("Check Contracts", booleanIcon(stock.check_contracts)),
                                                             dataEntry("Check Hangars", booleanIcon(stock.check_corporation_hangars)),

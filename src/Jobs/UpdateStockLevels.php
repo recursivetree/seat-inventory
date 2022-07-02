@@ -12,7 +12,10 @@ use Illuminate\Support\Facades\Redis;
 use RecursiveTree\Seat\Inventory\Helpers\ItemHelper;
 use RecursiveTree\Seat\Inventory\Models\InventoryItem;
 use RecursiveTree\Seat\Inventory\Models\InventorySource;
+use RecursiveTree\Seat\Inventory\Models\ItemEntryBasic;
+use RecursiveTree\Seat\Inventory\Models\ItemEntryList;
 use RecursiveTree\Seat\Inventory\Models\Stock;
+use RecursiveTree\Seat\Inventory\Models\StockLevel;
 
 class UpdateStockLevels implements ShouldQueue
 {
@@ -32,184 +35,275 @@ class UpdateStockLevels implements ShouldQueue
 
     public function handle()
     {
-        Redis::funnel("seat-inventory-update-stock-level-lock-$this->location_id")->limit(1)->then(
-            function (){
-                $this->updateStockLevels();
-            },
-            function (){
-                //update already in progress, delete the job
-                $this->delete();
-            }
-        );
+//        Redis::funnel("seat-inventory-update-stock-level-lock-$this->location_id")->limit(1)->then(
+//            function (){
+//                $this->updateStockLevels();
+//            },
+//            function (){
+//                //update already in progress, delete the job
+//                $this->delete();
+//            }
+//        );
+        $this->updateStockLevels();
     }
 
-    private function updateStockLevels(){
+    private function matchUnitSource($source, $stock){
+        //get a map of the items
+        $map = ItemEntryList::fromItemEntries($source->items)->asItemMap();
 
-        $stocks = Stock::with("items")->where("location_id",$this->location_id)->orderBy("priority","desc")->get();
+        //go over all required items
+        foreach ($stock->items as $item){
+            //get the type id
+            $type_id = $item->getTypeId();
+            //check if source has type
+            if($map->has($type_id)){
+                //get amount
+                $amount = $map->get($type_id);
+                //check if amount is sufficient
+                if($amount < $item->getAmount()){
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
 
-        //get the time from around when the query is triggered, so in case the db updates in between, we make sure that at least some ca be from the old state
+        //no failure until now -> success
+        return true;
+    }
+
+    private function saveStock($stock_data,$time){
+        //dd(json_encode($stock_data,JSON_PRETTY_PRINT));
+
+        $stock = $stock_data["stock"];
+        $stock->last_updated = $time;
+        $stock->available = $stock->amount - $stock_data["remaining"];
+
+        foreach ($stock->items as $item){
+            $item->save();
+        }
+
+        foreach ($stock_data["source_types"] as $type=>$amount){
+            $level = $stock->levels()->where("source_type",$type)->first();
+            if(!$level) {
+                $level = new StockLevel();
+                $level->stock_id = $stock->id;
+                $level->source_type=$type;
+            }
+            $level->amount = $amount;
+            $level->save();
+        }
+
+        $stock->save();
+    }
+
+    private function updateStockLevels()
+    {
+        //get the time
         $time = now();
 
-        //reset stock level caches
-        foreach ($stocks as $stock) {
-            $stock->available_on_contracts = 0;
-            $stock->available_in_hangars = 0;
-            $stock->last_updated = $time;
+        //fetch and group stocks
+        $stock_priority_groups = Stock::with("items", "levels")
+            ->where("location_id", $this->location_id)
+            ->get()
+            //create wrapper holding temp info
+            ->map(function ($stock) {
+                return [
+                    "stock" => $stock,
+                    "remaining" => $stock->amount,
+                    "priority" => $stock->priority,
+                    "virtual" => 0,
+                    "real" => 0,
+                    "source_types" => collect()
+                ];
+            })
+            ->groupBy("priority")
+            ->sortKeysDesc()
+            ->toArray();
 
-            foreach ($stock->items as $item){
-                $item->missing_items = 0;
-                $item->save();
-            }
-        }
+        //get sources
+        $sources = InventorySource::with("items")
+            ->where("location_id", $this->location_id)
+            ->get()
+            //place real, non-virtual sources first, so they get preferred when iterating over source to see if they are fulfilled
+            ->sortBy(function ($source) {
+                $source_type = $source->getSourceType();
+                if ($source_type["virtual"]) return 2;
+                return 1;
+            })
+            //add temp data required during computation
+            ->map(function ($source) {
+                $source_type = $source->getSourceType();
+                return [
+                    "source" => $source,
+                    "used" => false,
+                    "pooled" => $source_type["pooled"],
+                    "virtual" => $source_type["virtual"],
+                    "type_name" => $source->source_type
+                ];
+            });
 
-        //contract-like(exact-match): contracts, fitted ships
-        $exact_match_sources = InventorySource::where("location_id",$this->location_id)
-            ->whereIn("source_type",["contract","fitted_ship"])
-            ->get();
+        //prepare to sort sources
+        $real_pooled_items = collect();
+        $virtual_pooled_items = collect();
+        $unit_sources = collect();
 
-        //dd($exact_match_sources);
-
-        //because the stocks are sorted by priority, we don't have to do anything priority related here
-        foreach ($exact_match_sources as $source){
-            $item_list = ItemHelper::itemListFromQuery($source->items);
-            $total_items_map = ItemHelper::itemListToTypeIDMap($item_list);
-
-            $source_is_contract = $source->source_type == "contracts";
-
-            //stocks are sorted by priority with the highest priority first
-            foreach ($stocks as $stock){
-                if($source_is_contract && !$stock->check_contracts) continue;
-                if(!$source_is_contract && !$stock->check_corporation_hangars) continue;
-
-                //if we already fulfill a stock, don't consider it any further
-                if($this->getStockCoveredAmount($stock) >= $stock->amount) continue;
-
-                foreach ($stock->items as $item){
-                    $required = $item->amount;
-
-                    if(!array_key_exists($item->type_id,$total_items_map)){
-                        //dd($item->type_id,$total_items_map);
-                        continue 2;//quit inner loop, go to next stock, as the stock can't be fulfilled
-                    }
-
-                    if($total_items_map[$item->type_id]<$required){
-                        //dd(8);
-                        continue 2;//quit inner loop, go to next stock, as the stock can't be fulfilled
-                    }
-                }
-
-                //all items are available
-                if($source->source_type === "contract"){
-                    $stock->available_on_contracts += 1;
+        //sort sources
+        foreach ($sources as $source) {
+            if ($source["pooled"]) {
+                if ($source["virtual"]) {
+                    $virtual_pooled_items = $virtual_pooled_items->merge($source["source"]->items);
                 } else {
-                    $stock->available_in_hangars += 1;
+                    $real_pooled_items = $real_pooled_items->merge($source["source"]->items);
                 }
-
-                continue 2; // use this source for this stock, therefore continue with the next stock
+            } else {
+                $unit_sources->push($source);
             }
         }
 
+        //prepare pooled items
+        $virtual_pooled_items = ItemEntryList::fromItemEntries($virtual_pooled_items);
+        $virtual_pooled_items->simplify();
+        $virtual_pooled_items = $virtual_pooled_items->asItemMap()->toArray();
+        $real_pooled_items = ItemEntryList::fromItemEntries($real_pooled_items);
+        $real_pooled_items->simplify();
+        $real_pooled_items = $real_pooled_items->asItemMap()->toArray();
 
-        //hangar items
-        $source_ids = InventorySource::where("location_id",$this->location_id)
-            ->whereIn("source_type",["corporation_hangar","in_transport"])
-            ->pluck('id');
-        $items = InventoryItem::whereIn("source_id",$source_ids)->get();
-        $item_list = ItemHelper::itemListFromQuery($items);
+        //prepare unit sources
+        $unit_sources = $unit_sources->toArray();
+
+        //calculate stock levels
+        foreach ($stock_priority_groups as &$stock_priority_group) {
+            //try to fulfill stocks with unit groups
+            foreach ($stock_priority_group as &$stock) {
+                //if the stock is fulfilled, we can already ignore it
+                if ($stock["remaining"] < 1) continue;
 
 
-        $total_items_map = ItemHelper::itemListToTypeIDMap($item_list);
-        $used_items_map = $total_items_map;
+                foreach ($unit_sources as &$source) {
+                    //due to difficult bug caused by mutating a list while iterating it, we use a used flag to mark used sources
+                    if ($source["used"]) continue;
 
-        $priority_sorted = $stocks->groupBy("priority")->sortKeysDesc();
+                    $is_match = $this->matchUnitSource($source["source"], $stock["stock"]);
+                    if ($is_match) {
+                        //decrease remaining required amount
+                        $stock["remaining"] -= 1;
+                        //mark source as used
+                        $source["used"] = true;
+                        //stock: count virtual and real stocks
+                        if ($source["virtual"]) {
+                            $stock["virtual"] += 1;
+                        } else {
+                            $stock["real"] += 1;
+                        }
+                        //stock: add source type
+                        $name = $source["type_name"];
+                        $types = $stock["source_types"];
+                        if ($types->has($name)) {
+                            $types->put($name, $types->get($name) + 1);
+                        } else {
+                            $types->put($name, 1);
+                        }
 
-        $bonus_map = [];
-
-        foreach ($priority_sorted as $stock_list){
-            $total_items_map = $used_items_map;
-
-            //build up demand list considering that some stocks might already be covered by contracts
-            // this is done per priority
-            $demand_list = [];
-            foreach ($stock_list as $stock){
-                if($stock->check_corporation_hangars != true) continue; //sort out contracts that don't consider hangars
-
-                //parts might already be covered over contracts
-                $stock_numbers_required = $stock->amount - $this->getStockCoveredAmount($stock);
-
-                //make sure we never have a negative requirements
-                if($stock_numbers_required < 0){
-                    $stock_numbers_required = 0;
+                        //if we fulfill the stock, there is no need to continue checking
+                        if ($stock["remaining"] < 1) break;
+                    }
                 }
-
-                //get items
-                $required_items = ItemHelper::itemListFromQuery($stock->items); //creates a new ItemHelper instance, avoiding side effects when changing the amount
-                foreach ($required_items as $item){
-                    $item->amount *= $stock_numbers_required;
-                }
-
-                //merge all required items into one list
-                $demand_list = array_merge($demand_list,$required_items);
             }
-            $demand_map = ItemHelper::itemListToTypeIDMap($demand_list);
+        }
 
-            //calculate stock level
-            foreach ($stock_list as $stock) {
-                if ($stock->check_corporation_hangars != true) continue; //sort out contracts that don't consider hangars
+        //calculate pooled items
+        foreach ($stock_priority_groups as &$stock_priority_group) {
+            //calculate demand for this priority group
+            $item_demand = collect();
+            foreach ($stock_priority_group as &$stock) {
+                //skip stocks which are fulfilled
+                if ($stock["remaining"] < 1) continue;
 
-                $stock_numbers_required = $stock->amount - $this->getStockCoveredAmount($stock);  //number of stocks required
-                if($stock_numbers_required<0){
-                    $stock_numbers_required = 0;
-                }
-                $stock_numbers_possible = $stock_numbers_required;                          //max number of stock multiples you can possibly assemble
+                //adjust items for remaining amount
+                $item_demand->push($stock["stock"]->items->map(function ($item) use ($stock) {
+                    return new ItemEntryBasic($item->getTypeId(), $item->getAmount() * $stock["remaining"]);
+                }));
+            }
 
-                foreach ($stock->items as $item){
+            $item_demand = ItemEntryList::fromItemEntries($item_demand->flatten());
+            $item_demand->simplify();
+            $item_demand = $item_demand->asItemMap()->toArray();
+            foreach ($item_demand as $type_id=>&$demand){
+                $real_available = ($real_pooled_items[$type_id] ?? 0);
+                $virtual_available = ($virtual_pooled_items[$type_id] ?? 0);
+                $demand = ($real_available + $virtual_available) / $demand;
+            }
 
-                    $total_available = array_key_exists($item->type_id, $total_items_map) ? $total_items_map[$item->type_id] : 0;
-                    $item_demand = array_key_exists($item->type_id, $demand_map) ? $demand_map[$item->type_id] : 1;
-                    $possible_percentage =  $total_available / $item_demand;
-                    $items_required = $item->amount * $stock_numbers_required;
+            //item bonus for pooled items. Reset it after each priority group
+            $item_bonus = [];
 
-                    if($possible_percentage < 1){
-                        $bonus = array_key_exists($item->type_id,$bonus_map)? $bonus_map[$item->type_id] : 0;
-                        $exact_available = ($items_required * $possible_percentage) + $bonus;
+            foreach ($stock_priority_group as &$stock) {
+                //skip stocks which are fulfilled
+                if ($stock["remaining"] < 1) continue;
 
-                        $available = floor($exact_available);
-                        $missing = $items_required - $available;
-                        $item->missing_items = $missing;
+                $required = $stock["remaining"];
+                $possible = $required;
 
-                        if(array_key_exists($item->type_id,$used_items_map)) {
-                            $used_items_map [$item->type_id] -= $available;
-                            if($used_items_map [$item->type_id]<0){
-                                $used_items_map [$item->type_id] = 0;
-                            }
+                foreach ($stock["stock"]->items as &$item) {
+
+                    $type_id = $item->getTypeId();
+                    $amount = $item->getAmount();
+
+                    $item_amount = $amount * $required;
+
+                    $fair_amount = $item_demand[$type_id];
+
+                    var_dump($fair_amount);
+
+                    //we can fulfil it without problems
+                    if ($fair_amount < 1) {
+                        $bonus = $item_bonus[$type_id] ?? 0;
+                        $scheduled_items = $item_amount * $fair_amount + $bonus;
+                        $effective_items = floor($scheduled_items);
+
+                        //update bonus
+                        $item_bonus[$type_id] = $scheduled_items - $effective_items;
+
+                        //decrease amount of possible stocks if required
+                        $fulfilled = intdiv($effective_items, $amount);
+                        if ($fulfilled < $possible) {
+                            $possible = $fulfilled;
                         }
 
-                        $fulfilled = intdiv($available, $item->amount);
-                        if($fulfilled < $stock_numbers_possible){
-                            $stock_numbers_possible = $fulfilled;
-                        }
+                        //decrease available items
+                        $real_used = min($effective_items, $real_available);
+                        $virtual_used = $effective_items - $real_used; //what can't be covered by real items is covered by virtual items
+                        //because we fulfill the demand for this item, there is no need to check if the item exists
+                        $real_pooled_items[$type_id] = $real_available - $real_used;
+                        $virtual_pooled_items[$type_id] = $virtual_available - $virtual_used;
 
-                        $bonus = fmod($exact_available, 1.0);
-                        $bonus_map[$item->type_id] = $bonus;
+                        //update missing items
+                        $item->missing_items = $item_amount - $effective_items;
 
                     } else {
+                        //we can fulfill the demanded amount
                         $item->missing_items = 0;
-                        $used_items_map[$item->type_id] -= $items_required;
+
+                        //decrease available items
+                        $real_used = min($item_amount, $real_available);
+                        $virtual_used = $item_amount - $real_used; //what can't be covered by real items is covered by virtual items
+                        //because we fulfill the demand for this item, there is no need to check if the item exists
+                        $real_pooled_items[$type_id] = $real_available - $real_used;
+                        $virtual_pooled_items[$type_id] = $virtual_available - $virtual_used;
                     }
-                    $item->save();
                 }
 
-                $stock->available_in_hangars += $stock_numbers_possible;
+                $stock["remaining"] -= $possible;
+                $stock["source_types"]->put("item_pool", $possible);
+
+                //save the stock
+                $this->saveStock($stock, $time);
+
+
             }
         }
 
-        foreach ($stocks as $stock){
-            $stock->save();
-        }
-    }
-
-    private function getStockCoveredAmount($stock){
-        return $stock->available_in_hangars + $stock-> available_on_contracts;
+        //dd(json_encode($stock_priority_groups,JSON_PRETTY_PRINT));
     }
 }

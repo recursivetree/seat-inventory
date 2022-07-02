@@ -24,6 +24,10 @@ class Stock extends Model
         return $this->hasMany(StockItem::class,"stock_id","id");
     }
 
+    public function levels(){
+        return $this->hasMany(StockLevel::class,"stock_id","id");
+    }
+
     public static function fittingName($stock){
         if (FittingPluginHelper::pluginIsAvailable()){
             $fitting = FittingPluginHelper::$FITTING_PLUGIN_FITTING_MODEL::find($stock->fitting_plugin_fitting_id);
@@ -61,7 +65,7 @@ class Stock extends Model
     }
 
     public function getTotalAvailable(){
-        return $this->available_on_contracts + $this->available_in_hangars;
+        return $this->available;
     }
 
     public function isEligibleForCategory($filters){

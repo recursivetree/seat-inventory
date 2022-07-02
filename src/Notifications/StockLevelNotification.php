@@ -36,7 +36,7 @@ class StockLevelNotification extends AbstractNotification implements ShouldQueue
         foreach ($this->stocks as $stock){
             $name = $stock->name;
             $location = $stock->location->name;
-            $amount = $stock->getTotalAvailable();
+            $amount = $stock->available;
             $threshold = $stock->warning_threshold;
             $max = $stock->amount;
             $message->line("$name @$location: $amount/$threshold/$max");

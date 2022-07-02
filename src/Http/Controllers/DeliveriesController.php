@@ -68,6 +68,7 @@ class DeliveriesController extends Controller
         $source = InventorySource::where("id",$id)->where("source_type","in_transport")->first();
 
         if($source) {
+            $source->items()->delete();
             InventorySource::destroy($id);
 
             //update stock levels for new stock
