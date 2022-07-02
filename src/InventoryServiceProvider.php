@@ -52,7 +52,7 @@ class InventoryServiceProvider extends AbstractSeatPlugin
         ]);
 
         $this->publishes([
-            __DIR__.'/config/inventory.sources.php' => config_path('inventory.sources.php')],["config","seat"]
+            __DIR__.'/Config/inventory.sources.php' => config_path('inventory.sources.php')],["config","seat"]
         );
 
 
