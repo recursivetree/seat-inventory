@@ -144,30 +144,23 @@ class UpdateStockLevels implements ShouldQueue
             });
 
         //prepare to sort sources
-        $real_pooled_items = collect();
-        $virtual_pooled_items = collect();
+        $pooled_items = collect();
         $unit_sources = collect();
 
         //sort sources
         foreach ($sources as $source) {
             if ($source["pooled"]) {
-                if ($source["virtual"]) {
-                    $virtual_pooled_items = $virtual_pooled_items->merge($source["source"]->items);
-                } else {
-                    $real_pooled_items = $real_pooled_items->merge($source["source"]->items);
-                }
+                $pooled_items = $pooled_items->merge($source["source"]->items);
             } else {
                 $unit_sources->push($source);
             }
         }
 
         //prepare pooled items
-        $virtual_pooled_items = ItemEntryList::fromItemEntries($virtual_pooled_items);
-        $virtual_pooled_items->simplify();
-        $virtual_pooled_items = $virtual_pooled_items->asItemMap()->toArray();
-        $real_pooled_items = ItemEntryList::fromItemEntries($real_pooled_items);
-        $real_pooled_items->simplify();
-        $real_pooled_items = $real_pooled_items->asItemMap()->toArray();
+        $pooled_items = ItemEntryList::fromItemEntries($pooled_items);
+        $pooled_items->simplify();
+        $pooled_items = $pooled_items->asItemMap()->toArray();
+
 
         //prepare unit sources
         $unit_sources = $unit_sources->toArray();
@@ -230,9 +223,8 @@ class UpdateStockLevels implements ShouldQueue
             $item_demand->simplify();
             $item_demand = $item_demand->asItemMap()->toArray();
             foreach ($item_demand as $type_id=>&$demand){
-                $real_available = ($real_pooled_items[$type_id] ?? 0);
-                $virtual_available = ($virtual_pooled_items[$type_id] ?? 0);
-                $demand = ($real_available + $virtual_available) / $demand;
+                $available = ($pooled_items[$type_id] ?? 0);
+                $demand = $available / $demand;
             }
 
             //item bonus for pooled items. Reset it after each priority group
@@ -254,8 +246,6 @@ class UpdateStockLevels implements ShouldQueue
 
                     $fair_amount = $item_demand[$type_id];
 
-                    var_dump($fair_amount);
-
                     //we can fulfil it without problems
                     if ($fair_amount < 1) {
                         $bonus = $item_bonus[$type_id] ?? 0;
@@ -272,11 +262,12 @@ class UpdateStockLevels implements ShouldQueue
                         }
 
                         //decrease available items
-                        $real_used = min($effective_items, $real_available);
-                        $virtual_used = $effective_items - $real_used; //what can't be covered by real items is covered by virtual items
-                        //because we fulfill the demand for this item, there is no need to check if the item exists
-                        $real_pooled_items[$type_id] = $real_available - $real_used;
-                        $virtual_pooled_items[$type_id] = $virtual_available - $virtual_used;
+                        $new_value = ($pooled_items[$type_id]??0) - $effective_items;
+                        if($new_value<0) {
+                            $data = json_encode(["items"=>$pooled_items,"stocks"=>json_encode($stock_priority_groups)]);
+                            throw new \Exception("Trying to distribute non-existing items! $data");
+                        }
+                        $pooled_items[$type_id] = $new_value;
 
                         //update missing items
                         $item->missing_items = $item_amount - $effective_items;
@@ -286,11 +277,12 @@ class UpdateStockLevels implements ShouldQueue
                         $item->missing_items = 0;
 
                         //decrease available items
-                        $real_used = min($item_amount, $real_available);
-                        $virtual_used = $item_amount - $real_used; //what can't be covered by real items is covered by virtual items
-                        //because we fulfill the demand for this item, there is no need to check if the item exists
-                        $real_pooled_items[$type_id] = $real_available - $real_used;
-                        $virtual_pooled_items[$type_id] = $virtual_available - $virtual_used;
+                        $new_value = ($pooled_items[$type_id]??0) - $item_amount;
+                        if($new_value<0) {
+                            $data = json_encode(["items"=>$pooled_items,"stocks"=>json_encode($stock_priority_groups)]);
+                            throw new \Exception("Trying to distribute non-existing items! $data");
+                        }
+                        $pooled_items[$type_id] = $new_value;
                     }
                 }
 
