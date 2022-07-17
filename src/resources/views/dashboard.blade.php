@@ -942,8 +942,6 @@
                     warning_threshold: stock.warning_threshold || StockCreationDefaults.warning_threshold || 1,
                     location, //conversion from json see above
                     priority: stock.priority || StockCreationDefaults.priority || 1,
-                    checkHangars: stock.check_corporation_hangars !== undefined ? Boolean(stock.check_corporation_hangars) : true,
-                    checkContracts: stock.check_contracts !== undefined ? Boolean(stock.check_contracts) : true,
                     multibuy: "", //for existing stocks, the data is loaded after the ui code, as it needs access to the mount
                     fit: "",
                     name: stock.name || "",
@@ -1228,50 +1226,6 @@
                                 //no need to update the ui
                             })
                     )
-                    //source checks
-                    container.content(
-                        W2.html("div")
-                            .class("form-group")
-                            .content(
-                                W2.html("label").content("Item Source Settings"),
-                                //check contracts
-                                W2.html("div")
-                                    .class("form-check")
-                                    .content(
-                                        W2.html("input")
-                                            .attribute("type", "checkbox")
-                                            .id(W2.getID("editStockCheckContracts", true))
-                                            .class("form-check-input")
-                                            .attributeIf(state.checkContracts, "checked", true)
-                                            .event("change", (e) => {
-                                                state.checkContracts = e.target.checked
-                                                //no need to update the ui
-                                            }),
-                                        W2.html("label")
-                                            .attribute("for", W2.getID("editStockCheckContracts"))
-                                            .class("form-check-label")
-                                            .content("Check Contracts")
-                                    ),
-                                //check hangars
-                                W2.html("div")
-                                    .class("form-check")
-                                    .content(
-                                        W2.html("input")
-                                            .attribute("type", "checkbox")
-                                            .id(W2.getID("editStockCheckHangars", true))
-                                            .class("form-check-input")
-                                            .attributeIf(state.checkHangars, "checked", true)
-                                            .event("change", (e) => {
-                                                state.checkHangars = e.target.checked
-                                                //no need to update the ui
-                                            }),
-                                        W2.html("label")
-                                            .attribute("for", W2.getID("editStockCheckHangars"))
-                                            .class("form-check-label")
-                                            .content("Check Hangars")
-                                    )
-                            ),
-                    )
 
                     //add bottom button bar
                     container.content(
@@ -1363,8 +1317,6 @@
                                             amount: state.amount,
                                             warning_threshold: state.warning_threshold,
                                             priority: state.priority,
-                                            check_contracts: state.checkContracts,
-                                            check_hangars: state.checkHangars
                                         }
                                         if (state.type === "fit") {
                                             data.fit = state.fit

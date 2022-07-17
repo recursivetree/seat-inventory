@@ -204,8 +204,6 @@ class InventoryController extends Controller
             "amount"=>"required|integer|gt:0",
             "warning_threshold"=>"required|integer|gte:0",
             "priority"=>"required|integer|gte:0|lte:5",
-            "check_contracts"=>"required|boolean",
-            "check_hangars"=>"required|boolean",
             "fit"=>"nullable|string",
             "multibuy"=>"nullable|string",
             "plugin_fitting_id"=>"nullable|integer",
@@ -268,8 +266,6 @@ class InventoryController extends Controller
             $stock->amount = $request->amount;
             $stock->warning_threshold = $request->warning_threshold;
             $stock->priority = $request->priority;
-            $stock->check_contracts = $request->check_contracts;
-            $stock->check_corporation_hangars = $request->check_hangars;
             $stock->fitting_plugin_fitting_id = $request->plugin_fitting_id;
             $stock->available = 0;
 
