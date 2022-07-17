@@ -154,7 +154,7 @@ class UpdateStockLevels implements ShouldQueue
         $unit_sources = collect();
 
         //sort sources
-        foreach ($sources as $source) {
+        foreach ($sources as &$source) {
             if ($source["pooled"]) {
                 $pooled_items = $pooled_items->merge($source["source"]->items);
             } else {
