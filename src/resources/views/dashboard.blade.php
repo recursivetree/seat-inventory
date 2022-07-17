@@ -906,6 +906,14 @@
             })
         }
 
+        const StockCreationDefaults = {
+            type: null,
+            amount: null,
+            warning_threshold: null,
+            location: null,
+            priority: null
+        }
+
         //stock creation and edit button
         async function editStockPopUp(app, stock) {
             const priorities = await getStockPriorities()
@@ -923,15 +931,17 @@
                         id: stock.location.id || null,
                         text: stock.location.name || null
                     }
+                } else if (StockCreationDefaults.location){
+                    location = StockCreationDefaults.location
                 }
 
                 //ui state
                 const state = {
-                    type: stock.fitting_plugin_fitting_id ? "plugin" : "multibuy",
-                    amount: stock.amount || 1,
-                    warning_threshold: stock.warning_threshold || 1,
+                    type: stock.fitting_plugin_fitting_id ? "plugin" : StockCreationDefaults.type || "multibuy",
+                    amount: stock.amount || StockCreationDefaults.amount || 1,
+                    warning_threshold: stock.warning_threshold || StockCreationDefaults.warning_threshold || 1,
                     location, //conversion from json see above
-                    priority: stock.priority || 1,
+                    priority: stock.priority || StockCreationDefaults.priority || 1,
                     checkHangars: stock.check_corporation_hangars !== undefined ? Boolean(stock.check_corporation_hangars) : true,
                     checkContracts: stock.check_contracts !== undefined ? Boolean(stock.check_contracts) : true,
                     multibuy: "", //for existing stocks, the data is loaded after the ui code, as it needs access to the mount
@@ -979,6 +989,7 @@
                                     .event("change", (e) => {
                                         //update the state and rerender
                                         state.type = e.target.value
+                                        StockCreationDefaults.type = state.type
                                         mount.update()
                                     })
                             )
@@ -1118,6 +1129,7 @@
                                     .event("change", (e) => {
                                         //update the state and rerender
                                         state.amount = e.currentTarget.value
+                                        StockCreationDefaults.amount = state.amount
                                         //no need to update the ui
                                     })
                             )
@@ -1138,6 +1150,7 @@
                                     .event("change", (e) => {
                                         //update the state and rerender
                                         state.warning_threshold = e.currentTarget.value
+                                        StockCreationDefaults.warning_threshold = state.warning_threshold
                                         //no need to update the ui
                                     })
                             )
@@ -1167,6 +1180,7 @@
                                             if (selection) {
                                                 //set location
                                                 state.location = selection
+                                                StockCreationDefaults.location = state.location
                                             }
                                             state.invalidLocation = false
                                             //update ui to switch location selection stage
@@ -1210,6 +1224,7 @@
                             .event("change", (e) => {
                                 //update the state and rerender
                                 state.priority = parseInt(e.target.value)
+                                StockCreationDefaults.priority = state.priority
                                 //no need to update the ui
                             })
                     )
