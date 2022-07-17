@@ -104,7 +104,7 @@ class InventoryServiceProvider extends AbstractSeatPlugin
 
             if ($this->option("sync")){
                 $this->info("processing...");
-                UpdateStockLevels::dispatchNow($location_id);
+                UpdateStockLevels::dispatchNow($location_id, true);
                 $this->info("Synchronously processed stock level updates!");
             } else {
                 UpdateStockLevels::dispatch($location_id)->onQueue('default');

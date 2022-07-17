@@ -27,24 +27,29 @@ class UpdateStockLevels implements ShouldQueue
     }
 
     private $location_id;
+    private $sync;
 
-    public function __construct($location_id){
+    public function __construct($location_id,$sync=false){
         $this->location_id = $location_id;
+        $this->sync = $sync;
     }
 
 
     public function handle()
     {
-//        Redis::funnel("seat-inventory-update-stock-level-lock-$this->location_id")->limit(1)->then(
-//            function (){
-//                $this->updateStockLevels();
-//            },
-//            function (){
-//                //update already in progress, delete the job
-//                $this->delete();
-//            }
-//        );
-        $this->updateStockLevels();
+        if(!$this->sync) {
+            Redis::funnel("seat-inventory-update-stock-level-lock-$this->location_id")->limit(1)->then(
+                function () {
+                    $this->updateStockLevels();
+                },
+                function () {
+                    //update already in progress, delete the job
+                    $this->delete();
+                }
+            );
+        } else {
+            $this->updateStockLevels();
+        }
     }
 
     private function matchUnitSource($source, $stock){
@@ -128,6 +133,7 @@ class UpdateStockLevels implements ShouldQueue
             //place real, non-virtual sources first, so they get preferred when iterating over source to see if they are fulfilled
             ->sortBy(function ($source) {
                 $source_type = $source->getSourceType();
+
                 if ($source_type["virtual"]) return 2;
                 return 1;
             })

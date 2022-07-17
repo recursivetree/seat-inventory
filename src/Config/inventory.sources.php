@@ -26,5 +26,10 @@ return [
         'pooled'=>true,
         'virtual'=>true,
         'name'=>'Repackaged (Multiple Locations)'
-    ]
+    ],
+    'fake_fitted_ship' => [
+        'pooled'=>false,
+        'virtual'=>false,
+        'name'=>'Fitted Ships (Hangar), dev-fake'
+    ],
 ];
