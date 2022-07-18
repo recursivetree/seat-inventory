@@ -1262,6 +1262,7 @@
                                     //check response status
                                     if (response.ok) {
                                         BoostrapToast.open("Stock", "Successfully deleted the stock")
+                                        popup.close()
                                     } else {
                                         BoostrapToast.open("Stock", "Failed to delete the stock")
                                     }
