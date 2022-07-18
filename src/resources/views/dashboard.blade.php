@@ -752,9 +752,25 @@
                         .content(stockCardPropertyEntry("Warning Threshold", stock.warning_threshold))
                         .content(stockCardPropertyEntry("Available", available, availabilityColor))
                         .content((container)=>{
-                            for(const level of stock.levels){
-                                const fullName = SourceTypeHelper.getFullName(level.source_type)
-                                container.content(stockCardPropertyEntry(fullName, level.amount))
+                            const sorted = stock.levels.sort((a,b)=>b.amount - a.amount)
+
+                            const addEntry = (index)=>{
+                                const level = sorted[index]
+                                if (level){
+                                    container.content(stockCardPropertyEntry(SourceTypeHelper.getFullName(level.source_type),level.amount))
+                                } else {
+                                    container.content(stockCardPropertyEntry("\u200b","\u200b"))
+                                }
+                            }
+
+                            if (sorted.length > 3){
+                                addEntry(0)
+                                addEntry(1)
+                                container.content(stockCardPropertyEntry("Other Locations",sorted.slice(2).reduce((p,c)=>p+c.amount,0)))
+                            } else {
+                                addEntry(0)
+                                addEntry(1)
+                                addEntry(2)
                             }
                         })
                 )
