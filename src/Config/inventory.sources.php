@@ -27,6 +27,7 @@ return [
         'virtual'=>true,
         'name'=>'Repackaged (Multiple Locations)'
     ],
+    //development
     'fake_fitted_ship' => [
         'pooled'=>false,
         'virtual'=>false,

@@ -88,6 +88,12 @@ class UpdateStockLevels implements ShouldQueue
             $item->save();
         }
 
+        $old_stock_levels = $stock->levels()->whereNotIn("source_type",$stock_data["source_types"]->keys())->get();
+        foreach ($old_stock_levels as $old_stock_level){
+            $old_stock_level->delete();
+        }
+
+
         foreach ($stock_data["source_types"] as $type=>$amount){
             $level = $stock->levels()->where("source_type",$type)->first();
             if(!$level) {
