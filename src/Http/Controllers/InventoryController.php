@@ -6,6 +6,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Intervention\Image\Facades\Image;
+use RecursiveTree\Seat\Inventory\Helpers\AllianceIndustryPluginHelper;
 use RecursiveTree\Seat\Inventory\Helpers\FittingPluginHelper;
 use RecursiveTree\Seat\Inventory\Helpers\ItemHelper;
 use RecursiveTree\Seat\Inventory\Helpers\Parser;
@@ -400,5 +401,22 @@ class InventoryController extends Controller
         $stock = Stock::findOrFail($id);
 
         return Image::make($stock->getIcon())->response();
+    }
+
+    public function orderItemsAllianceIndustry(Request $request){
+        $request->validate([
+            "items" => "required|string"
+        ]);
+
+        $data = json_decode($request->items, true);
+
+        if(!AllianceIndustryPluginHelper::pluginIsAvailable() || $data === null){
+            return redirect()->back();
+        }
+
+        return AllianceIndustryPluginHelper::$API::create_orders([
+            "items" => $data["items"],
+            "location" => $data["location"]
+        ]);
     }
 }

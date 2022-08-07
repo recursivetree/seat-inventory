@@ -46,6 +46,9 @@
             ]
         }
 
+        const HAS_ALLIANCE_INDUSTRY_PLUGIN = {!! \RecursiveTree\Seat\Inventory\Helpers\AllianceIndustryPluginHelper::pluginIsAvailable() ? "true":"false" !!}
+
+        //stores data related to different source types
         class SourceTypeHelper {
             static #source_types ={!! json_encode(config("inventory.sources")) !!}
             //comments after blade things prevents syntax higliting errors
@@ -1391,7 +1394,7 @@
             })
         }
 
-        function stockItemsComponent(stockIds, onlyMissing=false) {
+        function stockItemsComponent(stockIds, onlyMissing=false, location=null) {
             const state = {
                 items: [],
                 showMultibuy: false,
@@ -1514,6 +1517,43 @@
                                         })
                                 )
                         )
+                ).contentIf(HAS_ALLIANCE_INDUSTRY_PLUGIN,
+                    W2.html("button")
+                        .class("btn btn-secondary btn-block mt-1")
+                        .content("Orders these items with seat-alliance-industry")
+                        .event("click",()=>{
+                            const data = {
+                                items: getItems(state).map((e)=>{
+                                    return {
+                                        type_id: e.type_id,
+                                        amount: e.amount
+                                    }
+                                }),
+                                location: location ? location.structure_id || location.station_id : null
+                            }
+
+                            //because we want to change the page displayed too, we have to use a form
+                            const form = document.createElement("form")
+                            form.method = "POST"
+                            form.action = "{{ route("inventory.orderItemsAllianceIndustry") }}"
+
+                            const csrf = document.createElement("input")
+                            csrf.type = "hidden"
+                            csrf.name = "_token"
+                            csrf.value = "{{ csrf_token() }}"
+                            form.appendChild(csrf)
+
+                            const items = document.createElement("input")
+                            items.type = "hidden"
+                            items.name = "items"
+                            items.value = JSON.stringify(data)
+                            form.appendChild(items)
+
+                            document.body.appendChild(form)
+                            form.submit()
+
+                            console.log(data)
+                        })
                 )
             })
 
@@ -1623,7 +1663,7 @@
                                         .content(
                                             W2.html("h5")
                                                 .content("Items"),
-                                            stockItemsComponent([stock.id])
+                                            stockItemsComponent([stock.id],false,stock.location)
                                         )
                                 )
                         )

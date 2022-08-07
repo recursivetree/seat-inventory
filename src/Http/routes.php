@@ -37,6 +37,14 @@ Route::group([
     ]);
 
 
+    // alliance-industry api routes
+    Route::post('/integrations/allianceindustry', [
+        'as'   => 'inventory.orderItemsAllianceIndustry',
+        'uses' => 'InventoryController@orderItemsAllianceIndustry',
+        'middleware' => 'can:inventory.edit_inventory'
+    ]);
+
+
     //category routes
 
     Route::post('/categories/save', [
