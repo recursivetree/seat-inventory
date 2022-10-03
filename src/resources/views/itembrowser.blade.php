@@ -5,136 +5,180 @@
 
 
 @section('full')
-    @include("inventory::includes.status")
 
-    <div class="card">
-        <div class="card-header">
-            <h3 class="card-title">Filter</h3>
-        </div>
-        <div class="card-body">
-
-            <p class="alert alert-warning">
-                This part of the plugin is no longer maintained and only here because the new dashboard isn't fully functional yet.
-                Please start to use the new dashboard
-            </p>
-
-            <form action="{{ route("inventory.itemBrowser") }}" method="GET">
-
-                <div class="form-check">
-                    <input
-                            type="checkbox"
-                            id="checkbox-corporation-hangars"
-                            class="form-check-input"
-                            name="checkbox_corporation_hangar"
-                            @if($check_corporation_hangars)
-                            checked
-                            @endif>
-                    <label for="checkbox-corporation-hangars">Corporation Hangars</label>
-                </div>
-
-                <div class="form-check">
-                    <input
-                            type="checkbox"
-                            id="checkbox-contracts"
-                            class="form-check-input"
-                            name="checkbox_contracts"
-                            @if($check_contracts)
-                            checked
-                            @endif>
-                    <label for="checkbox-contracts">Contracts</label>
-                </div>
-
-                <div class="form-check">
-                    <input
-                            type="checkbox"
-                            id="checkbox-in-transport"
-                            class="form-check-input"
-                            name="checkbox_in_transport"
-                            @if($check_in_transport)
-                            checked
-                            @endif>
-                    <label for="checkbox-in-transport">Items in transport</label>
-                </div>
-
-                <div class="form-check">
-                    <input
-                            type="checkbox"
-                            id="checkbox-fitted-ships"
-                            class="form-check-input"
-                            name="checkbox_fitted_ships"
-                            @if($check_fitted_ships)
-                            checked
-                            @endif>
-                    <label for="checkbox-fitted-ships">Fitted ships (corporation hangar)</label>
-                </div>
-
-                <div class="form-group">
-                    <label for="stock-location">Location</label>
-                    <select
-                            placeholder="enter the name of a location"
-                            class="form-control basicAutoComplete"
-                            autocomplete="off"
-                            id="stock-location"
-                            data-url="{{ route("inventory.legacyLocationSuggestions") }}"
-                            name="location_id">
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="stock-item">Item</label>
-                    <select
-                            placeholder="enter the name of a item"
-                            class="form-control basicAutoComplete"
-                            autocomplete="off"
-                            id="stock-item"
-                            data-url="{{ route("inventory.itemTypeSuggestions") }}"
-                            name="item_id">
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <button type="submit" class="btn btn-primary">Filter</button>
-                    <a href="{{ route("inventory.itemBrowser") }}" class="btn btn-secondary" role="button">Clear Filters</a>
-                </div>
-            </form>
-        </div>
-    </div>
-    @if($show_results)
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Items</h3>
-            </div>
-            <div class="card-body">
-                @include("inventory::includes.inventorySourceList",["sources"=>$inventory_sources,"filter_item_type"=>$filter_item_type])
-            </div>
-        </div>
-    @endif
+    <div id="main"></div>
 @stop
 
 @push('javascript')
     <script src="@inventoryVersionedAsset('inventory/js/bootstrap-autocomplete.js')"></script>
+    <script src="@inventoryVersionedAsset('inventory/js/w2.js')"></script>
+    <script src="@inventoryVersionedAsset('inventory/js/select2w2.js')"></script>
+    <script src="@inventoryVersionedAsset('inventory/js/bootstrapW2.js')"></script>
+    <script src="@inventoryVersionedAsset('inventory/js/components.js')"></script>
+
 
     <script>
-        $('.basicAutoComplete').autoComplete({
-            resolverSettings: {
-                requestThrottling: 50
-            },
-            minLength: 0,
-        });
 
-        @isset($location_id)
-            $('#stock-location').autoComplete('set', {
-                value: "{{ $location_id }}",
-                text: "{{ $location_id_text }}"
-            });
-        @endisset
+        async function jsonPostAction(url, data) {
+            return await fetch(url, {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify(data),
+            })
+        }
 
-        @isset($filter_item_type)
-            $('#stock-item').autoComplete('set', {
-                value: "{{ $filter_item_type }}",
-                text: "{{ $filter_item_type_text }}"
-            });
-        @endisset
+        const appState = {
+            locationFilter: null,
+            itemFilter: null,
+            items: [],
+            next_page: 0
+        }
 
+        async function fetchData(location, item, reset_page=true) {
+            if (reset_page) {
+                appState.next_page = 0
+                appState.items = []
+            }
+
+            const data = await jsonPostAction("{{ route("inventory.itemBrowserData") }}",{
+                location,
+                item,
+                page: appState.next_page++
+            })
+
+            appState.items = appState.items.concat(await data.json())
+        }
+
+        const mount = W2.mount(appState, (container, mount, state)=>{
+            //card
+            container.content(W2.html("div")
+                .class("card")
+                .content(
+                    //title header
+                    W2.html("div")
+                        .class("card-header")
+                        .content(
+                            W2.html("h3")
+                                .class("cart-title")
+                                .content("Item Browser")
+                        ),
+                    //card body
+                    W2.html("div")
+                        .class("card-body")
+                        .content(
+                            //location
+                            W2.html("div")
+                                .class("form-group d-flex flex-column")
+                                .content(
+                                    W2.html("label")
+                                        .content("Location")
+                                        .attribute("for",W2.getID("filterLocation"))
+                                ).content(
+                                    select2Component({
+                                        select2: {
+                                            placeholder: "All locations",
+                                            ajax: {
+                                                url: "{{ route("inventory.locationLookup") }}"
+                                            },
+                                            allowClear: true
+                                        },
+                                        selectionListeners: [
+                                            async (selection) => {
+                                                state.locationFilter = selection
+                                                mount.update()
+
+                                                await fetchData(state.locationFilter?state.locationFilter.id:null,state.itemFilter?state.itemFilter.id:null)
+                                                mount.update()
+                                            }
+                                        ],
+                                        id: W2.getID("filterLocation"),
+                                        selection: state.locationFilter
+                                    })
+                                ),
+                            //item
+                            W2.html("div")
+                                .class("form-group d-flex flex-column")
+                                .content(
+                                    W2.html("label")
+                                        .content("Item")
+                                        .attribute("for",W2.getID("filterItem"))
+                                ).content(
+                                select2Component({
+                                    select2: {
+                                        placeholder: "All Items",
+                                        ajax: {
+                                            url: "{{ route("inventory.itemLookup") }}"
+                                        },
+                                        allowClear: true
+                                    },
+                                    selectionListeners: [
+                                        async (selection) => {
+                                            state.itemFilter = selection
+                                            mount.update()
+
+                                            await fetchData(state.locationFilter?state.locationFilter.id:null,state.itemFilter?state.itemFilter.id:null)
+                                            mount.update()
+                                        }
+                                    ],
+                                    id: W2.getID("filterItem"),
+                                    selection: state.itemFilter
+                                })
+                            )
+                        )
+                ))
+
+            container.contentIf(state.items.length > 0,
+                W2.html("div")
+                    .class("card")
+                    .content(
+                        W2.html("div")
+                            .class("card-body")
+                            .content(
+                                W2.html("ul")
+                                    .class("list-group")
+                                    .content((container)=>{
+                                        for (const item of state.items){
+                                            container.content(
+                                                W2.html("li")
+                                                    .class("list-group-item d-flex flex-row align-items-center")
+                                                    .content(
+                                                        W2.html("img")
+                                                            .class("img-circle")
+                                                            .attribute("src",`https://images.evetech.net/types/${item.type_id}/icon?size=32`),
+                                                        W2.html("span")
+                                                            .class("ml-2")
+                                                            .content(`${item.amount}x ${item.type.typeName}`),
+                                                        W2.html("span")
+                                                            .class("text-muted ml-auto")
+                                                            .content(`${item.source.source_name} @ ${item.source.location.name}`)
+                                                    )
+                                            )
+                                        }
+                                    }),
+                            ).contentIf(state.items.length % 100 === 0 && state.items.length > 0,
+                                W2.html("div")
+                                    .class("d-flex flex-row justify-content-center mt-2")
+                                    .content(
+                                        W2.html("button")
+                                            .class("btn btn-primary")
+                                            .content("Load More")
+                                            .event("click",async ()=>{
+                                                await fetchData(state.locationFilter?state.locationFilter.id:null,state.itemFilter?state.itemFilter.id:null,false)
+                                                mount.update()
+                                            })
+                                    )
+                            )
+                    )
+            )
+        })
+
+        fetchData(null,null).then(()=>{
+            mount.update()
+        })
+
+        mount.addInto("main")
     </script>
 @endpush

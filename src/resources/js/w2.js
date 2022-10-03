@@ -312,24 +312,3 @@ const W2 = function () {
         restoreScrollPosition
     }
 }()
-
-class TestButtonComponent extends W2.W2Component{
-    counter
-
-    constructor() {
-        super();
-        this.counter = 0
-    }
-
-    buttonClicked(){
-        this.counter += 1
-        this.stateChanged()
-    }
-
-    render(container){
-        container.content(W2.html("button")
-            .content("Counter: ",this.counter)
-            .event("click",()=>this.buttonClicked())
-        )
-    }
-}

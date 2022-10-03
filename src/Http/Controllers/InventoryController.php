@@ -13,11 +13,13 @@ use RecursiveTree\Seat\Inventory\Helpers\Parser;
 use RecursiveTree\Seat\Inventory\Jobs\GenerateStockIcon;
 use RecursiveTree\Seat\Inventory\Jobs\UpdateCategoryMembers;
 use RecursiveTree\Seat\Inventory\Jobs\UpdateStockLevels;
+use RecursiveTree\Seat\Inventory\Models\InventoryItem;
 use RecursiveTree\Seat\Inventory\Models\ItemEntryList;
 use RecursiveTree\Seat\Inventory\Models\Location;
 use RecursiveTree\Seat\Inventory\Models\Stock;
 use RecursiveTree\Seat\Inventory\Models\StockCategory;
 use RecursiveTree\Seat\Inventory\Models\StockItem;
+use Seat\Eveapi\Models\Sde\InvType;
 use Seat\Web\Http\Controllers\Controller;
 
 class InventoryController extends Controller
@@ -330,6 +332,35 @@ class InventoryController extends Controller
         ]);
     }
 
+    public function itemLookup(Request $request){
+        $request->validate([
+            "term"=>"nullable|string",
+            "id"=>"nullable|integer"
+        ]);
+
+        $query = InvType::where("marketGroupID","!=",null);
+        if ($request->term){
+            $query = $query->where("typeName","like","%$request->term%");
+        }
+        if ($request->id){
+            $query = $query->where("typeID",$request->id);
+        }
+
+        $suggestions = $query->limit(100)->get();
+
+        $suggestions = $suggestions
+            ->map(function ($doctrine){
+                return [
+                    'id' => $doctrine->typeID,
+                    'text' => "$doctrine->typeName"
+                ];
+            });
+
+        return response()->json([
+            'results'=>$suggestions
+        ]);
+    }
+
     public function fittingsLookup(Request $request){
         $request->validate([
             "term"=>"nullable|string",
@@ -362,6 +393,36 @@ class InventoryController extends Controller
         return response()->json([
             'results'=>$suggestions
         ]);
+    }
+
+    public function itemBrowser(){
+        return view("inventory::itembrowser");
+    }
+
+    public function itemBrowserData(Request $request){
+        $request->validate([
+            "location"=>"nullable|integer",
+            "item"=>"nullable|integer",
+            "page"=>"integer"
+        ]);
+
+        $query = InventoryItem::with("source.location:id,name","type")
+            ->join("recursive_tree_seat_inventory_inventory_source","source_id","recursive_tree_seat_inventory_inventory_source.id")
+            ->orderBy("source_id")
+            ->limit(100)
+            ->offset($request->page*100);
+
+        if($request->location){
+            $query = $query->where("recursive_tree_seat_inventory_inventory_source.location_id",$request->location);
+        }
+
+        if($request->item){
+            $query = $query->where("type_id",$request->item);
+        }
+
+        $data = $query->get();
+
+        return response()->json($data);
     }
 
     public function exportItems(Request $request){

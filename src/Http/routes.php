@@ -30,12 +30,20 @@ Route::group([
 
 
     //locations
+    //this route is hard coded, due not change url
     Route::get('/location/lookup', [
         'as'   => 'inventory.locationLookup',
         'uses' => 'InventoryController@locationLookup',
         'middleware' => 'can:inventory.view_inventory'
     ]);
 
+    //items
+    //this route is hard coded, due not change url
+    Route::get('/item/lookup', [
+        'as'   => 'inventory.itemLookup',
+        'uses' => 'InventoryController@itemLookup',
+        'middleware' => 'can:inventory.view_inventory'
+    ]);
 
     // alliance-industry api routes
     Route::post('/integrations/allianceindustry', [
@@ -181,24 +189,17 @@ Route::group([
     ]);
 
 
-
-    //Legacy routes
-
-    Route::get('/legacy/locations/suggestions', [
-        'as'   => 'inventory.legacyLocationSuggestions',
-        'uses' => 'LegacyController@locationSuggestions',
-        'middleware' => 'can:inventory.view_inventory'
-    ]);
-
-    Route::get('/legacy/itembrowser', [
+    //item browser
+    Route::get('/browser', [
         'as'   => 'inventory.itemBrowser',
-        'uses' => 'LegacyController@itemBrowser',
+        'uses' => 'InventoryController@itemBrowser',
         'middleware' => 'can:inventory.view_inventory'
     ]);
 
-    Route::get('/legacy/items/suggestions', [
-        'as'   => 'inventory.itemTypeSuggestions',
-        'uses' => 'LegacyController@itemTypeSuggestions',
+    Route::post('/browser', [
+        'as'   => 'inventory.itemBrowserData',
+        'uses' => 'InventoryController@itemBrowserData',
         'middleware' => 'can:inventory.view_inventory'
     ]);
+
 });

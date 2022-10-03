@@ -5,8 +5,6 @@
 
 
 @section('full')
-    @include("inventory::includes.status")
-
     <div class="card">
         <div class="card-header">
             <h3 class="card-title">Add Alliance</h3>
