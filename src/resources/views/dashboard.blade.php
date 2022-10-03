@@ -1536,6 +1536,7 @@
                             const form = document.createElement("form")
                             form.method = "POST"
                             form.action = "{{ route("inventory.orderItemsAllianceIndustry") }}"
+                            form.target = "_blank"
 
                             const csrf = document.createElement("input")
                             csrf.type = "hidden"
