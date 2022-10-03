@@ -134,7 +134,7 @@
                 <thead>
                 <tr>
                     <th>Corporation</th>
-                    <th>Managed By</th>
+                    <th>Added by Alliance</th>
                     <th>Actions</th>
                 </tr>
                 </thead>
@@ -152,7 +152,7 @@
 
                                     @if($corporation->managed_by)
                                         <span class="d-inline-block" tabindex="0" data-toggle="tooltip" data-placement="top"
-                                              title="This corporation is automatically managed by the alliance '{{ $corporation->alliance->name }}' and cannot be manually removed.">
+                                              title="This corporation was automatically added by the alliance '{{ $corporation->alliance->name }}' and cannot be manually removed.">
                                             <button type="submit" class="btn btn-danger" disabled style="pointer-events: none;">Remove</button>
                                         </span>
                                     @else
