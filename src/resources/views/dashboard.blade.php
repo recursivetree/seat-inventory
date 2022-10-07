@@ -1928,7 +1928,7 @@
                             W2.html("i").class("fas fa-book"),
                             " Documentation"
                         )
-                        .attribute("href","https://github.com/recursivetree/seat-inventory/documentation/seat-inventory.md")
+                        .attribute("href","https://github.com/recursivetree/seat-inventory/blob/master/documentation/seat-inventory.md")
                         .attribute("target","_blank")
                 )
                 .content(
