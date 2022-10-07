@@ -14,11 +14,14 @@ More features:
 - priorities: If there aren't enough items, preferably allocate them to high priority ships like a home-defence doctrine
 - much more
 
-The plugin isn't that easy to use, but I will write a documentation at some point.
-
 It is likely that there are still some bugs. Don't hesitate to report them.
 
 ## Installation
 See the instruction over at the [seat documentation](https://eveseat.github.io/docs/community_packages/).
 
 The package name is `recursivetree/seat-inventory`.
+
+## Documentation
+[here](documentation/seat-inventory.md)
+
+

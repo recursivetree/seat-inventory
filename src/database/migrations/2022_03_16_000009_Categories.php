@@ -29,7 +29,7 @@ class Categories extends Migration
         }
 
         $category = new StockCategory();
-        $category->name = "Uncategorized (after update)";
+        $category->name = "Default Group";
         $category->save();
 
         $category->stocks()->syncWithoutDetaching(Stock::pluck("id"));

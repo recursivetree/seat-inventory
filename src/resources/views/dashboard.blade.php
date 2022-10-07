@@ -1922,6 +1922,16 @@
                         })
                 )
                 .content(
+                    W2.html("a")
+                        .class("btn btn-secondary ml-1")
+                        .content(
+                            W2.html("i").class("fas fa-book"),
+                            " Documentation"
+                        )
+                        .attribute("href","https://github.com/recursivetree/seat-inventory/documentation/seat-inventory.md")
+                        .attribute("target","_blank")
+                )
+                .content(
                     W2.html("button")
                         .class("btn btn-secondary ml-1")
                         .content("Collapse All")
