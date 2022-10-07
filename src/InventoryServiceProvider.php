@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
-use RecursiveTree\Seat\Inventory\Helpers\FittingPluginHelper;
+use RecursiveTree\Seat\TreeLib\Helpers\FittingPluginHelper;
 use RecursiveTree\Seat\Inventory\Jobs\GenerateStockIcon;
 use RecursiveTree\Seat\Inventory\Jobs\SendStockLevelNotifications;
 use RecursiveTree\Seat\Inventory\Jobs\UpdateCategoryMembers;

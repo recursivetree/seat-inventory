@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Intervention\Image\Facades\Image;
 use RecursiveTree\Seat\Inventory\Helpers\AllianceIndustryPluginHelper;
-use RecursiveTree\Seat\Inventory\Helpers\FittingPluginHelper;
+use RecursiveTree\Seat\TreeLib\Helpers\FittingPluginHelper;
 use RecursiveTree\Seat\Inventory\Helpers\ItemHelper;
 use RecursiveTree\Seat\Inventory\Helpers\Parser;
 use RecursiveTree\Seat\Inventory\Jobs\GenerateStockIcon;
