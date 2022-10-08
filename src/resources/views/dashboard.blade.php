@@ -46,7 +46,7 @@
             ]
         }
 
-        const HAS_ALLIANCE_INDUSTRY_PLUGIN = {!! \RecursiveTree\Seat\Inventory\Helpers\AllianceIndustryPluginHelper::pluginIsAvailable() ? "true":"false" !!}
+        const HAS_ALLIANCE_INDUSTRY_PLUGIN = {!! \RecursiveTree\Seat\TreeLib\Helpers\AllianceIndustryPluginHelper::pluginIsAvailable() ? "true":"false" !!}
 
         //stores data related to different source types
         class SourceTypeHelper {
