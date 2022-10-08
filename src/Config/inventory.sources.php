@@ -33,10 +33,4 @@ return [
         'virtual'=>false,
         'name'=>'Fitted Ships (Hangar), dev-fake'
     ],
-    //seat-alliance-industry
-    'alliance_industry' => [
-        'pooled'=>true,
-        'virtual'=>true,
-        'name'=>'industry order'
-    ],
 ];
