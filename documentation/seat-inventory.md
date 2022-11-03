@@ -1,14 +1,18 @@
 # seat-inventory
 ## What is seat-inventory
-This plugin aims to make the life of corporations and alliances easier by helping to manage contracts and corporation hangars. It loads contracts and corporation hangars from the ESI to make a list of what we have. Additionally, you can define what you need(e.g. a doctrine ship) and where you need it(staging). The plugin compares it to what you have and shows you how many times you have your doctrine ship stocked. Additionally, it shows you what's missing so you can restock.
+This plugin aims to make the life of corporations and alliances easier by helping to manage contracts and corporation hangars. 
+It loads contracts and corporation hangars from the ESI to make a list of what you have. 
+Additionally, you can define what you need(e.g. a doctrine ship) and where you need it(staging). 
+The plugin compares it to what you have and shows you how many times you have your doctrine ship stocked. 
+You can also export a list of missing items so you can restock.
 
-Some features:
+More features:
 
 * notifications if your stocks run low
-* dashboards to monitor doctrines consisting out of multiple ship types. You can even have one ship in multiple doctrine dashboards
-* create stocks from fits from seat-fitting, changes through seat-fitting are reflected
+* dashboard to monitor doctrines with multiple ship types. You can even have one ship in multiple doctrines
+* create stocks from fits from seat-fitting including updating the stock when you change fits
 * export missing items to seat-alliance-industry
-* priorities: If there aren't enough items, preferably allocate them to high priority ships like a home-defence doctrine
+* stock priority system: If there aren't enough items, preferably allocate them to high priority ships like a home-defence doctrine over a fun fleet
 * much more
 
 **This guide is still work in progress!**
@@ -18,23 +22,39 @@ Some features:
 This is a guide on how to get started with seat-inventory.
 
 ### Installation
-The first step is to install seat-inventory. You can follow the normal steps to install seat plugins, as described [here](https://eveseat.github.io/docs/community_packages/). The package name is `recursivetree/seat-inventory`
+The first step is to install seat-inventory. You can follow the normal steps to install seat plugins, as described [here](https://eveseat.github.io/docs/community_packages/). 
+The package name is `recursivetree/seat-inventory`
 
 ### Configuration
+You need to configure seat-inventory before you can use it. 
+There are two steps:
+
+1. Setting up permissions
+2. Setting up seat-inventory
 
 #### Permissions
-You can configure edit and view access over normal seat permissions under *Settings/Access Management*
+seat-inventory provides two permissions: edit and view. A description of what they do is below.
+You can configure the permissions over the normal seat permission system under *Settings/Access Management*
 
-##### View Inventory
+##### Permission View Inventory
 Allows you to view the seat-inventory pages and the data on this page. As of right now, the UI still shows all buttons as if you have edit permissions, but it fails as soon as you press submit.
 
-##### Edit Inventory
-Allows you to change the configuration and everything else which is persisted on the server.
+##### Permission Edit Inventory
+Allows you to change the configuration, create stocks and group, or generally anything that is permanently stored on the server.
 
 #### Plugin Configuration
-Open *Inventory Management/Tracking*. On this page, you can configure from where inventory data will be loaded. You can add corporations and alliances. If you add a corporation, it's assets in the coporation hangars and corporation contracts will be tracked. Tracking an alliance only tracks alliance contracts. With alliances, you can choose if you want to track member corporations too.
+sea-inventory must know from where it should take its inventory data.
 
-After changing the tracking settings, you might need to wait up to 2 ESI cycles until theythe changes are fully reflected. Besides that, the plugin is ready to be used.
+Open *Inventory Management/Tracking*. 
+On this page, you can configure from where inventory data will be loaded. 
+You can track corporations and alliances. 
+If you add a corporation, it's assets in the corporation hangars and corporation contracts will be considered as an item source. 
+Adding an alliance only tracks alliance contracts. 
+There is an option to add all corporations of an alliance as well.
+
+After changing the tracking settings, you might need to wait up to 2 ESI cache cycles until the changes are fully reflected. 
+
+Finally, the plugin is ready to be used. Following is a brief description of the different pages and what they do.
 
 ## The Inventory Browser
 The inventory browser allows you to, as the name suggest, browse through all assets from the sources you configured under the tracking page.
@@ -43,9 +63,11 @@ You can use the filter to specify a single item type you look for and where you 
 
 To the right, you see a grey text which describes the location of the item. It consists of the name of the hangar/ship/container and the station/structure.
 
-The plugin currently doesn't distinguish between the different corporation hangars in a corporation office. Instead, it treats it like all items would be in one container.
+The plugin currently doesn't distinguish between the different corporation hangars in a corporation office. 
+Instead, it treats it like all items would be in one container.
 
-Fitted ships in a corporation hangar are treated as a seperate source and don't appear inside the corporation hangar source. Instead, they apppear with their ship name in the station of the corporation hangar.
+Fitted ships in a corporation hangar are treated as a separate source and don't appear inside the corporation hangar source. 
+Instead, they appear with their ship name in the station of the corporation hangar.
 
 ## The Dashboard
 This is the heart of seat-inventory.
@@ -62,7 +84,7 @@ Once you open the dashboard under *Inventory management/Dashboard*, you should s
 Reloads all data. You need this if two persons work on the dashboard at the same time, so you can load each other's changes. It is also useful if you change a stock and want to load the new data.
 
 #### Deliveries
-Opens the deliveries popup. Deliveries allow you to add items that don't really exist to the item sources. My corporation uses it to mark items that are being produced or shipped to staging as already there, so they dissappear from the list of missing items.
+Opens the deliveries popup. Deliveries allow you to add items that don't really exist to the item sources. My corporation uses it to mark items that are being produced or shipped to staging as already there, so they disappear from the list of missing items.
 
 #### Collapse All
 Collapses all open groups
@@ -121,7 +143,20 @@ A stock can be in multiple groups at the same time. This can be useful if you ha
 ### Filters
 Filters can automatically put stocks into groups.
 
+You can edit your filters in the **edit group** window. You can currently automatically add stocks to groups by their location and doctrines. 
+If you filter by location and doctrine at the same time, both conditions need to be fulfilled for a stock to be added to the group.
+Even if you have filters set up, you can manually add stocks that won't be removed.
+
 ## Deliveries
+The name is probably not the best for what they are, but it is a use-case for them. My corp had the issue that when restocking, 
+we bought/produced all the items, but didn't have them in our hangars. This made it look like we still didn't own them while they
+were being shipped to our home.
+
+Deliveries allow you to add items to the list of available items that don't actually exist. They are like an imaginary corporation 
+hangars.
+
+You can manage your deliveries with the `Deliveries` button below the location filter. Deliveries only support the 
+multibuy format, like it is generated when you export the items in the multibuy function of the market window.
 
 ## Notifications
 There are discord and mail notification available. You can configure them like all other seat notifications.
