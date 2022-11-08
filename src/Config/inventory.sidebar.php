@@ -13,15 +13,15 @@ return [
                 'permission' => 'inventory.view_inventory',
             ],
             [
-                'name'  => 'Tracking',
-                'icon'  => 'fas fa-cog',
-                'route' => 'inventory.tracking',
-                'permission' => 'inventory.view_inventory',
-            ],
-            [
                 'name'  => 'Item Browser',
                 'icon'  => 'fas fa-list',
                 'route' => 'inventory.itemBrowser',
+                'permission' => 'inventory.view_inventory',
+            ],
+            [
+                'name'  => 'Settings',
+                'icon'  => 'fas fa-cog',
+                'route' => 'inventory.settings',
                 'permission' => 'inventory.view_inventory',
             ],
             [

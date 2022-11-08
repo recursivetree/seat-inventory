@@ -22,5 +22,7 @@ class TrackedCorporation extends Model
         return $this->hasOne(Alliance::class, "alliance_id", "managed_by")->withDefault(["name"=>""]);
     }
 
-    protected $table = 'recursive_tree_seat_inventory_tracked_corporations';
+    protected $table = 'seat_inventory_tracked_corporations';
+    protected $primaryKey = 'corporation_id';
+    public $incrementing = false;
 }

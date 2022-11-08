@@ -102,10 +102,6 @@ class BoostrapToast {
             content = container
         }
 
-        // <button type="button" className="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
-        //     <span aria-hidden="true">&times;</span>
-        // </button>
-
         const toast = W2.html("div")
             .class("toast")
             .content(

@@ -123,8 +123,39 @@ Route::group([
         'middleware' => 'can:inventory.view_inventory'
     ]);
 
-    //tracking routes
+    //setting routes
 
+    Route::get('/settings', [
+        'as'   => 'inventory.settings',
+        'uses' => 'TrackingController@settings',
+        'middleware' => 'can:inventory.view_inventory'
+    ]);
+
+    Route::get('/settings/corporations/list', [
+        'as'   => 'inventory.trackedCorporations',
+        'uses' => 'TrackingController@getTrackedCorporations',
+        'middleware' => 'can:inventory.view_inventory'
+    ]);
+
+    Route::post('/settings/corporations/add', [
+        'as'   => 'inventory.addCorporation',
+        'uses' => 'TrackingController@addCorporation',
+        'middleware' => 'can:inventory.edit_inventory'
+    ]);
+
+    Route::post('/settings/corporations/remove', [
+        'as'   => 'inventory.removeCorporation',
+        'uses' => 'TrackingController@removeCorporation',
+        'middleware' => 'can:inventory.edit_inventory'
+    ]);
+
+    Route::get('/settings/corporations/lookup', [
+        'as'   => 'inventory.corporationLookup',
+        'uses' => 'TrackingController@corporationLookup',
+        'middleware' => 'can:inventory.view_inventory'
+    ]);
+
+    //old
     Route::get('/tracking', [
         'as'   => 'inventory.tracking',
         'uses' => 'TrackingController@tracking',

@@ -13,5 +13,7 @@ class TrackedAlliance extends Model
         return $this->hasOne(Alliance::class, "alliance_id", "alliance_id");
     }
 
-    protected $table = 'recursive_tree_seat_inventory_tracked_alliances';
+    protected $table = 'seat_inventory_tracked_alliances';
+    protected $primaryKey = 'alliance_id';
+    public $incrementing = false;
 }

@@ -15,19 +15,98 @@ use Seat\Web\Http\Controllers\Controller;
 
 class TrackingController extends Controller
 {
+    public function settings(){
+        return view("inventory::settings");
+    }
+
+    public function getTrackedCorporations(){
+        $corporations = TrackedCorporation::with(["corporation","alliance"])->get();
+
+        return response()->json($corporations);
+    }
+
+    public function addCorporation(Request $request){
+        $request->validate([
+            "corporation_id"=>"required|integer"
+        ]);
+
+        if(!CorporationInfo::where("corporation_id",$request->corporation_id)->exists()){
+            return response()->json(["message"=>"corporation doesn't exist"],400);
+        }
+
+        if(TrackedCorporation::where("corporation_id",$request->corporation_id)->exists()){
+            return response()->json(["message"=>"corporation is already tracked"],400);
+        }
+
+        //save it to the db
+        $db_entry = new TrackedCorporation();
+        $db_entry->corporation_id = $request->corporation_id;
+        $db_entry->save();
+
+        //new corporations, new assets -> we need to update
+        UpdateInventory::dispatch()->onQueue('default');
+
+        return response()->json();
+    }
+
+    public function removeCorporation(Request $request){
+        $request->validate([
+            "corporation_id"=>"required|integer"
+        ]);
+
+        TrackedCorporation::destroy($request->corporation_id);
+
+        //-1 corporation, less assets -> we need to update
+        UpdateInventory::dispatch()->onQueue('default');
+
+        return response()->json();
+    }
+
+    public function corporationLookup(Request $request){
+        $request->validate([
+            "term"=>"nullable|string",
+            "id"=>"nullable|integer"
+        ]);
+
+        $query = CorporationInfo::query();
+
+        if($request->term){
+            $query = $query->where("name","like","%$request->term%");
+        }
+
+        if($request->id){
+            $query = $query->where("id",$request->id);
+        }
+
+        $suggestions = $query->get();
+
+        $suggestions = $suggestions
+            ->map(function ($corporation){
+                return [
+                    'id' => $corporation->corporation_id,
+                    'text' => "$corporation->name"
+                ];
+            });
+
+        return response()->json([
+            'results'=>$suggestions
+        ]);
+    }
+
+    //OLD
+
+    public function tracking(){
+        $tracked_corporations = TrackedCorporation::all();
+        $tracked_alliances = TrackedAlliance::all();
+        return view("inventory::tracking", compact('tracked_corporations','tracked_alliances'));
+    }
+
     private function redirectWithStatus($request,$redirect,$message,$type){
         $request->session()->flash('message', [
             'message' => $message,
             'type' => $type
         ]);
         return redirect()->route($redirect);
-    }
-
-    public function tracking(){
-        $tracked_corporations = TrackedCorporation::all();
-        $tracked_alliances = TrackedAlliance::all();
-
-        return view("inventory::tracking", compact('tracked_corporations','tracked_alliances'));
     }
 
     public function addTrackingCorporation(Request $request){
