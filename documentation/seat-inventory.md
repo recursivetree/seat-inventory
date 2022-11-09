@@ -45,19 +45,20 @@ Allows you to change the configuration, create stocks and group, or generally an
 #### Plugin Configuration
 sea-inventory must know from where it should take its inventory data.
 
-Open *Inventory Management/Tracking*. 
+Open *Inventory Management/Settings*. 
 On this page, you can configure from where inventory data will be loaded. 
 You can track corporations and alliances. 
 If you add a corporation, it's assets in the corporation hangars and corporation contracts will be considered as an item source. 
-Adding an alliance only tracks alliance contracts. 
-There is an option to add all corporations of an alliance as well.
+Adding an alliance only tracks alliance contracts, but there is a button which enables adding alliance members. 
+This automatic mode will also add newly joined corporations and remove corporation which left. Corporations added manually 
+over the corporation section will be ignored completely and are never removed.
 
-After changing the tracking settings, you might need to wait up to 2 ESI cache cycles until the changes are fully reflected. 
+After changing the settings, you might need to wait up to 2 ESI cache cycles until the changes are fully reflected. 
 
 Finally, the plugin is ready to be used. Following is a brief description of the different pages and what they do.
 
 ## The Inventory Browser
-The inventory browser allows you to, as the name suggest, browse through all assets from the sources you configured under the tracking page.
+The inventory browser allows you to, as the name suggest, browse through all assets from the sources you configured under the settings page.
 
 You can use the filter to specify a single item type you look for and where you search for the items.
 
