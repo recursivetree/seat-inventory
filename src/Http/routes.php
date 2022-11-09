@@ -173,6 +173,18 @@ Route::group([
         'middleware' => 'can:inventory.edit_inventory'
     ]);
 
+    Route::post('/settings/alliances/members/add', [
+        'as'   => 'inventory.addAllianceMembers',
+        'uses' => 'TrackingController@addAllianceMembers',
+        'middleware' => 'can:inventory.edit_inventory'
+    ]);
+
+    Route::post('/settings/alliances/members/remove', [
+        'as'   => 'inventory.removeAllianceMembers',
+        'uses' => 'TrackingController@removeAllianceMembers',
+        'middleware' => 'can:inventory.edit_inventory'
+    ]);
+
     Route::post('/settings/alliances/remove', [
         'as'   => 'inventory.removeAlliance',
         'uses' => 'TrackingController@removeAlliance',

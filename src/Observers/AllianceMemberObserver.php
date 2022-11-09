@@ -15,12 +15,19 @@ class AllianceMemberObserver
         if($alliance_tracking != null && $alliance_tracking->manage_members){
 
             //check if corporations is already tracked
-            if(!TrackedCorporation::where("corporation_id",$alliance_member->corporation_id)->exists()){
+            $db_entry = TrackedCorporation::first($alliance_member->corporation_id);
+
+            // if not, create a tracking entry
+            if($db_entry===null){
                 $db_entry = new TrackedCorporation();
                 $db_entry->corporation_id = $alliance_member->corporation_id;
-                $db_entry->managed_by = $alliance_member->alliance_id;
-                $db_entry->save();
             }
+
+            //fill data and save
+            $db_entry = new TrackedCorporation();
+            $db_entry->managed_by = $alliance_member->alliance_id;
+            $db_entry->save();
+
         }
     }
 

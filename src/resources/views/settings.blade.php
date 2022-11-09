@@ -156,20 +156,63 @@
                                                     .content(
                                                         W2.html("span")
                                                             .content(alliance.alliance.name),
-                                                        confirmButtonComponent("Remove",async ()=>{
-                                                            const response = await jsonPostAction("{{ route("inventory.removeAlliance") }}",{
-                                                                alliance_id: alliance.alliance_id
-                                                            })
+                                                        W2.html("div")
+                                                            .contentIf(!alliance.manage_members,
+                                                                tooltipComponent(
+                                                                    W2.html("button")
+                                                                        .class("btn btn-secondary mx-1")
+                                                                        .content("Add Members")
+                                                                        .event("click",async ()=>{
+                                                                            const response = await jsonPostAction("{{ route("inventory.addAllianceMembers") }}",{
+                                                                                alliance_id: alliance.alliance_id
+                                                                            })
 
-                                                            if (response.ok){
-                                                                BoostrapToast.open("Success",`Successfully removed ${alliance.alliance.name}`)
-                                                            } else {
-                                                                BoostrapToast.open("Error",`Failed to remove ${alliance.alliance.name}`)
-                                                            }
+                                                                            if (response.ok){
+                                                                                BoostrapToast.open("Success",`Successfully added members of ${alliance.alliance.name}`)
+                                                                            } else {
+                                                                                BoostrapToast.open("Error",`Failed to add members of ${alliance.alliance.name}`)
+                                                                            }
 
-                                                            await fetchData()
-                                                            mount.update()
-                                                        })
+                                                                            await fetchData()
+                                                                            mount.update()
+                                                                        }),
+                                                                    "Existing and new alliance members will be added automatically.")
+                                                            ).contentIf(alliance.manage_members,
+                                                                tooltipComponent(
+                                                                    W2.html("button")
+                                                                        .class("btn btn-secondary mx-1")
+                                                                        .content("Remove Members")
+                                                                        .event("click",async ()=>{
+                                                                            const response = await jsonPostAction("{{ route("inventory.removeAllianceMembers") }}",{
+                                                                                alliance_id: alliance.alliance_id
+                                                                            })
+
+                                                                            if (response.ok){
+                                                                                BoostrapToast.open("Success",`Successfully removed members of ${alliance.alliance.name}`)
+                                                                            } else {
+                                                                                BoostrapToast.open("Error",`Failed to add members of ${alliance.alliance.name}`)
+                                                                            }
+
+                                                                            await fetchData()
+                                                                            mount.update()
+                                                                        }),
+                                                                    "Automatically added corporations will be removed and no new corporations will be added in the future. Manually added corporations will stay.")
+                                                            ).content(
+                                                                confirmButtonComponent("Remove",async ()=>{
+                                                                    const response = await jsonPostAction("{{ route("inventory.removeAlliance") }}",{
+                                                                        alliance_id: alliance.alliance_id
+                                                                    })
+
+                                                                    if (response.ok){
+                                                                        BoostrapToast.open("Success",`Successfully removed ${alliance.alliance.name}`)
+                                                                    } else {
+                                                                        BoostrapToast.open("Error",`Failed to remove ${alliance.alliance.name}`)
+                                                                    }
+
+                                                                    await fetchData()
+                                                                    mount.update()
+                                                                })
+                                                            )
                                                     )
                                             )
                                         }
