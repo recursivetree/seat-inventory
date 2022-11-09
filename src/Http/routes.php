@@ -191,50 +191,6 @@ Route::group([
         'middleware' => 'can:inventory.edit_inventory'
     ]);
 
-    //old
-    Route::get('/tracking', [
-        'as'   => 'inventory.tracking',
-        'uses' => 'TrackingController@tracking',
-        'middleware' => 'can:inventory.view_inventory'
-    ]);
-
-    Route::post('/tracking/corporations/add', [
-        'as'   => 'inventory.addTrackingCorporation',
-        'uses' => 'TrackingController@addTrackingCorporation',
-        'middleware' => 'can:inventory.edit_inventory'
-    ]);
-
-    Route::post('/tracking/alliances/add', [
-        'as'   => 'inventory.addTrackingAlliance',
-        'uses' => 'TrackingController@addTrackingAlliance',
-        'middleware' => 'can:inventory.edit_inventory'
-    ]);
-
-    Route::post('/tracking/corporations/delete', [
-        'as'   => 'inventory.deleteTrackingCorporation',
-        'uses' => 'TrackingController@deleteTrackingCorporation',
-        'middleware' => 'can:inventory.edit_inventory'
-    ]);
-
-    Route::post('/tracking/alliances/delete', [
-        'as'   => 'inventory.deleteTrackingAlliance',
-        'uses' => 'TrackingController@deleteTrackingAlliance',
-        'middleware' => 'can:inventory.edit_inventory'
-    ]);
-
-    Route::get('/tracking/corporations/suggestions', [
-        'as'   => 'inventory.trackingCorporationSuggestions',
-        'uses' => 'TrackingController@trackingCorporationSuggestions',
-        'middleware' => 'can:inventory.view_inventory'
-    ]);
-
-    Route::get('/tracking/alliances/suggestions', [
-        'as'   => 'inventory.trackingAllianceSuggestions',
-        'uses' => 'TrackingController@trackingAllianceSuggestions',
-        'middleware' => 'can:inventory.view_inventory'
-    ]);
-
-
 
     //Delivery Routes
     Route::post('/deliveries/add', [
