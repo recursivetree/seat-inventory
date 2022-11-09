@@ -35,7 +35,15 @@ class TrackingController extends Controller
         }
 
         if(TrackedCorporation::where("corporation_id",$request->corporation_id)->exists()){
-            return response()->json(["message"=>"corporation is already tracked"],400);
+            $corp = TrackedCorporation::find($request->corporation_id);
+            //special case: add corporation permanently
+            if($corp->managed_by !== null){
+                $corp->managed_by = null;
+                $corp->save();
+                return response()->json();
+            } else {
+                return response()->json(["message" => "corporation is already tracked"], 400);
+            }
         }
 
         //save it to the db
@@ -188,6 +196,9 @@ class TrackingController extends Controller
 
         foreach ($tracking->alliance->members as $member){
             $corp = TrackedCorporation::where("corporation_id",$member->corporation_id)->first();
+            //skip manually added corporations
+            if($corp!==null && $corp->managed_by === null) continue;
+            // update corporation
             if($corp === null){
                 $corp = new TrackedCorporation();
                 $corp->corporation_id = $member->corporation_id;
