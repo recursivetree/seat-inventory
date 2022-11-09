@@ -40,6 +40,10 @@ class TrackingController extends Controller
             if($corp->managed_by !== null){
                 $corp->managed_by = null;
                 $corp->save();
+
+                //config changed -> update items
+                UpdateInventory::dispatch()->onQueue('default');
+
                 return response()->json();
             } else {
                 return response()->json(["message" => "corporation is already tracked"], 400);
@@ -150,6 +154,9 @@ class TrackingController extends Controller
         $db_entry->manage_members = false;
         $db_entry->save();
 
+        //config changed -> update items
+        UpdateInventory::dispatch()->onQueue('default');
+
         return response()->json([]);
     }
 
@@ -171,6 +178,10 @@ class TrackingController extends Controller
             }
         }
         $alliance->delete();
+
+        //config changed -> update items
+        UpdateInventory::dispatch()->onQueue('default');
+
         return response()->json([]);
     }
 
@@ -206,6 +217,10 @@ class TrackingController extends Controller
             $corp->managed_by = $request->alliance_id;
             $corp->save();
         }
+
+        //config changed -> update items
+        UpdateInventory::dispatch()->onQueue('default');
+
         return response()->json([]);
     }
 
@@ -225,6 +240,9 @@ class TrackingController extends Controller
         $tracking->save();
 
         TrackedCorporation::where("managed_by",$request->alliance_id)->delete();
+
+        //config changed -> update items
+        UpdateInventory::dispatch()->onQueue('default');
 
         return response()->json([]);
     }
