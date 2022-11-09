@@ -74,16 +74,112 @@
 
         const appState = {
             corporations: [],
-            corporationSelector: null
+            alliances: [],
+            corporationSelector: null,
+            allianceSelector: null,
         }
 
         async function fetchData() {
-            const response = await fetch("{{ route("inventory.trackedCorporations") }}")
+            let response = await fetch("{{ route("inventory.listCorporations") }}")
             appState.corporations = await response.json()
+            response = await fetch("{{ route("inventory.listAlliances") }}")
+            appState.alliances = await response.json()
         }
 
         const mount = W2.mount(appState, (container, mount, state)=>{
-            //card
+            //card for alliances
+            container.content(W2.html("div")
+                .class("card")
+                .content(
+                    //title header
+                    W2.html("div")
+                        .class("card-header")
+                        .content(
+                            W2.html("h3")
+                                .class("cart-title")
+                                .content("Alliances")
+                        ),
+                    //card body
+                    W2.html("div")
+                        .class("card-body")
+                        .content(
+                            W2.html("div")
+                                .class("form-group d-flex flex-column w-100")
+                                .content(
+                                    W2.html("label")
+                                        .attribute("for", W2.getID("addAlliance", true))
+                                        .content("Add alliances"),
+                                    select2Component({
+                                        select2: {
+                                            placeholder: "Select an alliance",
+                                            ajax: {
+                                                url: "{{ route("inventory.allianceLookup") }}"
+                                            },
+                                            allowClear: true,
+                                        },
+                                        selectionListeners: [
+                                            (selection) => {
+                                                state.allianceSelector = selection
+                                                mount.update()
+                                            }
+                                        ],
+                                        selection: state.allianceSelector,
+                                        id: W2.getID("addAlliance")
+                                    }),
+                                ).contentIf(state.allianceSelector!==null,
+                                W2.html("button")
+                                    .class("btn btn-primary btn-block mt-2")
+                                    .content("Add")
+                                    .event("click",async ()=>{
+                                        const response = await jsonPostAction("{{ route("inventory.addAlliance") }}",{
+                                            alliance_id: state.allianceSelector.id
+                                        })
+
+                                        if (response.ok){
+                                            BoostrapToast.open("Success",`Successfully added ${state.allianceSelector.text}`)
+                                        } else {
+                                            BoostrapToast.open("Error",`Failed to add ${state.allianceSelector.text}`)
+                                        }
+
+                                        await fetchData()
+                                        mount.update()
+                                    })
+                            ),
+                            W2.html("ul")
+                                .class("list-group")
+                                .content(
+                                    (container) => {
+                                        for (const alliance of appState.alliances) {
+                                            container.content(
+                                                W2.html("li")
+                                                    .class("list-group-item d-flex flex-row justify-content-between align-items-baseline")
+                                                    .content(
+                                                        W2.html("span")
+                                                            .content(alliance.alliance.name),
+                                                        confirmButtonComponent("Remove",async ()=>{
+                                                            const response = await jsonPostAction("{{ route("inventory.removeAlliance") }}",{
+                                                                alliance_id: alliance.alliance_id
+                                                            })
+
+                                                            if (response.ok){
+                                                                BoostrapToast.open("Success",`Successfully removed ${alliance.alliance.name}`)
+                                                            } else {
+                                                                BoostrapToast.open("Error",`Failed to remove ${alliance.alliance.name}`)
+                                                            }
+
+                                                            await fetchData()
+                                                            mount.update()
+                                                        })
+                                                    )
+                                            )
+                                        }
+                                    }
+                                )
+                        )
+                )
+            )
+
+            //card for corporations
             container.content(W2.html("div")
                 .class("card")
                 .content(

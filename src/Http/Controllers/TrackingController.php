@@ -19,7 +19,7 @@ class TrackingController extends Controller
         return view("inventory::settings");
     }
 
-    public function getTrackedCorporations(){
+    public function listCorporations(){
         $corporations = TrackedCorporation::with(["corporation","alliance"])->get();
 
         return response()->json($corporations);
@@ -91,6 +91,79 @@ class TrackingController extends Controller
         return response()->json([
             'results'=>$suggestions
         ]);
+    }
+
+    public function allianceLookup(Request $request){
+        $request->validate([
+            "term"=>"nullable|string",
+            "id"=>"nullable|integer"
+        ]);
+
+        $query = Alliance::query();
+
+        if($request->term){
+            $query = $query->where("name","like","%$request->term%");
+        }
+
+        if($request->id){
+            $query = $query->where("id",$request->id);
+        }
+
+        $suggestions = $query->get();
+
+        $suggestions = $suggestions
+            ->map(function ($alliance){
+                return [
+                    'id' => $alliance->alliance_id,
+                    'text' => "$alliance->name"
+                ];
+            });
+
+        return response()->json([
+            'results'=>$suggestions
+        ]);
+    }
+
+    public function addAlliance(Request $request){
+        $request->validate([
+            "alliance_id"=>"required|integer"
+        ]);
+
+        if(!Alliance::where("alliance_id",$request->alliance_id)->exists()){
+            return response()->json(["message"=>"alliance doesn't exist"],400);
+        }
+
+        if(TrackedAlliance::where("alliance_id",$request->alliance_id)->exists()){
+            return response()->json(["message"=>"alliance already trackes"],40);
+        }
+
+        $db_entry = new TrackedAlliance();
+        $db_entry->alliance_id = $request->alliance_id;
+        $db_entry->manage_members = false;
+        $db_entry->save();
+
+        return response()->json([]);
+    }
+
+    public function removeAlliance(Request $request){
+        $request->validate([
+            "alliance_id"=>"required|integer"
+        ]);
+
+        $alliance = TrackedAlliance::find($request->alliance_id);
+        if($alliance->manange_members){
+            $corporations = TrackedCorporation::where("managed_by",$request->alliance_id)->get();
+            foreach ($corporations as $corporation){
+                $corporation->delete();
+            }
+        }
+        $alliance->delete();
+    }
+
+    public function listAlliances(){
+        $corporations = TrackedAlliance::with("alliance")->get();
+
+        return response()->json($corporations);
     }
 
     //OLD

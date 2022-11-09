@@ -132,8 +132,8 @@ Route::group([
     ]);
 
     Route::get('/settings/corporations/list', [
-        'as'   => 'inventory.trackedCorporations',
-        'uses' => 'TrackingController@getTrackedCorporations',
+        'as'   => 'inventory.listCorporations',
+        'uses' => 'TrackingController@listCorporations',
         'middleware' => 'can:inventory.view_inventory'
     ]);
 
@@ -153,6 +153,30 @@ Route::group([
         'as'   => 'inventory.corporationLookup',
         'uses' => 'TrackingController@corporationLookup',
         'middleware' => 'can:inventory.view_inventory'
+    ]);
+
+    Route::get('/settings/alliances/lookup', [
+        'as'   => 'inventory.allianceLookup',
+        'uses' => 'TrackingController@allianceLookup',
+        'middleware' => 'can:inventory.view_inventory'
+    ]);
+
+    Route::get('/settings/alliances/list', [
+        'as'   => 'inventory.listAlliances',
+        'uses' => 'TrackingController@listAlliances',
+        'middleware' => 'can:inventory.view_inventory'
+    ]);
+
+    Route::post('/settings/alliances/add', [
+        'as'   => 'inventory.addAlliance',
+        'uses' => 'TrackingController@addAlliance',
+        'middleware' => 'can:inventory.edit_inventory'
+    ]);
+
+    Route::post('/settings/alliances/remove', [
+        'as'   => 'inventory.removeAlliance',
+        'uses' => 'TrackingController@removeAlliance',
+        'middleware' => 'can:inventory.edit_inventory'
     ]);
 
     //old
