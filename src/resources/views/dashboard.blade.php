@@ -1638,8 +1638,6 @@
                                                                 }
                                                             },
                                                             dataEntry("Minimal amount fulfilled", booleanIcon(available < stock.warning_threshold)),
-                                                            dataEntry("Check Contracts", booleanIcon(stock.check_contracts)),
-                                                            dataEntry("Check Hangars", booleanIcon(stock.check_corporation_hangars)),
                                                             dataEntry("Linked to a fitting", booleanIcon(stock.fitting_plugin_fitting_id)),
                                                             dataEntry("Groups", W2.emptyHtml().content((container) => {
                                                                 for (const category of stock.categories) {
