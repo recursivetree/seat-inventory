@@ -14,6 +14,20 @@ Route::group([
 
 
 
+    //workspaces
+    //hard coded route, as it is used in a non-blade file
+    Route::get('/workspaces/list', [
+        'as'   => 'inventory.listWorkspaces',
+        'uses' => 'TrackingCOntroller@listWorkspaces',
+        'middleware' => 'can:inventory.view_inventory'
+    ]);
+
+    Route::post('/workspaces/create', [
+        'as'   => 'inventory.createWorkspaces',
+        'uses' => 'TrackingCOntroller@createWorkspace',
+        'middleware' => 'can:inventory.create_workspace'
+    ]);
+
     //ui routes
 
     Route::get('/dashboard', [

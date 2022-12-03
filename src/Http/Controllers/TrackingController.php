@@ -9,6 +9,7 @@ use RecursiveTree\Seat\Inventory\Helpers\StockHelper;
 use RecursiveTree\Seat\Inventory\Jobs\UpdateInventory;
 use RecursiveTree\Seat\Inventory\Models\TrackedAlliance;
 use RecursiveTree\Seat\Inventory\Models\TrackedCorporation;
+use RecursiveTree\Seat\Inventory\Models\Workspace;
 use Seat\Eveapi\Models\Alliances\Alliance;
 use Seat\Eveapi\Models\Corporation\CorporationInfo;
 use Seat\Web\Http\Controllers\Controller;
@@ -245,5 +246,21 @@ class TrackingController extends Controller
         UpdateInventory::dispatch()->onQueue('default');
 
         return response()->json([]);
+    }
+
+    public function listWorkspaces(){
+        $workspaces = Workspace::all();
+
+        return response()->json($workspaces,200);
+    }
+
+    public function createWorkspace(Request $request){
+        $request->validate([
+           "name"=>"requires|string"
+        ]);
+
+        $workspace = new Workspace();
+        $workspace->name = $request->name;
+        $workspace->save();
     }
 }

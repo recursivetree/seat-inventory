@@ -87,6 +87,9 @@
         }
 
         const mount = W2.mount(appState, (container, mount, state)=>{
+            //workspace selection
+            container.content(workspaceSelector())
+
             //card for alliances
             container.content(W2.html("div")
                 .class("card")
