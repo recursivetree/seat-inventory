@@ -77,21 +77,22 @@
             alliances: [],
             corporationSelector: null,
             allianceSelector: null,
+            currentWorkspace: null
         }
 
         async function fetchData() {
-            let response = await fetch("{{ route("inventory.listCorporations") }}")
+            const workspaceId = appState.currentWorkspace?appState.currentWorkspace.id:null
+            let response = await fetch(`{{ route("inventory.listCorporations") }}?workspace=${workspaceId}`)
             appState.corporations = await response.json()
-            response = await fetch("{{ route("inventory.listAlliances") }}")
+            response = await fetch(`{{ route("inventory.listAlliances") }}?workspace=${workspaceId}`)
             appState.alliances = await response.json()
         }
 
         const mount = W2.mount(appState, (container, mount, state)=>{
-            //workspace selection
-            container.content(workspaceSelector())
+            const hasWorkspace = state.currentWorkspace !== null
 
             //card for alliances
-            container.content(W2.html("div")
+            container.contentIf(hasWorkspace,W2.html("div")
                 .class("card")
                 .content(
                     //title header
@@ -135,7 +136,8 @@
                                     .content("Add")
                                     .event("click",async ()=>{
                                         const response = await jsonPostAction("{{ route("inventory.addAlliance") }}",{
-                                            alliance_id: state.allianceSelector.id
+                                            alliance_id: state.allianceSelector.id,
+                                            workspace: state.currentWorkspace.id
                                         })
 
                                         if (response.ok){
@@ -203,7 +205,7 @@
                                                             ).content(
                                                                 confirmButtonComponent("Remove",async ()=>{
                                                                     const response = await jsonPostAction("{{ route("inventory.removeAlliance") }}",{
-                                                                        alliance_id: alliance.alliance_id
+                                                                        alliance_id: alliance.alliance_id,
                                                                     })
 
                                                                     if (response.ok){
@@ -226,7 +228,7 @@
             )
 
             //card for corporations
-            container.content(W2.html("div")
+            container.contentIf(hasWorkspace,W2.html("div")
                 .class("card")
                 .content(
                     //title header
@@ -270,7 +272,8 @@
                                         .content("Add")
                                         .event("click",async ()=>{
                                             const response = await jsonPostAction("{{ route("inventory.addCorporation") }}",{
-                                                corporation_id: state.corporationSelector.id
+                                                corporation_id: state.corporationSelector.id,
+                                                workspace: state.currentWorkspace.id
                                             })
 
                                             if (response.ok){
@@ -322,6 +325,14 @@
             mount.update()
         })
 
-        mount.addInto("main")
+        W2.mount((container)=>{
+            //workspace selection
+            container.content(workspaceSelector(async (selectedWorkspace)=>{
+                appState.currentWorkspace = selectedWorkspace
+                await fetchData()
+                mount.update()
+            }))
+            container.content(mount)
+        }).addInto("main")
     </script>
 @endpush

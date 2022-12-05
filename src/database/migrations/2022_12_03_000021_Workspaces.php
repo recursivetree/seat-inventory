@@ -18,11 +18,32 @@ class Workspaces extends Migration
         $default = new \RecursiveTree\Seat\Inventory\Models\Workspace();
         $default->name = "Default Workspace";
         $default->save();
+
+        $default_workspace_id = $default->id;
+
+        Schema::table('seat_inventory_tracked_corporations', function (Blueprint $table) {
+            $table->bigInteger("workspace_id");
+            $table->index("workspace_id");
+        });
+        DB::statement("UPDATE seat_inventory_tracked_corporations SET workspace_id = $default_workspace_id");
+
+        Schema::table('seat_inventory_tracked_alliances', function (Blueprint $table) {
+            $table->bigInteger("workspace_id");
+            $table->index("workspace_id");
+        });
+        DB::statement("UPDATE seat_inventory_tracked_alliances SET workspace_id = $default_workspace_id");
+
     }
 
     public function down()
     {
         Schema::drop('recursive_tree_seat_inventory_workspaces');
+        Schema::table('seat_inventory_tracked_corporations', function (Blueprint $table) {
+            $table->dropColumn("workspace_id");
+        });
+        Schema::table('seat_inventory_tracked_alliances', function (Blueprint $table) {
+            $table->dropColumn("workspace_id");
+        });
     }
 }
 

@@ -18,7 +18,8 @@ function workspaceCreatorPopup(container, popup){
 
 function workspaceSelector(...callbacks) {
     const state = {
-        workspaces: []
+        workspaces: [],
+        currentWorkspace: null
     }
 
     async function loadWorkspaces(mount) {
@@ -26,6 +27,13 @@ function workspaceSelector(...callbacks) {
         if (response.ok){
             const data = await response.json()
             state.workspaces = data
+
+            if(state.currentWorkspace === null){
+                if (data.length > 0){
+                    //state.currentWorkspace = data[0]
+                }
+            }
+
             mount.update()
         } else {
             BoostrapToast.open("Error","Failed to load workspaces")
@@ -42,7 +50,7 @@ function workspaceSelector(...callbacks) {
                         .content(
                             W2.html("h3")
                                 .class("cart-title")
-                                .content("Select Workspace"),
+                                .content(`Select Workspace (${state.currentWorkspace?state.currentWorkspace.name:""})`),
                             W2.html("button")
                                 .class("btn btn-success ml-auto")
                                 .content(
@@ -62,11 +70,14 @@ function workspaceSelector(...callbacks) {
                                         container.content(
                                             W2.html("btn")
                                                 .class("list-group-item list-group-item-action")
+                                                .classIf(state.currentWorkspace && workspace.id===state.currentWorkspace.id,"active")
                                                 .content(workspace.name)
                                                 .event("click",()=>{
                                                     for (const callback of callbacks) {
                                                         callback(workspace)
                                                     }
+                                                    state.currentWorkspace = workspace
+                                                    mount.update()
                                                 })
                                         )
                                     }
