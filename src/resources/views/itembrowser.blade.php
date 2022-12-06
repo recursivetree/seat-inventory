@@ -12,7 +12,6 @@
 @push('javascript')
     <script>const CSRF_TOKEN = '{{ csrf_token() }}'</script>
     <script src="@inventoryVersionedAsset('inventory/js/utils.js')"></script>
-    <script src="@inventoryVersionedAsset('inventory/js/bootstrap-autocomplete.js')"></script>
     <script src="@inventoryVersionedAsset('inventory/js/w2.js')"></script>
     <script src="@inventoryVersionedAsset('inventory/js/select2w2.js')"></script>
     <script src="@inventoryVersionedAsset('inventory/js/bootstrapW2.js')"></script>
