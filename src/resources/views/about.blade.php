@@ -22,13 +22,7 @@
                 This plugin uses the following third-party components:
                 <ul>
                     <li>
-                        <a href="https://github.com/xcash/bootstrap-autocomplete">https://github.com/xcash/bootstrap-autocomplete (MIT License)</a>
-                    </li>
-                    <li>
                         <a href="https://fonts.google.com/specimen/Roboto#about">Roboto Font</a><a href="https://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</a>
-                    </li>
-                    <li>
-                        <a href="https://github.com/souptheloop/shipfit">shipfit (MIT License)</a>
                     </li>
                 </ul>
             </p>
