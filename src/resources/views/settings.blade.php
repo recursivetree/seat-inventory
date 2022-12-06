@@ -9,7 +9,6 @@
 @stop
 
 @push('javascript')
-    <script src="@inventoryVersionedAsset('inventory/js/bootstrap-autocomplete.js')"></script>
     <script src="@inventoryVersionedAsset('inventory/js/w2.js')"></script>
     <script src="@inventoryVersionedAsset('inventory/js/select2w2.js')"></script>
     <script src="@inventoryVersionedAsset('inventory/js/bootstrapW2.js')"></script>
