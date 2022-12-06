@@ -277,7 +277,7 @@ class TrackingController extends Controller
 
     public function createWorkspace(Request $request){
         $request->validate([
-           "name"=>"requires|string"
+           "name"=>"required|string"
         ]);
 
         $workspace = new Workspace();

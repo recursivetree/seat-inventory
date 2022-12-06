@@ -9,9 +9,12 @@
 @stop
 
 @push("javascript")
+    <script>const CSRF_TOKEN = '{{ csrf_token() }}'</script>
+    <script src="@inventoryVersionedAsset('inventory/js/utils.js')"></script>
     <script src="@inventoryVersionedAsset('inventory/js/w2.js')"></script>
     <script src="@inventoryVersionedAsset('inventory/js/select2w2.js')"></script>
     <script src="@inventoryVersionedAsset('inventory/js/bootstrapW2.js')"></script>
+    <script src="@inventoryVersionedAsset('inventory/js/components.js')"></script>
 
 
     <script>
@@ -64,17 +67,6 @@
 
         function generateMultiBuy(items) {
             return items.map(item => `${item.name} ${item.amount}`).join("\n")
-        }
-
-        async function jsonPostAction(url, data) {
-            return await fetch(url, {
-                method: "POST",
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify(data),
-            })
         }
 
         async function jsonGetAction(url, data) {

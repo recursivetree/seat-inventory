@@ -10,6 +10,8 @@
 @stop
 
 @push('javascript')
+    <script>const CSRF_TOKEN = '{{ csrf_token() }}'</script>
+    <script src="@inventoryVersionedAsset('inventory/js/utils.js')"></script>
     <script src="@inventoryVersionedAsset('inventory/js/bootstrap-autocomplete.js')"></script>
     <script src="@inventoryVersionedAsset('inventory/js/w2.js')"></script>
     <script src="@inventoryVersionedAsset('inventory/js/select2w2.js')"></script>
@@ -18,17 +20,6 @@
 
 
     <script>
-
-        async function jsonPostAction(url, data) {
-            return await fetch(url, {
-                method: "POST",
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify(data),
-            })
-        }
 
         const appState = {
             locationFilter: null,

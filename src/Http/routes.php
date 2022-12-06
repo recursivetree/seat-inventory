@@ -18,13 +18,13 @@ Route::group([
     //hard coded route, as it is used in a non-blade file
     Route::get('/workspaces/list', [
         'as'   => 'inventory.listWorkspaces',
-        'uses' => 'TrackingCOntroller@listWorkspaces',
+        'uses' => 'TrackingController@listWorkspaces',
         'middleware' => 'can:inventory.view_inventory'
     ]);
-
+    //hard coded route
     Route::post('/workspaces/create', [
-        'as'   => 'inventory.createWorkspaces',
-        'uses' => 'TrackingCOntroller@createWorkspace',
+        'as'   => 'inventory.createWorkspace',
+        'uses' => 'TrackingController@createWorkspace',
         'middleware' => 'can:inventory.create_workspace'
     ]);
 
