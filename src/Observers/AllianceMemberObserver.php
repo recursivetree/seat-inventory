@@ -18,7 +18,12 @@ class AllianceMemberObserver
             if ($alliance_tracking->manage_members) {
 
                 //check if corporations is already tracked
-                $db_entry = TrackedCorporation::first($alliance_member->corporation_id);
+                $db_entry = TrackedCorporation::where("corporation_id",$alliance_member->corporation_id)
+                    ->where("workspace_id",$alliance_tracking->workspace_id)
+                    ->first();
+
+                //keep manually added corporation manually added
+                if($db_entry->managed_by == null) continue;
 
                 // if not, create a tracking entry
                 if ($db_entry === null) {
