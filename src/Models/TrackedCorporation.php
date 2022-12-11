@@ -23,6 +23,4 @@ class TrackedCorporation extends Model
     }
 
     protected $table = 'seat_inventory_tracked_corporations';
-    protected $primaryKey = 'corporation_id';
-    public $incrementing = false;
 }

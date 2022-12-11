@@ -14,6 +14,4 @@ class TrackedAlliance extends Model
     }
 
     protected $table = 'seat_inventory_tracked_alliances';
-    protected $primaryKey = 'alliance_id';
-    public $incrementing = false;
 }

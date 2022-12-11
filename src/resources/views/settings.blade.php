@@ -71,12 +71,15 @@
             currentWorkspace: null
         }
 
+
         async function fetchData() {
-            const workspaceId = appState.currentWorkspace?appState.currentWorkspace.id:null
-            let response = await fetch(`{{ route("inventory.listCorporations") }}?workspace=${workspaceId}`)
-            appState.corporations = await response.json()
-            response = await fetch(`{{ route("inventory.listAlliances") }}?workspace=${workspaceId}`)
-            appState.alliances = await response.json()
+            if (appState.currentWorkspace){
+                const workspaceId = appState.currentWorkspace.id
+                let response = await fetch(`{{ route("inventory.listCorporations") }}?workspace=${workspaceId}`)
+                appState.corporations = await response.json()
+                response = await fetch(`{{ route("inventory.listAlliances") }}?workspace=${workspaceId}`)
+                appState.alliances = await response.json()
+            }
         }
 
         const mount = W2.mount(appState, (container, mount, state)=>{
@@ -160,7 +163,7 @@
                                                                         .content("Add Members")
                                                                         .event("click",async ()=>{
                                                                             const response = await jsonPostAction("{{ route("inventory.addAllianceMembers") }}",{
-                                                                                alliance_id: alliance.alliance_id
+                                                                                tracking_id: alliance.id
                                                                             })
 
                                                                             if (response.ok){
@@ -180,7 +183,7 @@
                                                                         .content("Remove Members")
                                                                         .event("click",async ()=>{
                                                                             const response = await jsonPostAction("{{ route("inventory.removeAllianceMembers") }}",{
-                                                                                alliance_id: alliance.alliance_id
+                                                                                tracking_id: alliance.id
                                                                             })
 
                                                                             if (response.ok){
@@ -196,7 +199,7 @@
                                                             ).content(
                                                                 confirmButtonComponent("Remove",async ()=>{
                                                                     const response = await jsonPostAction("{{ route("inventory.removeAlliance") }}",{
-                                                                        alliance_id: alliance.alliance_id,
+                                                                        tracking_id: alliance.id,
                                                                     })
 
                                                                     if (response.ok){
@@ -290,7 +293,7 @@
                                                             .content(corporation.corporation.name),
                                                         confirmButtonComponent("Remove",async ()=>{
                                                             const response = await jsonPostAction("{{ route("inventory.removeCorporation") }}",{
-                                                                corporation_id: corporation.corporation_id
+                                                                tracking_id: corporation.id
                                                             })
 
                                                             if (response.ok){

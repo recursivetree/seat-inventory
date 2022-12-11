@@ -44,8 +44,14 @@ class TrackingController extends Controller
             return response()->json(["message"=>"corporation doesn't exist"],400);
         }
 
-        if(TrackedCorporation::where("corporation_id",$request->corporation_id)->exists()){
-            $corp = TrackedCorporation::find($request->corporation_id);
+        if(TrackedCorporation::where("corporation_id",$request->corporation_id)
+            ->where("workspace_id",$request->workspace_id)
+            ->exists()
+        ){
+            $corp = TrackedCorporation::where("corporation_id",$request->corporation_id)
+                ->where("workspace_id",$request->workspace_id)
+                ->first();
+
             //special case: add corporation permanently
             if($corp->managed_by !== null){
                 $corp->managed_by = null;
@@ -75,10 +81,10 @@ class TrackingController extends Controller
 
     public function removeCorporation(Request $request){
         $request->validate([
-            "corporation_id"=>"required|integer"
+            "tracking_id"=>"required|integer"
         ]);
 
-        TrackedCorporation::destroy($request->corporation_id);
+        TrackedCorporation::destroy($request->tracking_id);
 
         //-1 corporation, less assets -> we need to update
         UpdateInventory::dispatch()->onQueue('default');
@@ -162,7 +168,10 @@ class TrackingController extends Controller
             return response()->json(["message"=>"alliance doesn't exist"],400);
         }
 
-        if(TrackedAlliance::where("alliance_id",$request->alliance_id)->exists()){
+        if(TrackedAlliance::where("alliance_id",$request->alliance_id)
+            ->where("workspace_id",$request->workspace)
+            ->exists()
+        ){
             return response()->json(["message"=>"alliance already trackes"],40);
         }
 
@@ -180,10 +189,10 @@ class TrackingController extends Controller
 
     public function removeAlliance(Request $request){
         $request->validate([
-            "alliance_id"=>"required|integer"
+            "tracking_id"=>"required|integer"
         ]);
 
-        $alliance = TrackedAlliance::find($request->alliance_id);
+        $alliance = TrackedAlliance::find($request->tracking_id);
 
         if($alliance === null){
             return response()->json(["message"=>"alliance doesn't exist"],400);
@@ -215,10 +224,10 @@ class TrackingController extends Controller
 
     public function addAllianceMembers(Request $request){
         $request->validate([
-            "alliance_id"=>"required|integer"
+            "tracking_id"=>"required|integer"
         ]);
 
-        $tracking = TrackedAlliance::find($request->alliance_id);
+        $tracking = TrackedAlliance::find($request->tracking_id);
 
         if($tracking === null){
             return response()->json(["message"=>"alliance isn't tracked"],400);
@@ -236,7 +245,8 @@ class TrackingController extends Controller
                 $corp = new TrackedCorporation();
                 $corp->corporation_id = $member->corporation_id;
             }
-            $corp->managed_by = $request->alliance_id;
+            $corp->managed_by = $tracking->alliance_id;
+            $corp->workspace_id = $tracking->workspace_id;
             $corp->save();
         }
 
@@ -249,10 +259,10 @@ class TrackingController extends Controller
     public function removeAllianceMembers(Request $request)
     {
         $request->validate([
-            "alliance_id" => "required|integer"
+            "tracking_id" => "required|integer"
         ]);
 
-        $tracking = TrackedAlliance::find($request->alliance_id);
+        $tracking = TrackedAlliance::find($request->tracking_id);
 
         if ($tracking === null) {
             return response()->json(["message" => "alliance isn't tracked"], 400);
@@ -261,7 +271,7 @@ class TrackingController extends Controller
         $tracking->manage_members = false;
         $tracking->save();
 
-        TrackedCorporation::where("managed_by",$request->alliance_id)->delete();
+        TrackedCorporation::where("managed_by",$tracking->alliance_id)->delete();
 
         //config changed -> update items
         UpdateInventory::dispatch()->onQueue('default');
