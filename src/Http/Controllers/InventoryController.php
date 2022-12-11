@@ -403,17 +403,19 @@ class InventoryController extends Controller
         $request->validate([
             "location"=>"nullable|integer",
             "item"=>"nullable|integer",
-            "page"=>"integer"
+            "page"=>"integer",
+            "workspace"=>"required|integer"
         ]);
 
         $query = InventoryItem::with("source.location:id,name","type")
-            ->join("recursive_tree_seat_inventory_inventory_source","source_id","recursive_tree_seat_inventory_inventory_source.id")
+            ->join("seat_inventory_inventory_source","source_id","seat_inventory_inventory_source.id")
+            ->where("seat_inventory_inventory_source.workspace_id","=","$request->workspace")
             ->orderBy("source_id")
             ->limit(100)
             ->offset($request->page*100);
 
         if($request->location){
-            $query = $query->where("recursive_tree_seat_inventory_inventory_source.location_id",$request->location);
+            $query = $query->where("seat_inventory_inventory_source.location_id",$request->location);
         }
 
         if($request->item){
