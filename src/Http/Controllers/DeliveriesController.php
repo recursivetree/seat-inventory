@@ -17,7 +17,8 @@ class DeliveriesController extends Controller
     public function addDeliveries(Request $request){
         $request->validate([
             "items" => "string|required",
-            "location"=>"integer|required"
+            "location"=>"integer|required",
+            "workspace"=>"required|integer"
         ]);
 
         $location_id = $request->location;
@@ -35,6 +36,7 @@ class DeliveriesController extends Controller
             $source->location_id = $location_id;
             $source->source_name = "Pending Delivery";
             $source->source_type = "in_transport";
+            $source->workspace_id = $request->workspace;
             $source->save();
 
             foreach ($itemList as $item){
@@ -53,8 +55,15 @@ class DeliveriesController extends Controller
         return response()->json(["message"=>"Added"]);
     }
 
-    public function listDeliveries(){
-        $deliveries = InventorySource::with("location","items.type")->where("source_type","in_transport")->get();
+    public function listDeliveries(Request $request){
+        $request->validate([
+            "workspace"=>"required|integer"
+        ]);
+
+        $deliveries = InventorySource::with("location","items.type")
+            ->where("workspace_id",$request->workspace)
+            ->where("source_type","in_transport")
+            ->get();
         return response()->json($deliveries);
     }
 

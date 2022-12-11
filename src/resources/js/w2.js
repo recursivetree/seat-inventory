@@ -210,7 +210,9 @@ const W2 = function () {
 
                 this.#last = newTree.domNode.lastChild
 
-                this.#anchor.parentNode.insertBefore(newTree.domNode,this.#anchor.nextSibling)
+                if (this.#anchor.parentNode){
+                    this.#anchor.parentNode.insertBefore(newTree.domNode,this.#anchor.nextSibling)
+                }
             })
         }
 

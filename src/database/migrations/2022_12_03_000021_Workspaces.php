@@ -14,7 +14,7 @@ class Workspaces extends Migration
             $table->bigIncrements("id");
             $table->string("name");
         });
-//
+
         $default = new \RecursiveTree\Seat\Inventory\Models\Workspace();
         $default->name = "Default Workspace";
         $default->save();
