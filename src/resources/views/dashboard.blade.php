@@ -350,6 +350,7 @@
                                                     data: function (params) {
                                                         return {
                                                             term: params.term,
+                                                            workspace: app.workspace.id
                                                         }
                                                     },
                                                     processResults: (data) => {
@@ -636,6 +637,7 @@
                                                     }
                                                 }),
                                                 filters: filters,
+                                                workspace: app.workspace.id
                                             }
 
                                             const response = await jsonPostAction("{{ route("inventory.saveCategory") }}", data)
@@ -882,7 +884,7 @@
                 }
 
                 async loadData() {
-                    let url = "{{ route("inventory.getCategories") }}"
+                    let url = `{{ route("inventory.getCategories") }}?workspace=${app.workspace.id}`
 
                     const response = await fetch(url)
                     if (!response.ok) {
@@ -1329,6 +1331,7 @@
                                             amount: state.amount,
                                             warning_threshold: state.warning_threshold,
                                             priority: state.priority,
+                                            workspace: app.workspace.id
                                         }
                                         if (state.type === "fit") {
                                             data.fit = state.fit

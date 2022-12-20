@@ -6,6 +6,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Intervention\Image\Facades\Image;
+use RecursiveTree\Seat\Inventory\Models\Workspace;
 use RecursiveTree\Seat\TreeLib\Helpers\AllianceIndustryPluginHelper;
 use RecursiveTree\Seat\TreeLib\Helpers\FittingPluginHelper;
 use RecursiveTree\Seat\Inventory\Helpers\ItemHelper;
@@ -29,8 +30,13 @@ class InventoryController extends Controller
     }
 
     public function getCategories(Request $request){
+        $request->validate([
+            "workspace"=>"required|integer"
+        ]);
 
-        $categories = StockCategory::with("stocks","stocks.location", "stocks.categories","stocks.levels")->get();
+        $categories = StockCategory::with("stocks","stocks.location", "stocks.categories","stocks.levels")
+            ->where("workspace_id",$request->workspace)
+            ->get();
 
         return response()->json($categories->values());
     }
@@ -68,6 +74,7 @@ class InventoryController extends Controller
     public function stockSuggestion(Request $request){
         $request->validate([
             "term"=>"nullable|string",
+            "workspace"=>"required|integer"
         ]);
 
         $location_ids = null;
@@ -76,6 +83,9 @@ class InventoryController extends Controller
         }
 
         $query = Stock::query();
+
+        $query->where("workspace_id",$request->workspace);
+
         if($request->term){
             $query->where("name", "like", "%$request->term%");
         }
@@ -99,18 +109,18 @@ class InventoryController extends Controller
     }
 
     public function saveCategory(Request $request){
-        $rules = [
+        $request->validate([
             "name" => "required|string",
             "id" => "nullable|integer",
             "stocks" => "nullable|array",
             "stocks.*.id" => "required|integer",
             "stocks.*.manually_added"=>"required|boolean",
             "filters" => "nullable|array",
-        ];
+            "workspace"=>"required|integer"
+        ]);
 
-        $validator = validator($request->all(),$rules);
-        if($validator->fails()){
-            return response()->json($validator->errors(),400);
+        if(!Workspace::where("id",$request->workspace)->exists()){
+            return response()->json([],400);
         }
 
         $category = StockCategory::find($request->id);
@@ -127,6 +137,7 @@ class InventoryController extends Controller
 
         $category->name = $request->name;
         $category->filters = json_encode($request->filters);
+        $category->workspace_id = $request->workspace;
         $category->save();
 
         //save stocks after category so the category has an id when creating a new category
@@ -210,12 +221,18 @@ class InventoryController extends Controller
             "fit"=>"nullable|string",
             "multibuy"=>"nullable|string",
             "plugin_fitting_id"=>"nullable|integer",
-            "name"=>"required_with:multibuy|string"
+            "name"=>"required_with:multibuy|string",
+            "workspace"=>"required|integer"
         ]);
 
         //additional fields
         $name = $request->name ?: "unnamed";
         $items = [];
+
+        //validate workspace
+        if(!Workspace::where("id",$request->workspace)->exists()){
+            return response()->json(["message"=>"workspace not found"],400);
+        }
 
         //validate location
         $location = Location::find($request->location);
@@ -271,6 +288,7 @@ class InventoryController extends Controller
             $stock->priority = $request->priority;
             $stock->fitting_plugin_fitting_id = $request->plugin_fitting_id;
             $stock->available = 0;
+            $stock->workspace_id = $request->workspace;
 
             //make sure we get an id
             $stock->save();
@@ -437,8 +455,6 @@ class InventoryController extends Controller
             ->select("recursive_tree_seat_inventory_stock_items.*",DB::raw("(recursive_tree_seat_inventory_stock_items.amount * recursive_tree_seat_inventory_stock_definitions.amount) as full_amount"))
             ->join("recursive_tree_seat_inventory_stock_definitions","stock_id","=","recursive_tree_seat_inventory_stock_definitions.id")
             ->get();
-
-        //dd(json_encode($items, JSON_PRETTY_PRINT));
 
         $item_list = ItemEntryList::fromItemEntries($items);
         $item_list->simplify();

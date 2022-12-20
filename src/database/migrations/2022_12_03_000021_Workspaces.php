@@ -59,6 +59,16 @@ class Workspaces extends Migration
             $table->index("location_id");
         });
         DB::statement("UPDATE seat_inventory_inventory_source SET workspace_id = $default_workspace_id");
+
+        Schema::table('recursive_tree_seat_inventory_stock_definitions', function (Blueprint $table) {
+            $table->bigInteger("workspace_id");
+        });
+        DB::statement("UPDATE recursive_tree_seat_inventory_stock_definitions SET workspace_id = $default_workspace_id");
+
+        Schema::table('recursive_tree_seat_inventory_stock_categories', function (Blueprint $table) {
+            $table->bigInteger("workspace_id");
+        });
+        DB::statement("UPDATE recursive_tree_seat_inventory_stock_categories SET workspace_id = $default_workspace_id");
     }
 
     public function down()
@@ -87,6 +97,14 @@ class Workspaces extends Migration
         Schema::table('recursive_tree_seat_inventory_inventory_source', function (Blueprint $table) {
             $table->dropColumn("workspace_id");
             $table->dropIndex("seat_inventory_inventory_source_location_id_index");
+        });
+
+        Schema::table('recursive_tree_seat_inventory_stock_definitions', function (Blueprint $table) {
+            $table->dropColumn("workspace_id");
+        });
+
+        Schema::table('recursive_tree_seat_inventory_stock_categories', function (Blueprint $table) {
+            $table->dropColumn("workspace_id");
         });
     }
 }
