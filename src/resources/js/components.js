@@ -20,7 +20,7 @@ function workspaceCreatorPopup(...updatedCallbacks) {
                 ),
             W2.html("button")
                 .class("btn btn-primary")
-                .content("Create")
+                .content("Create (You currently can't delete workspaces!)")
                 .event("click", async () => {
                     if (state.name.length > 0) {
                         const response = await jsonPostAction("/inventory/workspaces/create", {
