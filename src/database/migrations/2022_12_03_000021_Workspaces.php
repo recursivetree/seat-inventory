@@ -13,6 +13,7 @@ class Workspaces extends Migration
         Schema::create('recursive_tree_seat_inventory_workspaces', function (Blueprint $table) {
             $table->bigIncrements("id");
             $table->string("name");
+            $table->boolean("enable_notifications")->default(false);
         });
 
         $default = new \RecursiveTree\Seat\Inventory\Models\Workspace();

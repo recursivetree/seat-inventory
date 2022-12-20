@@ -294,4 +294,26 @@ class TrackingController extends Controller
         $workspace->name = $request->name;
         $workspace->save();
     }
+
+    public function editWorkspace(Request $request){
+
+        $request->validate([
+            "workspace"=>"required|integer",
+            "name"=>"required|string",
+            "enableNotifications"=>"required|boolean"
+        ]);
+
+        $workspace = Workspace::find($request->workspace);
+
+        if(!$workspace){
+            return response()->json([],400);
+        }
+
+        $workspace->name = $request->name;
+        $workspace->enable_notifications = $request->enableNotifications;
+
+        $workspace->save();
+
+        return response()->json([99]);
+    }
 }

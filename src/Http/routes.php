@@ -28,6 +28,12 @@ Route::group([
         'middleware' => 'can:inventory.create_workspace'
     ]);
 
+    Route::post('/workspaces/edit', [
+        'as'   => 'inventory.editWorkspace',
+        'uses' => 'TrackingController@editWorkspace',
+        'middleware' => 'can:inventory.edit_inventory'
+    ]);
+
     //ui routes
 
     Route::get('/dashboard', [
