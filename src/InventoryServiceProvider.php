@@ -95,7 +95,7 @@ class InventoryServiceProvider extends AbstractSeatPlugin
             }
         });
 
-        Artisan::command('inventory:stocks {location_id} {--sync}', function ($location_id) {
+        Artisan::command('inventory:stocks {location_id} {workspace_id} {--sync}', function ($location_id, $workspace_id) {
             $location = Location::find($location_id);
             if ($location == null){
                 $this->error("Location not found");
@@ -104,10 +104,10 @@ class InventoryServiceProvider extends AbstractSeatPlugin
 
             if ($this->option("sync")){
                 $this->info("processing...");
-                UpdateStockLevels::dispatchNow($location_id, true);
+                UpdateStockLevels::dispatchNow($location_id,$workspace_id, true);
                 $this->info("Synchronously processed stock level updates!");
             } else {
-                UpdateStockLevels::dispatch($location_id)->onQueue('default');
+                UpdateStockLevels::dispatch($location_id, $workspace_id)->onQueue('default');
                 $this->info("Scheduled an stock level update!");
             }
         });

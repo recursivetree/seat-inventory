@@ -59,10 +59,10 @@ class UpdateInventory implements ShouldQueue
         $this->handleCorporationAssets($corporations, $workspace->id);
 
         //TODO
-//        $ids = Stock::pluck("location_id")->unique();
-//        foreach ($ids as $id) {
-//            UpdateStockLevels::dispatch($id)->onQueue('default');
-//        }
+        $ids = Stock::pluck("location_id")->unique();
+        foreach ($ids as $id) {
+            UpdateStockLevels::dispatch($id, $workspace->id)->onQueue('default');
+        }
     }
 
     private function handleContracts($corporation_ids, $alliance_ids, $workspace_id)

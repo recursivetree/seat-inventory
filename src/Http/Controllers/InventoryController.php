@@ -304,7 +304,7 @@ class InventoryController extends Controller
         //data update phase
 
         //update stock levels for new stock
-        UpdateStockLevels::dispatch($location->id)->onQueue('default');
+        UpdateStockLevels::dispatch($location->id, $request->workspace)->onQueue('default');
 
         //generate a new icon
         GenerateStockIcon::dispatch($stock->id,null);

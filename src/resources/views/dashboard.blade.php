@@ -1622,7 +1622,7 @@
                                                         .content(
                                                             dataEntry("Name", stock.name),
                                                             dataEntry("Location", stock.location.name),
-                                                            dataEntry("Last Updatet", stock.last_updated),
+                                                            dataEntry("Last Updated", stock.last_updated || "never"),
                                                             dataEntry("Amount", stock.amount),
                                                             dataEntry("Warning Threshold", stock.warning_threshold),
                                                             dataEntry("Priority", stock.priority),
