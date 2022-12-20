@@ -9,6 +9,9 @@
 @stop
 
 @push('javascript')
+
+    <script>const CSRF_TOKEN = '{{ csrf_token() }}'</script>
+    <script src="@inventoryVersionedAsset('inventory/js/utils.js')"></script>
     <script src="@inventoryVersionedAsset('inventory/js/w2.js')"></script>
     <script src="@inventoryVersionedAsset('inventory/js/select2w2.js')"></script>
     <script src="@inventoryVersionedAsset('inventory/js/bootstrapW2.js')"></script>
@@ -16,17 +19,6 @@
 
 
     <script>
-
-        async function jsonPostAction(url, data) {
-            return await fetch(url, {
-                method: "POST",
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify(data),
-            })
-        }
 
         function confirmButtonComponent(text, callback) {
             const state = {
@@ -76,18 +68,106 @@
             alliances: [],
             corporationSelector: null,
             allianceSelector: null,
+            currentWorkspace: null,
+            newWorkspaceName: null,
+            newEnableNotifications: null
         }
 
+
         async function fetchData() {
-            let response = await fetch("{{ route("inventory.listCorporations") }}")
-            appState.corporations = await response.json()
-            response = await fetch("{{ route("inventory.listAlliances") }}")
-            appState.alliances = await response.json()
+            if (appState.currentWorkspace){
+                const workspaceId = appState.currentWorkspace.id
+                let response = await fetch(`{{ route("inventory.listCorporations") }}?workspace=${workspaceId}`)
+                appState.corporations = await response.json()
+                response = await fetch(`{{ route("inventory.listAlliances") }}?workspace=${workspaceId}`)
+                appState.alliances = await response.json()
+            }
         }
 
         const mount = W2.mount(appState, (container, mount, state)=>{
+            const hasWorkspace = state.currentWorkspace !== null
+
+            //workspace settings
+            container.contentIf(hasWorkspace,W2.html("div")
+                .class("card")
+                .content(
+                    //title header
+                    W2.html("div")
+                        .class("card-header")
+                        .content(
+                            W2.html("h3")
+                                .class("cart-title")
+                                .content("Workspace Settings")
+                        ),
+                    //card body
+                    W2.html("div")
+                        .class("card-body")
+                        .content(
+                            //name
+                            W2.html("div")
+                                .class("form-group")
+                                .content(
+                                    W2.html("label")
+                                        .attribute("for", W2.getID("editWSName", true))
+                                        .content("Name"),
+                                    W2.html("input")
+                                        .attribute("id", W2.getID("editWSName"))
+                                        .class("form-control")
+                                        .attribute("type","text")
+                                        .attribute("placeholder","Enter the workspace's name...")
+                                        .attribute("value",appState.newWorkspaceName||(appState.currentWorkspace?appState.currentWorkspace.name:""))
+                                        .event("change",(e)=>{
+                                            appState.newWorkspaceName = e.target.value
+                                        })
+                                ),
+                            //notifications
+                            W2.html("div")
+                                .class("form-check")
+                                .content(
+                                    W2.html("input")
+                                        .attribute("id", W2.getID("editWSNotifications", true))
+                                        .class("form-check-input")
+                                        .attribute("type","checkbox")
+                                        .attributeIf(appState.newEnableNotifications!==null?appState.newEnableNotifications:(appState.currentWorkspace!==null?appState.currentWorkspace.enable_notifications===1:false),"checked","checked")
+                                        .event("change",(e)=>{
+                                            appState.newEnableNotifications = e.target.checked === true
+                                        }),
+                                    W2.html("label")
+                                        .attribute("for", W2.getID("editWSNotifications"))
+                                        .content("Notifications"),
+                                ),
+                            //submit
+                            W2.html("div")
+                                .class("form-group")
+                                .content(
+                                    W2.html("button")
+                                        .class("btn btn-primary")
+                                        .content("Save")
+                                        .event("click",async ()=>{
+                                            const data = {
+                                                workspace: appState.currentWorkspace.id,
+                                                name: appState.newWorkspaceName || appState.currentWorkspace.name,
+                                                enableNotifications: appState.newEnableNotifications!==null?appState.newEnableNotifications: (appState.currentWorkspace.enable_notifications === 1)
+                                            }
+
+                                            const response = await jsonPostAction("{{route("inventory.editWorkspace")}}",data)
+
+                                            if (response.ok){
+                                                BoostrapToast.open("Success","Successfully changed the settings")
+                                            } else {
+                                                BoostrapToast.open("Error","Failed to change the settings")
+                                            }
+
+                                            //I'm too lazy
+                                            location.reload()
+                                        })
+                                )
+                        )
+                )
+            )
+
             //card for alliances
-            container.content(W2.html("div")
+            container.contentIf(hasWorkspace,W2.html("div")
                 .class("card")
                 .content(
                     //title header
@@ -131,7 +211,8 @@
                                     .content("Add")
                                     .event("click",async ()=>{
                                         const response = await jsonPostAction("{{ route("inventory.addAlliance") }}",{
-                                            alliance_id: state.allianceSelector.id
+                                            alliance_id: state.allianceSelector.id,
+                                            workspace: state.currentWorkspace.id
                                         })
 
                                         if (response.ok){
@@ -163,7 +244,7 @@
                                                                         .content("Add Members")
                                                                         .event("click",async ()=>{
                                                                             const response = await jsonPostAction("{{ route("inventory.addAllianceMembers") }}",{
-                                                                                alliance_id: alliance.alliance_id
+                                                                                tracking_id: alliance.id
                                                                             })
 
                                                                             if (response.ok){
@@ -183,7 +264,7 @@
                                                                         .content("Remove Members")
                                                                         .event("click",async ()=>{
                                                                             const response = await jsonPostAction("{{ route("inventory.removeAllianceMembers") }}",{
-                                                                                alliance_id: alliance.alliance_id
+                                                                                tracking_id: alliance.id
                                                                             })
 
                                                                             if (response.ok){
@@ -199,7 +280,7 @@
                                                             ).content(
                                                                 confirmButtonComponent("Remove",async ()=>{
                                                                     const response = await jsonPostAction("{{ route("inventory.removeAlliance") }}",{
-                                                                        alliance_id: alliance.alliance_id
+                                                                        tracking_id: alliance.id,
                                                                     })
 
                                                                     if (response.ok){
@@ -222,7 +303,7 @@
             )
 
             //card for corporations
-            container.content(W2.html("div")
+            container.contentIf(hasWorkspace,W2.html("div")
                 .class("card")
                 .content(
                     //title header
@@ -266,7 +347,8 @@
                                         .content("Add")
                                         .event("click",async ()=>{
                                             const response = await jsonPostAction("{{ route("inventory.addCorporation") }}",{
-                                                corporation_id: state.corporationSelector.id
+                                                corporation_id: state.corporationSelector.id,
+                                                workspace: state.currentWorkspace.id
                                             })
 
                                             if (response.ok){
@@ -292,7 +374,7 @@
                                                             .content(corporation.corporation.name),
                                                         confirmButtonComponent("Remove",async ()=>{
                                                             const response = await jsonPostAction("{{ route("inventory.removeCorporation") }}",{
-                                                                corporation_id: corporation.corporation_id
+                                                                tracking_id: corporation.id
                                                             })
 
                                                             if (response.ok){
@@ -318,6 +400,17 @@
             mount.update()
         })
 
-        mount.addInto("main")
+        const rootMount = W2.mount((container,m)=>{
+            //workspace selection
+            container.content(workspaceSelector(async (selectedWorkspace)=>{
+                appState.currentWorkspace = selectedWorkspace
+                appState.newWorkspaceName = null
+                appState.newEnableNotifications = null
+                await fetchData()
+                mount.update()
+            }))
+            container.content(mount)
+        })
+        rootMount.addInto("main")
     </script>
 @endpush

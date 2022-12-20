@@ -19,10 +19,6 @@ class AddStockLevelCache extends Migration
             $table->integer("missing_items")->unsigned()->default(0);
         });
 
-        $ids = InventorySource::all()->pluck("location_id")->unique();
-        foreach ($ids as $id) {
-            UpdateStockLevels::dispatch($id)->onQueue('default');
-        }
     }
 
     /**

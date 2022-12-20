@@ -17,6 +17,7 @@ use RecursiveTree\Seat\Inventory\Models\Location;
 use RecursiveTree\Seat\Inventory\Models\Stock;
 use RecursiveTree\Seat\Inventory\Models\TrackedAlliance;
 use RecursiveTree\Seat\Inventory\Models\TrackedCorporation;
+use RecursiveTree\Seat\Inventory\Models\Workspace;
 use Seat\Eveapi\Models\Assets\CorporationAsset;
 use Seat\Eveapi\Models\Contracts\ContractDetail;
 use Seat\Eveapi\Models\Universe\UniverseStation;
@@ -38,26 +39,39 @@ class UpdateInventory implements ShouldQueue
     public function handle()
     {
         Redis::funnel('seat-inventory-asset-lock')->limit(1)->then(function () {
-            $corporations = TrackedCorporation::all()->pluck("corporation_id");
-            $alliances = TrackedAlliance::all()->pluck("alliance_id");
+            //get all workspaces
+            $workspaces = Workspace::all();
 
-            $this->handleContracts($corporations, $alliances);
-            $this->handleCorporationAssets($corporations);
-
-            $ids = Stock::pluck("location_id")->unique();
-            foreach ($ids as $id) {
-                UpdateStockLevels::dispatch($id)->onQueue('default');
+            //update each workspace
+            foreach ($workspaces as $workspace){
+                $this->handleWorkspace($workspace);
             }
         }, function () {
             $this->delete(); // update is already in progress
         });
     }
 
-    private function handleContracts($corporations, $alliances)
-    {
-        $valid_assingees = $corporations->merge($alliances);
+    public function handleWorkspace($workspace){
+        $corporations = TrackedCorporation::where("workspace_id",$workspace->id)->pluck("corporation_id");
+        $alliances = TrackedAlliance::where("workspace_id",$workspace->id)->pluck("alliance_id");
 
-        $sources = InventorySource::where("source_type","contract")->get();
+        $this->handleContracts($corporations, $alliances, $workspace->id);
+        $this->handleCorporationAssets($corporations, $workspace->id);
+
+        $ids = Stock::pluck("location_id")->unique();
+        foreach ($ids as $id) {
+            UpdateStockLevels::dispatch($id, $workspace->id)->onQueue('default');
+        }
+    }
+
+    private function handleContracts($corporation_ids, $alliance_ids, $workspace_id)
+    {
+        //collect both corporations and alliances
+        $valid_assignee_ids = $corporation_ids->merge($alliance_ids);
+
+        $sources = InventorySource::where("source_type","contract")
+            ->where("workspace_id", $workspace_id)
+            ->get();
         foreach ($sources as $source){
             $source->delete();
             InventoryItem::where("source_id", $source->id)->delete();
@@ -69,7 +83,7 @@ class UpdateInventory implements ShouldQueue
         $contracts = ContractDetail::where("type", "item_exchange")
             ->where("status", "outstanding")
             ->whereDate("date_expired",">",$time)
-            ->whereIn("assignee_id", $valid_assingees)
+            ->whereIn("assignee_id", $valid_assignee_ids)
             ->get();
 
         foreach ($contracts as $contract) {
@@ -95,6 +109,7 @@ class UpdateInventory implements ShouldQueue
             $source->source_name = $name;
             $source->source_type = "contract";
             $source->last_updated = $time;
+            $source->workspace_id = $workspace_id;
             $source->save();
 
             $simplified = ItemHelper::simplifyItemList($items);
@@ -108,38 +123,41 @@ class UpdateInventory implements ShouldQueue
         }
     }
 
-    private function handleCorporationAssets($corporations)
+    private function handleCorporationAssets($corporation_ids, $workspace_id)
     {
         $time = now();
 
         //remove all assembled ships
-        $ids = InventorySource::where("source_type","fitted_ship")->pluck("id");
+        $ids = InventorySource::where("source_type","fitted_ship")
+            ->where("workspace_id",$workspace_id)
+            ->pluck("id");
         InventorySource::whereIn("id",$ids)->delete();
         InventoryItem::whereIn("source_id",$ids)->delete();
 
-        //get locations
+        //get locations with corporation assets
         $locations = DB::table("corporation_assets")
             ->select(
                 "corporation_assets.location_id as game_location_id",
                 "recursive_tree_seat_inventory_locations.id as inventory_location_id",
-                "recursive_tree_seat_inventory_inventory_source.id as source_id"
+                "seat_inventory_inventory_source.id as source_id"
             )
             ->whereIn("location_flag", ["OfficeFolder", "CorpDeliveries"])
-            ->whereIn("corporation_id", $corporations)
+            ->whereIn("corporation_id", $corporation_ids)
             ->leftJoin("recursive_tree_seat_inventory_locations", function ($join) {
                 $join
                     ->on('corporation_assets.location_id', '=', 'recursive_tree_seat_inventory_locations.structure_id')
                     ->orOn('corporation_assets.location_id', '=', 'recursive_tree_seat_inventory_locations.station_id');
             })
-            ->leftJoin("recursive_tree_seat_inventory_inventory_source", function ($join) {
+            ->leftJoin("seat_inventory_inventory_source", function ($join) use ($workspace_id) {
                 $join
-                    ->on("recursive_tree_seat_inventory_locations.id", "=", "recursive_tree_seat_inventory_inventory_source.location_id")
+                    ->on("recursive_tree_seat_inventory_locations.id", "=", "seat_inventory_inventory_source.location_id")
+                    ->where("workspace_id",$workspace_id) // only consider it if the workspace is also correct
                     ->where("source_type","corporation_hangar");
             })
-            ->groupBy("corporation_assets.location_id", "recursive_tree_seat_inventory_locations.id", "recursive_tree_seat_inventory_inventory_source.id")
+            ->groupBy("corporation_assets.location_id", "recursive_tree_seat_inventory_locations.id", "seat_inventory_inventory_source.id")
             ->get();
 
-        //fill location table if no value is found
+        //create a Location object if it doesn't already exist
         $locations = $locations->map(function ($e) {
             if ($e->inventory_location_id == null) {
                 $location = $this->getOrCreateLocation($e->game_location_id,$e->game_location_id);
@@ -149,13 +167,15 @@ class UpdateInventory implements ShouldQueue
         });
 
         //fill inventory source ids
-        $locations = $locations->map(function ($e) {
-            if ($e->source_id == null) {
+        $locations = $locations->map(function ($asset_location) use ($workspace_id) {
+            // if there isn't an inventory source, create a new one
+            if ($asset_location->source_id == null) {
                 $source = new InventorySource();
                 $source->source_type = "corporation_hangar";
-                $source->location_id = $e->inventory_location_id;
+                $source->location_id = $asset_location->inventory_location_id;
+                $source->workspace_id = $workspace_id;
 
-                $location = Location::find($e->inventory_location_id);
+                $location = Location::find($asset_location->inventory_location_id);
                 if ($location->station_id) {
                     $source->source_name = "Station Hangar";
                 } else {
@@ -163,27 +183,32 @@ class UpdateInventory implements ShouldQueue
                 }
 
                 $source->save();
-                $e->source_id = $source->id;
+                // update the asset location with the corresponding inventory source
+                $asset_location->source_id = $source->id;
             }
-            return $e;
+            return $asset_location;
         });
 
         //delete old stuff
-        $deleteable_ids = DB::table("recursive_tree_seat_inventory_inventory_source")
+        $deleteable_ids = DB::table("seat_inventory_inventory_source")
             ->select("id")
             ->where("source_type", "corporation_hangar")
             ->whereNotIn("id", $locations->pluck("source_id"))
+            ->where("workspace_id",$workspace_id)
             ->pluck("id");
         InventoryItem::whereIn("source_id", $deleteable_ids)->delete();
         InventorySource::whereIn("id", $deleteable_ids)->delete();
 
+        //go over each location
         foreach ($locations as $location) {
             $item_list = [];
 
             //because laravel is weird once again, we eager load up to a depth of 3: hangar/container/item (infinite would be perfect)
-            $assets = CorporationAsset::with("content.content.content")->where("location_id", $location->game_location_id)->get();
+            $assets = CorporationAsset::with("content.content.content")
+                ->where("location_id", $location->game_location_id)
+                ->get();
             foreach ($assets as $asset){
-                $this->handleAssetItem($asset, $item_list,$location->inventory_location_id, true);
+                $this->handleAssetItem($asset, $item_list,$location->inventory_location_id, true, $workspace_id);
             }
 
             $item_list = ItemHelper::simplifyItemList($item_list);
@@ -198,33 +223,34 @@ class UpdateInventory implements ShouldQueue
         }
     }
 
-    private function handleAssetItem($item, &$list,$location, $handle_ship)
+    private function handleAssetItem($item, &$list,$location, $handle_ship, $workspace_id)
     {
         //check for ships
         if($item->type->group->categoryID === 6 && $item->is_singleton && $handle_ship){
             //it is an assembled ship, handle it differently
-            $this->handleAssembledShip($item,$location);
+            $this->handleAssembledShip($item,$location, $workspace_id);
         } else {
 
             $list[] = new ItemHelper($item->type_id, $item->quantity);
 
             //chunking bugs it out, don't optimize it
             foreach ($item->content as $content) {
-                $this->handleAssetItem($content, $list, $location, true);
+                $this->handleAssetItem($content, $list, $location, true, $workspace_id);
             }
         }
     }
 
-    private function handleAssembledShip($ship,$location){
+    private function handleAssembledShip($ship,$location, $workspace_id){
         $source = new InventorySource();
         $source->source_type = "fitted_ship";
         $source->location_id = $location;
         $ship_type_name = $ship->type->typeName;
         $source->source_name = "$ship->name($ship_type_name)";
+        $source->workspace_id = $workspace_id;
         $source->save();
 
         $item_list = [];
-        $this->handleAssetItem($ship,$item_list,$location,false);
+        $this->handleAssetItem($ship,$item_list,$location,false, $workspace_id);
         $item_list = ItemHelper::simplifyItemList($item_list);
         $bulk = ItemHelper::prepareBulkInsertionSourceItems($item_list,$source->id);
 

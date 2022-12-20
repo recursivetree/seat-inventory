@@ -9,39 +9,53 @@ use RecursiveTree\Seat\Inventory\Models\TrackedCorporation;
 class AllianceMemberObserver
 {
     public function saved($alliance_member){
-        $alliance_tracking = TrackedAlliance::where("alliance_id",$alliance_member->alliance_id)->first();
+        //there might be multiple instances of the same alliance in different workspaces
+        $alliance_trackings = TrackedAlliance::where("alliance_id",$alliance_member->alliance_id)->get();
 
-        //check if alliance tracks members
-        if($alliance_tracking != null && $alliance_tracking->manage_members){
+        //update alliance in each workspace
+        foreach ($alliance_trackings as $alliance_tracking) {
+            //check if alliance tracks members
+            if ($alliance_tracking->manage_members) {
 
-            //check if corporations is already tracked
-            $db_entry = TrackedCorporation::first($alliance_member->corporation_id);
+                //check if corporations is already tracked
+                $db_entry = TrackedCorporation::where("corporation_id",$alliance_member->corporation_id)
+                    ->where("workspace_id",$alliance_tracking->workspace_id)
+                    ->first();
 
-            // if not, create a tracking entry
-            if($db_entry===null){
-                $db_entry = new TrackedCorporation();
-                $db_entry->corporation_id = $alliance_member->corporation_id;
+                //keep manually added corporation manually added
+                if($db_entry->managed_by == null) continue;
+
+                // if not, create a tracking entry
+                if ($db_entry === null) {
+                    $db_entry = new TrackedCorporation();
+                    $db_entry->corporation_id = $alliance_member->corporation_id;
+                }
+
+                //fill data and save
+                $db_entry->managed_by = $alliance_member->alliance_id;
+                $db_entry->workspace_id = $alliance_tracking->workspace_id;
+                $db_entry->save();
             }
-
-            //fill data and save
-            $db_entry = new TrackedCorporation();
-            $db_entry->managed_by = $alliance_member->alliance_id;
-            $db_entry->save();
-
         }
     }
 
     public function deleted($alliance_member){
         //delete corporations that aren't tracked anymore
 
-        //find parent alliance
-        $alliance_tracking = TrackedAlliance::where("alliance_id",$alliance_member->alliance_id)->first();
+        //find parent alliances. there might be multiple entries because of workspaces
+        $alliance_trackings = TrackedAlliance::where("alliance_id",$alliance_member->alliance_id)->get();
 
-        //check if alliance tracks members
-        if($alliance_tracking != null && $alliance_tracking->manage_members){
-
-            //alliance is tracking members, so delete the tracking
-            TrackedCorporation::where("corporation_id",$alliance_member->corporation_id)->delete();
+        //go over each alliance entry
+        foreach ($alliance_trackings as $alliance_tracking){
+            //check if the alliance is automated
+            if($alliance_tracking->manage_members){
+                //remove corporation
+                TrackedCorporation::where("corporation_id",$alliance_member->corporation_id)
+                    ->where("workspace_id",$alliance_tracking->workspace_id)
+                    ->where("managed_by",$alliance_member->alliance_id)
+                    ->first()
+                    ->delete();
+            }
         }
     }
 }

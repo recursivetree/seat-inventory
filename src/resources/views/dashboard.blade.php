@@ -9,9 +9,12 @@
 @stop
 
 @push("javascript")
+    <script>const CSRF_TOKEN = '{{ csrf_token() }}'</script>
+    <script src="@inventoryVersionedAsset('inventory/js/utils.js')"></script>
     <script src="@inventoryVersionedAsset('inventory/js/w2.js')"></script>
     <script src="@inventoryVersionedAsset('inventory/js/select2w2.js')"></script>
     <script src="@inventoryVersionedAsset('inventory/js/bootstrapW2.js')"></script>
+    <script src="@inventoryVersionedAsset('inventory/js/components.js')"></script>
 
 
     <script>
@@ -64,17 +67,6 @@
 
         function generateMultiBuy(items) {
             return items.map(item => `${item.name} ${item.amount}`).join("\n")
-        }
-
-        async function jsonPostAction(url, data) {
-            return await fetch(url, {
-                method: "POST",
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify(data),
-            })
         }
 
         async function jsonGetAction(url, data) {
@@ -358,6 +350,7 @@
                                                     data: function (params) {
                                                         return {
                                                             term: params.term,
+                                                            workspace: app.workspace.id
                                                         }
                                                     },
                                                     processResults: (data) => {
@@ -644,6 +637,7 @@
                                                     }
                                                 }),
                                                 filters: filters,
+                                                workspace: app.workspace.id
                                             }
 
                                             const response = await jsonPostAction("{{ route("inventory.saveCategory") }}", data)
@@ -890,7 +884,7 @@
                 }
 
                 async loadData() {
-                    let url = "{{ route("inventory.getCategories") }}"
+                    let url = `{{ route("inventory.getCategories") }}?workspace=${app.workspace.id}`
 
                     const response = await fetch(url)
                     if (!response.ok) {
@@ -1337,6 +1331,7 @@
                                             amount: state.amount,
                                             warning_threshold: state.warning_threshold,
                                             priority: state.priority,
+                                            workspace: app.workspace.id
                                         }
                                         if (state.type === "fit") {
                                             data.fit = state.fit
@@ -1627,7 +1622,7 @@
                                                         .content(
                                                             dataEntry("Name", stock.name),
                                                             dataEntry("Location", stock.location.name),
-                                                            dataEntry("Last Updatet", stock.last_updated),
+                                                            dataEntry("Last Updated", stock.last_updated || "never"),
                                                             dataEntry("Amount", stock.amount),
                                                             dataEntry("Warning Threshold", stock.warning_threshold),
                                                             dataEntry("Priority", stock.priority),
@@ -1671,7 +1666,7 @@
         }
 
         //deliveries popup
-        function deliveriesPopup() {
+        function deliveriesPopup(workspace) {
             BootstrapPopUp.open("Deliveries",(container, popup)=>{
                 const state = {
                     addPanel: true,
@@ -1806,7 +1801,8 @@
 
                                                             const data = {
                                                                 items: state.items,
-                                                                location: state.location.id
+                                                                location: state.location.id,
+                                                                workspace: workspace.id
                                                             }
 
                                                             const response = await jsonPostAction("{{ route("inventory.addDeliveries") }}", data)
@@ -1868,7 +1864,9 @@
                 container.content(mount)
 
                 async function loadDeliveriesData() {
-                    const response = await jsonPostAction("{{ route("inventory.listDeliveries") }}",{})
+                    const response = await jsonPostAction("{{ route("inventory.listDeliveries") }}",{
+                        workspace: workspace.id
+                    })
                     if(!response.ok){
                         BoostrapToast.open("Deliveries","Failed to load deliveries")
                         return
@@ -1916,7 +1914,7 @@
                         .content(W2.html("i").class("fas fa-truck"), " Deliveries")
                         .event("click", (e) => {
                             e.target.blur()
-                            deliveriesPopup()
+                            deliveriesPopup(app.workspace)
                         })
                 )
                 .content(
@@ -1972,22 +1970,36 @@
         class App {
             categoryList
             locationFilter
+            workspace
+            mount
 
             constructor() {
-                this.categoryList = categoryListComponent(this)
+                this.workspace = null
 
-                this.locationFilter = new LocationFilterComponent({
-                    locationListeners: [(location) => {
-                        this.categoryList.state.setLocation(location)
-                    }]
+                this.mount = W2.mount((container,mount)=>{
+                    if(this.workspace) {
+                        this.categoryList = categoryListComponent(this)
+                        this.locationFilter = new LocationFilterComponent({
+                            locationListeners: [(location) => {
+                                this.categoryList.state.setLocation(location)
+                            }]
+                        })
+                    }
+
+                    container
+                        .content(workspaceSelector((workspace)=>{
+                            this.workspace = workspace
+                            this.mount.update()
+                        }))
+                        .contentIf(this.workspace,(container)=>container.content(this.locationFilter.mount()))
+                        .contentIf(this.workspace,toolButtonPanelComponent(this))
+                        .contentIf(this.workspace,this.categoryList)
                 })
             }
 
             render() {
                 return W2.emptyHtml()
-                    .content(this.locationFilter.mount())
-                    .content(toolButtonPanelComponent(this))
-                    .content(this.categoryList)
+                    .content(this.mount)
             }
         }
 

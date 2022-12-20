@@ -9,6 +9,7 @@ use RecursiveTree\Seat\Inventory\Helpers\StockHelper;
 use RecursiveTree\Seat\Inventory\Jobs\UpdateInventory;
 use RecursiveTree\Seat\Inventory\Models\TrackedAlliance;
 use RecursiveTree\Seat\Inventory\Models\TrackedCorporation;
+use RecursiveTree\Seat\Inventory\Models\Workspace;
 use Seat\Eveapi\Models\Alliances\Alliance;
 use Seat\Eveapi\Models\Corporation\CorporationInfo;
 use Seat\Web\Http\Controllers\Controller;
@@ -19,26 +20,42 @@ class TrackingController extends Controller
         return view("inventory::settings");
     }
 
-    public function listCorporations(){
-        $corporations = TrackedCorporation::with(["corporation","alliance"])->get();
+    public function listCorporations(Request $request){
+        $request->validate([
+            "workspace"=>"required|integer"
+        ]);
+
+        $corporations = TrackedCorporation::with(["corporation","alliance"])->where("workspace_id",$request->workspace)->get();
 
         return response()->json($corporations);
     }
 
     public function addCorporation(Request $request){
         $request->validate([
-            "corporation_id"=>"required|integer"
+            "corporation_id"=>"required|integer",
+            "workspace"=>"required|integer"
         ]);
+
+        if(!Workspace::where("id",$request->workspace)->exists()){
+            return response()->json(["message"=>"workspace doesn't exist"],400);
+        }
 
         if(!CorporationInfo::where("corporation_id",$request->corporation_id)->exists()){
             return response()->json(["message"=>"corporation doesn't exist"],400);
         }
 
-        if(TrackedCorporation::where("corporation_id",$request->corporation_id)->exists()){
-            $corp = TrackedCorporation::find($request->corporation_id);
+        if(TrackedCorporation::where("corporation_id",$request->corporation_id)
+            ->where("workspace_id",$request->workspace_id)
+            ->exists()
+        ){
+            $corp = TrackedCorporation::where("corporation_id",$request->corporation_id)
+                ->where("workspace_id",$request->workspace_id)
+                ->first();
+
             //special case: add corporation permanently
             if($corp->managed_by !== null){
                 $corp->managed_by = null;
+                $corp->workspace_id = $request->workspace;
                 $corp->save();
 
                 //config changed -> update items
@@ -53,6 +70,7 @@ class TrackingController extends Controller
         //save it to the db
         $db_entry = new TrackedCorporation();
         $db_entry->corporation_id = $request->corporation_id;
+        $db_entry->workspace_id = $request->workspace;
         $db_entry->save();
 
         //new corporations, new assets -> we need to update
@@ -63,10 +81,10 @@ class TrackingController extends Controller
 
     public function removeCorporation(Request $request){
         $request->validate([
-            "corporation_id"=>"required|integer"
+            "tracking_id"=>"required|integer"
         ]);
 
-        TrackedCorporation::destroy($request->corporation_id);
+        TrackedCorporation::destroy($request->tracking_id);
 
         //-1 corporation, less assets -> we need to update
         UpdateInventory::dispatch()->onQueue('default');
@@ -138,20 +156,29 @@ class TrackingController extends Controller
 
     public function addAlliance(Request $request){
         $request->validate([
-            "alliance_id"=>"required|integer"
+            "alliance_id"=>"required|integer",
+            "workspace"=>"required|integer"
         ]);
+
+        if(!Workspace::where("id",$request->workspace)->exists()){
+            return response()->json(["message"=>"workspace doesn't exist"],400);
+        }
 
         if(!Alliance::where("alliance_id",$request->alliance_id)->exists()){
             return response()->json(["message"=>"alliance doesn't exist"],400);
         }
 
-        if(TrackedAlliance::where("alliance_id",$request->alliance_id)->exists()){
+        if(TrackedAlliance::where("alliance_id",$request->alliance_id)
+            ->where("workspace_id",$request->workspace)
+            ->exists()
+        ){
             return response()->json(["message"=>"alliance already trackes"],40);
         }
 
         $db_entry = new TrackedAlliance();
         $db_entry->alliance_id = $request->alliance_id;
         $db_entry->manage_members = false;
+        $db_entry->workspace_id = $request->workspace;
         $db_entry->save();
 
         //config changed -> update items
@@ -162,10 +189,10 @@ class TrackingController extends Controller
 
     public function removeAlliance(Request $request){
         $request->validate([
-            "alliance_id"=>"required|integer"
+            "tracking_id"=>"required|integer"
         ]);
 
-        $alliance = TrackedAlliance::find($request->alliance_id);
+        $alliance = TrackedAlliance::find($request->tracking_id);
 
         if($alliance === null){
             return response()->json(["message"=>"alliance doesn't exist"],400);
@@ -185,18 +212,22 @@ class TrackingController extends Controller
         return response()->json([]);
     }
 
-    public function listAlliances(){
-        $corporations = TrackedAlliance::with("alliance")->get();
+    public function listAlliances(Request $request){
+        $request->validate([
+            "workspace"=>"required|integer"
+        ]);
+
+        $corporations = TrackedAlliance::with("alliance")->where("workspace_id",$request->workspace)->get();
 
         return response()->json($corporations);
     }
 
     public function addAllianceMembers(Request $request){
         $request->validate([
-            "alliance_id"=>"required|integer"
+            "tracking_id"=>"required|integer"
         ]);
 
-        $tracking = TrackedAlliance::find($request->alliance_id);
+        $tracking = TrackedAlliance::find($request->tracking_id);
 
         if($tracking === null){
             return response()->json(["message"=>"alliance isn't tracked"],400);
@@ -214,7 +245,8 @@ class TrackingController extends Controller
                 $corp = new TrackedCorporation();
                 $corp->corporation_id = $member->corporation_id;
             }
-            $corp->managed_by = $request->alliance_id;
+            $corp->managed_by = $tracking->alliance_id;
+            $corp->workspace_id = $tracking->workspace_id;
             $corp->save();
         }
 
@@ -227,10 +259,10 @@ class TrackingController extends Controller
     public function removeAllianceMembers(Request $request)
     {
         $request->validate([
-            "alliance_id" => "required|integer"
+            "tracking_id" => "required|integer"
         ]);
 
-        $tracking = TrackedAlliance::find($request->alliance_id);
+        $tracking = TrackedAlliance::find($request->tracking_id);
 
         if ($tracking === null) {
             return response()->json(["message" => "alliance isn't tracked"], 400);
@@ -239,11 +271,49 @@ class TrackingController extends Controller
         $tracking->manage_members = false;
         $tracking->save();
 
-        TrackedCorporation::where("managed_by",$request->alliance_id)->delete();
+        TrackedCorporation::where("managed_by",$tracking->alliance_id)->delete();
 
         //config changed -> update items
         UpdateInventory::dispatch()->onQueue('default');
 
         return response()->json([]);
+    }
+
+    public function listWorkspaces(){
+        $workspaces = Workspace::all();
+
+        return response()->json($workspaces,200);
+    }
+
+    public function createWorkspace(Request $request){
+        $request->validate([
+           "name"=>"required|string"
+        ]);
+
+        $workspace = new Workspace();
+        $workspace->name = $request->name;
+        $workspace->save();
+    }
+
+    public function editWorkspace(Request $request){
+
+        $request->validate([
+            "workspace"=>"required|integer",
+            "name"=>"required|string",
+            "enableNotifications"=>"required|boolean"
+        ]);
+
+        $workspace = Workspace::find($request->workspace);
+
+        if(!$workspace){
+            return response()->json([],400);
+        }
+
+        $workspace->name = $request->name;
+        $workspace->enable_notifications = $request->enableNotifications;
+
+        $workspace->save();
+
+        return response()->json([99]);
     }
 }

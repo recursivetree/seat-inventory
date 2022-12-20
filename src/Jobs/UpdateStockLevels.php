@@ -23,22 +23,24 @@ class UpdateStockLevels implements ShouldQueue
 
     public function tags()
     {
-        return [ 'location:' . $this->location_id, "seat-inventory", "stock-levels" ];
+        return [ 'location:' . $this->location_id,'workspace:'.$this->workspace_id, "seat-inventory", "stock-levels" ];
     }
 
     private $location_id;
     private $sync;
+    private $workspace_id;
 
-    public function __construct($location_id,$sync=false){
+    public function __construct($location_id,$workspace,$sync=false){
         $this->location_id = $location_id;
         $this->sync = $sync;
+        $this->workspace_id = $workspace;
     }
 
 
     public function handle()
     {
         if(!$this->sync) {
-            Redis::funnel("seat-inventory-update-stock-level-lock-$this->location_id")->limit(1)->then(
+            Redis::funnel("seat.inventory.stock.update.lock.location.$this->location_id.workspace.$this->workspace_id")->limit(1)->then(
                 function () {
                     $this->updateStockLevels();
                 },
@@ -78,7 +80,6 @@ class UpdateStockLevels implements ShouldQueue
     }
 
     private function saveStock($stock_data,$time){
-        //dd(json_encode($stock_data,JSON_PRETTY_PRINT));
 
         $stock = $stock_data["stock"];
         $stock->last_updated = $time;
@@ -116,6 +117,7 @@ class UpdateStockLevels implements ShouldQueue
         //fetch and group stocks
         $stock_priority_groups = Stock::with("items", "levels")
             ->where("location_id", $this->location_id)
+            ->where("workspace_id",$this->workspace_id)
             ->get()
             //create wrapper holding temp info
             ->map(function ($stock) {
@@ -135,6 +137,7 @@ class UpdateStockLevels implements ShouldQueue
         //get sources
         $sources = InventorySource::with("items")
             ->where("location_id", $this->location_id)
+            ->where("workspace_id",$this->workspace_id)
             ->get()
             //place real, non-virtual sources first, so they get preferred when iterating over source to see if they are fulfilled
             ->sortBy(function ($source) {
@@ -243,71 +246,69 @@ class UpdateStockLevels implements ShouldQueue
             $item_bonus = [];
 
             foreach ($stock_priority_group as &$stock) {
-                //skip stocks which are fulfilled
-                if ($stock["remaining"] < 1) continue;
 
-                $required = $stock["remaining"];
-                $possible = $required;
+                //first, fill remaining item, then save the stock. stock saving is done regardless of whether  we have missing items, as it also save all other data we've processed
+                if ($stock["remaining"] > 0) {
 
-                foreach ($stock["stock"]->items as &$item) {
+                    $required = $stock["remaining"];
+                    $possible = $required;
 
-                    $type_id = $item->getTypeId();
-                    $amount = $item->getAmount();
+                    foreach ($stock["stock"]->items as &$item) {
 
-                    $item_amount = $amount * $required;
+                        $type_id = $item->getTypeId();
+                        $amount = $item->getAmount();
 
-                    $fair_amount = $item_demand[$type_id];
+                        $item_amount = $amount * $required;
 
-                    //we can fulfil it without problems
-                    if ($fair_amount < 1) {
-                        $bonus = $item_bonus[$type_id] ?? 0;
-                        $scheduled_items = $item_amount * $fair_amount + $bonus;
-                        $effective_items = floor($scheduled_items);
+                        $fair_amount = $item_demand[$type_id];
 
-                        //update bonus
-                        $item_bonus[$type_id] = $scheduled_items - $effective_items;
+                        //we can fulfil it without problems
+                        if ($fair_amount < 1) {
+                            $bonus = $item_bonus[$type_id] ?? 0;
+                            $scheduled_items = $item_amount * $fair_amount + $bonus;
+                            $effective_items = floor($scheduled_items);
 
-                        //decrease amount of possible stocks if required
-                        $fulfilled = intdiv($effective_items, $amount);
-                        if ($fulfilled < $possible) {
-                            $possible = $fulfilled;
+                            //update bonus
+                            $item_bonus[$type_id] = $scheduled_items - $effective_items;
+
+                            //decrease amount of possible stocks if required
+                            $fulfilled = intdiv($effective_items, $amount);
+                            if ($fulfilled < $possible) {
+                                $possible = $fulfilled;
+                            }
+
+                            //decrease available items
+                            $new_value = ($pooled_items[$type_id] ?? 0) - $effective_items;
+                            if ($new_value < 0) {
+                                $data = json_encode(["items" => $pooled_items, "stocks" => json_encode($stock_priority_groups)]);
+                                throw new \Exception("Trying to distribute non-existing items! $data");
+                            }
+                            $pooled_items[$type_id] = $new_value;
+
+                            //update missing items
+                            $item->missing_items = $item_amount - $effective_items;
+
+                        } else {
+                            //we can fulfill the demanded amount
+                            $item->missing_items = 0;
+
+                            //decrease available items
+                            $new_value = ($pooled_items[$type_id] ?? 0) - $item_amount;
+                            if ($new_value < 0) {
+                                $data = json_encode(["items" => $pooled_items, "stocks" => json_encode($stock_priority_groups)]);
+                                throw new \Exception("Trying to distribute non-existing items! $data");
+                            }
+                            $pooled_items[$type_id] = $new_value;
                         }
-
-                        //decrease available items
-                        $new_value = ($pooled_items[$type_id]??0) - $effective_items;
-                        if($new_value<0) {
-                            $data = json_encode(["items"=>$pooled_items,"stocks"=>json_encode($stock_priority_groups)]);
-                            throw new \Exception("Trying to distribute non-existing items! $data");
-                        }
-                        $pooled_items[$type_id] = $new_value;
-
-                        //update missing items
-                        $item->missing_items = $item_amount - $effective_items;
-
-                    } else {
-                        //we can fulfill the demanded amount
-                        $item->missing_items = 0;
-
-                        //decrease available items
-                        $new_value = ($pooled_items[$type_id]??0) - $item_amount;
-                        if($new_value<0) {
-                            $data = json_encode(["items"=>$pooled_items,"stocks"=>json_encode($stock_priority_groups)]);
-                            throw new \Exception("Trying to distribute non-existing items! $data");
-                        }
-                        $pooled_items[$type_id] = $new_value;
                     }
-                }
 
-                $stock["remaining"] -= $possible;
-                $stock["source_types"]->put("item_pool", $possible);
+                    $stock["remaining"] -= $possible;
+                    $stock["source_types"]->put("item_pool", $possible);
+                }
 
                 //save the stock
                 $this->saveStock($stock, $time);
-
-
             }
         }
-
-        //dd(json_encode($stock_priority_groups,JSON_PRETTY_PRINT));
     }
 }

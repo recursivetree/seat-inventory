@@ -9,4 +9,8 @@ return [
         'label' => 'View Inventory',
         'description' => 'Allows you to view stocks and stock levels.',
     ],
+    'create_workspace' => [
+        'label' => 'Create Workspace',
+        'description' => 'Allows you to create workspaces.'
+    ]
 ];

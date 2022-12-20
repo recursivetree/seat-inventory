@@ -8,7 +8,7 @@ class InventorySource extends Model
 {
     public $timestamps = false;
 
-    protected $table = 'recursive_tree_seat_inventory_inventory_source';
+    protected $table = 'seat_inventory_inventory_source';
 
     public function location(){
         return $this->hasOne(Location::class, 'id', 'location_id');

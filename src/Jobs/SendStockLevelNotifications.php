@@ -10,6 +10,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Notification;
+use RecursiveTree\Seat\Inventory\Models\Workspace;
 use Seat\Notifications\Models\NotificationGroup;
 use RecursiveTree\Seat\Inventory\Models\Stock;
 
@@ -29,7 +30,11 @@ class SendStockLevelNotifications implements ShouldQueue
 
     public function handle()
     {
-        $stocks = Stock::where("available","<",DB::RAW("warning_threshold"))->get();
+        $workspaces = Workspace::where("enable_notifications",true)->pluck("id");
+
+        $stocks = Stock::where("available","<",DB::RAW("warning_threshold"))
+            ->whereIn("workspace_id",$workspaces)
+            ->get();
 
         if(!$stocks->isEmpty()){
             $this->dispatchNotification($stocks);

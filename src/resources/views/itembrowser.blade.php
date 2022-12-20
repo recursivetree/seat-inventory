@@ -10,6 +10,8 @@
 @stop
 
 @push('javascript')
+    <script>const CSRF_TOKEN = '{{ csrf_token() }}'</script>
+    <script src="@inventoryVersionedAsset('inventory/js/utils.js')"></script>
     <script src="@inventoryVersionedAsset('inventory/js/w2.js')"></script>
     <script src="@inventoryVersionedAsset('inventory/js/select2w2.js')"></script>
     <script src="@inventoryVersionedAsset('inventory/js/bootstrapW2.js')"></script>
@@ -18,22 +20,12 @@
 
     <script>
 
-        async function jsonPostAction(url, data) {
-            return await fetch(url, {
-                method: "POST",
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify(data),
-            })
-        }
-
         const appState = {
             locationFilter: null,
             itemFilter: null,
             items: [],
-            next_page: 0
+            next_page: 0,
+            workspace: null
         }
 
         async function fetchData(location, item, reset_page=true) {
@@ -42,18 +34,21 @@
                 appState.items = []
             }
 
-            const data = await jsonPostAction("{{ route("inventory.itemBrowserData") }}",{
-                location,
-                item,
-                page: appState.next_page++
-            })
+            if(appState.workspace) {
+                const data = await jsonPostAction("{{ route("inventory.itemBrowserData") }}", {
+                    location,
+                    item,
+                    page: appState.next_page++,
+                    workspace: appState.workspace.id
+                })
 
-            appState.items = appState.items.concat(await data.json())
+                appState.items = appState.items.concat(await data.json())
+            }
         }
 
         const mount = W2.mount(appState, (container, mount, state)=>{
             //card
-            container.content(W2.html("div")
+            container.contentIf(state.workspace,W2.html("div")
                 .class("card")
                 .content(
                     //title header
@@ -129,7 +124,7 @@
                         )
                 ))
 
-            container.contentIf(state.items.length > 0,
+            container.contentIf(state.items.length > 0 && state.workspace,
                 W2.html("div")
                     .class("card")
                     .content(
@@ -178,6 +173,13 @@
             mount.update()
         })
 
-        mount.addInto("main")
+        W2.emptyHtml()
+            .content(workspaceSelector(async (workspace) => {
+                appState.workspace = workspace
+                await fetchData(appState.locationFilter?appState.locationFilter.id:null,appState.itemFilter?appState.itemFilter.id:null, true)
+                mount.update()
+            }))
+            .content(mount)
+            .addInto("main")
     </script>
 @endpush
