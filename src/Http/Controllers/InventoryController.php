@@ -20,6 +20,8 @@ use RecursiveTree\Seat\Inventory\Models\Location;
 use RecursiveTree\Seat\Inventory\Models\Stock;
 use RecursiveTree\Seat\Inventory\Models\StockCategory;
 use RecursiveTree\Seat\Inventory\Models\StockItem;
+use RecursiveTree\Seat\TreeLib\Helpers\ItemList;
+use RecursiveTree\Seat\TreeLib\Helpers\SimpleItem;
 use Seat\Eveapi\Models\Sde\InvType;
 use Seat\Web\Http\Controllers\Controller;
 
@@ -493,8 +495,12 @@ class InventoryController extends Controller
             return redirect()->back();
         }
 
+        $item_list = new ItemList(array_map(function ($item){
+            return new SimpleItem($item["type_id"],$item["amount"]);
+        },$data["items"]));
+
         return AllianceIndustryPluginHelper::$API::create_orders([
-            "items" => $data["items"],
+            "items" => $item_list,
             "location" => $data["location"]
         ]);
     }
