@@ -1987,10 +1987,6 @@
                     }
 
                     container
-                        .content(workspaceSelector((workspace)=>{
-                            this.workspace = workspace
-                            this.mount.update()
-                        }))
                         .contentIf(this.workspace,(container)=>container.content(this.locationFilter.mount()))
                         .contentIf(this.workspace,toolButtonPanelComponent(this))
                         .contentIf(this.workspace,this.categoryList)
@@ -2003,7 +1999,15 @@
             }
         }
 
-        new App().render().addInto("content-target")
+        const app = new App()
+        W2.emptyHtml()
+            .content(workspaceSelector((workspace)=>{
+                app.workspace = workspace
+                app.mount.update()
+            }))
+            .content(app.render())
+            .addInto("content-target")
+
     </script>
 @endpush
 

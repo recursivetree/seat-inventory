@@ -65,6 +65,14 @@ function workspaceSelector(...callbacks) {
         }
     }
 
+    const changeWorkspace = (workspace) => {
+        window.sessionStorage.setItem("selectedWorkspace",workspace.id)
+        state.currentWorkspace = workspace
+        for (const callback of callbacks) {
+            callback(workspace)
+        }
+    }
+
     const mount = W2.mount(state, (container, mount, state) => {
         container.content(
             W2.html("div")
@@ -101,10 +109,7 @@ function workspaceSelector(...callbacks) {
                                                 .classIf(state.currentWorkspace && workspace.id === state.currentWorkspace.id, "active")
                                                 .content(workspace.name)
                                                 .event("click", () => {
-                                                    for (const callback of callbacks) {
-                                                        callback(workspace)
-                                                    }
-                                                    state.currentWorkspace = workspace
+                                                    changeWorkspace(workspace)
                                                     mount.update()
                                                 })
                                         )
@@ -115,7 +120,19 @@ function workspaceSelector(...callbacks) {
         )
     })
 
-    loadWorkspaces().then(()=>mount.update())
+    loadWorkspaces().then(()=>{
+        let selectedWorkspaceID = window.sessionStorage.getItem("selectedWorkspace")
+        if(selectedWorkspaceID){
+            selectedWorkspaceID = parseInt(selectedWorkspaceID)
+            for (const workspace of state.workspaces) {
+                if(workspace.id === selectedWorkspaceID){
+                    changeWorkspace(workspace)
+                }
+            }
+        }
+
+        mount.update()
+    })
 
     return mount
 }
