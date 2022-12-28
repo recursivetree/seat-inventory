@@ -13,6 +13,7 @@ More features:
 * create stocks from fits from seat-fitting including updating the stock when you change fits
 * export missing items to seat-alliance-industry
 * stock priority system: If there aren't enough items, preferably allocate them to high priority ships like a home-defence doctrine over a fun fleet
+* workspaces: Have completely independent stocks, item sources and settings on one SeAT install.
 * much more
 
 **This guide is still work in progress!**
@@ -33,7 +34,7 @@ There are two steps:
 2. Setting up seat-inventory
 
 #### Permissions
-seat-inventory provides two permissions: edit and view. A description of what they do is below.
+seat-inventory provides three permissions: `edit`, `view` and `create workspaces`. A description of what they do is below.
 You can configure the permissions over the normal seat permission system under *Settings/Access Management*
 
 ##### Permission View Inventory
@@ -42,23 +43,36 @@ Allows you to view the seat-inventory pages and the data on this page. As of rig
 ##### Permission Edit Inventory
 Allows you to change the configuration, create stocks and group, or generally anything that is permanently stored on the server.
 
-#### Plugin Configuration
-sea-inventory must know from where it should take its inventory data.
+##### Permission Create Workspaces
+Allows you to create new workspaces. More on them below.
 
-Open *Inventory Management/Settings*. 
-On this page, you can configure from where inventory data will be loaded. 
-You can track corporations and alliances. 
+#### Plugin Configuration
+seat-inventory can manage the items from multiple different organisations, like a corporation and it's alliance.
+The stocks and item sources can be kept completely independent. This is done with workspaces. 
+A workspace is independent of any other workspace. 
+You have to configure stocks and item sources per workspace, in return one stock doesn't appear in another workspace than the one it has been defined in.
+
+To get started, open *Inventory Management/Settings*. 
+
+Either select the default workspace or create a new one using the + button.
+
+The next step is to configure the workspace. You are already on the right page to do this.
+
+On this page, you can configure from where inventory data will be loaded ("configuring the inventory sources"). 
+You can add corporations and alliances. 
 If you add a corporation, it's assets in the corporation hangars and corporation contracts will be considered as an item source. 
 Adding an alliance only tracks alliance contracts, but there is a button which enables adding alliance members. 
 This automatic mode will also add newly joined corporations and remove corporation which left. Corporations added manually 
 over the corporation section will be ignored completely and are never removed.
 
-After changing the settings, you might need to wait up to 2 ESI cache cycles until the changes are fully reflected. 
+After changing the settings, you might need to wait up to 2 ESI cache cycles until the changes are fully reflected in the item data. 
 
 Finally, the plugin is ready to be used. Following is a brief description of the different pages and what they do.
 
 ## The Inventory Browser
 The inventory browser allows you to, as the name suggest, browse through all assets from the sources you configured under the settings page.
+
+As always, you have to select the workspace you want to work in.
 
 You can use the filter to specify a single item type you look for and where you search for the items.
 
@@ -73,7 +87,7 @@ Instead, they appear with their ship name in the station of the corporation hang
 ## The Dashboard
 This is the heart of seat-inventory.
 
-Once you open the dashboard under *Inventory management/Dashboard*, you should see three parts, from top to bottom:
+Besides the workspace selector, once you open the dashboard under *Inventory management/Dashboard*, you should see three parts, from top to bottom:
 
 1. A location filter. More on it later
 2. A row of buttons
@@ -82,7 +96,7 @@ Once you open the dashboard under *Inventory management/Dashboard*, you should s
 ### The Buttons
 
 #### Update
-Reloads all data. You need this if two persons work on the dashboard at the same time, so you can load each other's changes. It is also useful if you change a stock and want to load the new data.
+Reloads all data. You need this if two persons work on the same workspace at the same time, so you can load each other's changes. It is also useful if you change a stock and want to load the new data.
 
 #### Deliveries
 Opens the deliveries popup. Deliveries allow you to add items that don't really exist to the item sources. My corporation uses it to mark items that are being produced or shipped to staging as already there, so they disappear from the list of missing items.
