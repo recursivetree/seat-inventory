@@ -20,34 +20,44 @@
     <script>
 
         //TODO: load them from the server
+        let stockPriorities = null
         async function getStockPriorities() {
-            return [
-                {
-                    priority: 5,
-                    name: "Critical"
-                },
-                {
-                    priority: 4,
-                    name: "Important"
-                },
-                {
-                    priority: 3,
-                    name: "Preferred"
-                },
-                {
-                    priority: 2,
-                    name: "Normal"
-                },
-                {
-                    priority: 1,
-                    name: "Low"
-                },
-                {
-                    priority: 0,
-                    name: "Very Low"
-                },
-            ]
+            if (!stockPriorities){
+                try {
+                    const response = await fetch("{{ route("treelib.prioritiesList") }}")
+                    const data = await response.json()
+                    stockPriorities = []
+                    for (const [priority,pdata] of data.entries()){
+                        stockPriorities.push({
+                            priority,
+                            name: pdata.name
+                        })
+                    }
+
+                } catch (e){
+                    BoostrapToast.open("Error","Failed to load stock priority data")
+                    stockPriorities = [{
+                           priority: 0,
+                           name: "Error"
+                       }]
+                }
+            }
+            return stockPriorities
         }
+        function getStockPriorityName(priority){
+            if(!stockPriorities){
+                return priority.toString()
+            }
+            for (const pdata of stockPriorities){
+                if(pdata.priority===priority){
+                    return pdata.name
+                }
+            }
+            return priority.toString()
+        }
+
+        //load stock priorities
+        getStockPriorities()
 
         const HAS_ALLIANCE_INDUSTRY_PLUGIN = {!! \RecursiveTree\Seat\TreeLib\Helpers\AllianceIndustryPluginHelper::pluginIsAvailable() ? "true":"false" !!}
 
@@ -744,7 +754,7 @@
                     W2.html("ul")
                         .class("list-group list-group-flush")
                         .content(stockCardPropertyEntry("Location", stock.location.name))
-                        .content(stockCardPropertyEntry("Priority", stock.priority))
+                        .content(stockCardPropertyEntry("Priority", getStockPriorityName(stock.priority)))
                         .content(stockCardPropertyEntry("Planned", stock.amount))
                         .content(stockCardPropertyEntry("Warning Threshold", stock.warning_threshold))
                         .content(stockCardPropertyEntry("Available", available, availabilityColor))
@@ -1625,7 +1635,7 @@
                                                             dataEntry("Last Updated", stock.last_updated || "never"),
                                                             dataEntry("Amount", stock.amount),
                                                             dataEntry("Warning Threshold", stock.warning_threshold),
-                                                            dataEntry("Priority", stock.priority),
+                                                            dataEntry("Priority", getStockPriorityName(stock.priority)),
                                                             dataEntry("Available", available),
                                                             (container)=>{
                                                                 for (const level of stock.levels){
