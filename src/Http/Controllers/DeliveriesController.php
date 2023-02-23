@@ -6,10 +6,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Intervention\Image\Facades\Image;
 use RecursiveTree\Seat\Inventory\Helpers\ItemHelper;
-use RecursiveTree\Seat\Inventory\Helpers\Parser;
 use RecursiveTree\Seat\Inventory\Jobs\UpdateStockLevels;
+use RecursiveTree\Seat\Inventory\Models\InventoryItem;
 use RecursiveTree\Seat\Inventory\Models\InventorySource;
 use RecursiveTree\Seat\Inventory\Models\Location;
+use RecursiveTree\Seat\TreeLib\Parser\Parser;
 use Seat\Web\Http\Controllers\Controller;
 
 class DeliveriesController extends Controller
@@ -28,29 +29,33 @@ class DeliveriesController extends Controller
             return response()->json(["message"=>"location not found"],400);
         }
 
-        $itemList = Parser::parseMultiBuy($multibuy);
-        $itemList = ItemHelper::simplifyItemList($itemList);
-
-        if(count($itemList)>0) {
-            $source = new InventorySource();
-            $source->location_id = $location_id;
-            $source->source_name = "Pending Delivery";
-            $source->source_type = "in_transport";
-            $source->workspace_id = $request->workspace;
-            $source->save();
-
-            foreach ($itemList as $item){
-                $source_item = $item->asSourceItem();
-                $source_item->source_id = $source->id;
-                $source_item->save();
-            }
-
-            //update stock levels for new stock
-            UpdateStockLevels::dispatch($source->location_id)->onQueue('default');
-
-        } else {
-            return response()->json(["message"=>"Invalid multibuy: No items added"],400);
+        $parser_result = Parser::parseItems($multibuy);
+        if ($parser_result===null){
+            return response()->json(["message"=>"Failed to parse multibuy"],400);
         }
+        $items = $parser_result->items->simplifyItems();
+        if($items->count()<1){
+            return response()->json(["message"=>"You can't submit an empty multibuy"],400);
+        }
+
+        $source = new InventorySource();
+        $source->location_id = $location_id;
+        $source->source_name = "Pending Delivery";
+        $source->source_type = "in_transport";
+        $source->workspace_id = $request->workspace;
+        $source->save();
+
+        foreach ($items as $item){
+            $source_item = new InventoryItem();
+            $source_item->type_id = $item->typeModel->typeID;
+            $source_item->amount = $item->amount ?? 1;
+            $source_item->source_id = $source->id;
+            $source_item->save();
+        }
+
+        //update stock levels for new stock
+        UpdateStockLevels::dispatch($source->location_id,$request->workspace)->onQueue('default');
+
 
         return response()->json(["message"=>"Added"]);
     }
