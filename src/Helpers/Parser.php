@@ -50,24 +50,6 @@ class Parser
         ];
     }
 
-    public static function parseMultiBuy($multibuy): array
-    {
-        $multibuy = preg_replace('~\R~u', "\n", $multibuy);
-
-        $matches = [];
-
-        preg_match_all("/^^(?<item_name>[\w '-]+?)\s+(?:x)?(?<item_amount>\d+)/m",$multibuy, $matches);
-
-        //dd($matches,$multibuy);
-
-        $intermediate = [
-            'item_names'=>$matches['item_name'],
-            'item_amount'=>$matches['item_amount']
-        ];
-
-        return self::convertToTypeIDList($intermediate);
-    }
-
     public static function convertToTypeIDList($item_list): array
     {
         $type_list = [];
