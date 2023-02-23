@@ -2,7 +2,6 @@
 
 namespace RecursiveTree\Seat\Inventory\Http\Controllers;
 
-use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Intervention\Image\Facades\Image;
@@ -10,7 +9,6 @@ use RecursiveTree\Seat\Inventory\Models\Workspace;
 use RecursiveTree\Seat\TreeLib\Helpers\AllianceIndustryPluginHelper;
 use RecursiveTree\Seat\TreeLib\Helpers\FittingPluginHelper;
 use RecursiveTree\Seat\Inventory\Helpers\ItemHelper;
-use RecursiveTree\Seat\Inventory\Helpers\Parser;
 use RecursiveTree\Seat\Inventory\Jobs\GenerateStockIcon;
 use RecursiveTree\Seat\Inventory\Jobs\UpdateCategoryMembers;
 use RecursiveTree\Seat\Inventory\Jobs\UpdateStockLevels;
@@ -21,6 +19,7 @@ use RecursiveTree\Seat\Inventory\Models\Stock;
 use RecursiveTree\Seat\Inventory\Models\StockCategory;
 use RecursiveTree\Seat\Inventory\Models\StockItem;
 use RecursiveTree\Seat\TreeLib\Items\EveItem;
+use RecursiveTree\Seat\TreeLib\Parser\Parser;
 use Seat\Eveapi\Models\Sde\InvType;
 use Seat\Web\Http\Controllers\Controller;
 
@@ -226,10 +225,6 @@ class InventoryController extends Controller
             "workspace"=>"required|integer"
         ]);
 
-        //additional fields
-        $name = $request->name ?: "unnamed";
-        $items = [];
-
         //validate workspace
         if(!Workspace::where("id",$request->workspace)->exists()){
             return response()->json(["message"=>"workspace not found"],400);
@@ -242,9 +237,9 @@ class InventoryController extends Controller
         //validate type
         if($request->multibuy === null && $request->fit===null && $request->plugin_fitting_id===null) return response()->json(["message"=>"neither fit nor multibuy found"],400);
 
-        $fit = null;
+        $items_text = $request->multibuy;
         if($request->fit){
-            $fit = $request->fit;
+            $items_text = $request->fit;
         } else if ($request->plugin_fitting_id && FittingPluginHelper::pluginIsAvailable()){
             $fitting = FittingPluginHelper::$FITTING_PLUGIN_FITTING_MODEL::find($request->plugin_fitting_id);
 
@@ -252,30 +247,25 @@ class InventoryController extends Controller
                 return response()->json(["message"=>"Fitting not found"],400);
             }
 
-            $fit = $fitting->eftfitting;
+            $items_text = $fitting->eftfitting;
         }
 
-        //validate fit/get items
-        if($fit){
-            try {
-                $fit = Parser::parseFit($fit);
-            } catch (Exception $e){
-                $message = $e->getMessage();
-                return response()->json(["message"=>"Failed to parse fit: $message"],400);
-            }
-            $name = $fit["name"];
-            $items = $fit["items"];
+        //parse items
+        $parser_results = Parser::parseItems($items_text);
+        if($parser_results == null){
+            return response()->json(["message"=>"Failed to parse fit/items"],400);
         }
 
-        //validate multibuy
-        if($request->multibuy){
-            $items = Parser::parseMultiBuy($request->multibuy);
+        $name = $parser_results->shipName ?? $request->name ?? "unnamed";
+
+        if($parser_results->items->isEmpty()){
+            return response()->json(["message"=>"Empty stocks aren't allowed!"],400);
         }
 
         //data filling stage
 
         //make sure there aren't any duplicate item stacks
-        $items = ItemHelper::simplifyItemList($items);
+        $items = $parser_results->items->simplifyItems();
 
         //get the stock
         $stock = Stock::findOrNew($request->id);
@@ -297,9 +287,13 @@ class InventoryController extends Controller
             //remove old items
             $stock->items()->delete();
 
-            $stock->items()->saveMany(array_map(function ($item) use ($stock) {
-                return $item->asStockItem($stock->id);
-            },$items));
+            $stock->items()->saveMany($items->map(function ($item) use ($stock) {
+                $stock_item = new StockItem();
+                $stock_item->stock_id = $stock->id;
+                $stock_item->type_id = $item->typeModel->typeID;
+                $stock_item->amount = $item->amount;
+                return $stock_item;
+            }));
         });
 
         //data update phase

@@ -1359,6 +1359,8 @@
                                             BoostrapToast.open("Stock", "Successfully saved the stock")
                                         } else {
                                             BoostrapToast.open("Stock", "Failed to safe the stock")
+                                            const msg = await response.json()
+                                            alert(msg);
                                         }
 
                                         //reload categories
