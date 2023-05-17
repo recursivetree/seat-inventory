@@ -13,9 +13,6 @@ class ManuallyAddedEligibleForFilters extends Migration
         Schema::table('recursive_tree_seat_inventory_stock_category_mapping', function (Blueprint $table) {
             $table->boolean("category_eligible")->default(false);
         });
-
-        //update with new data
-        UpdateCategoryMembers::dispatchNow();
     }
 
     public function down()

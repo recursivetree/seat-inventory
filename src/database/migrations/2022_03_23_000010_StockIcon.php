@@ -17,7 +17,7 @@ class StockIcon extends Migration
         });
 
         foreach (Stock::pluck("id") as $stock_id){
-            GenerateStockIcon::dispatchNow($stock_id,null);
+            GenerateStockIcon::dispatchSync($stock_id,null);
         }
     }
 

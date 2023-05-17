@@ -76,7 +76,7 @@ class InventoryServiceProvider extends AbstractSeatPlugin
         Artisan::command('inventory:assets {--sync}', function () {
             if ($this->option("sync")){
                 $this->info("processing...");
-                UpdateInventory::dispatchNow();
+                UpdateInventory::dispatchSync();
                 $this->info("Synchronously processed inventory updates!");
             } else {
                 UpdateInventory::dispatch()->onQueue('default');
@@ -87,7 +87,7 @@ class InventoryServiceProvider extends AbstractSeatPlugin
         Artisan::command('inventory:notifications {--sync}', function () {
             if ($this->option("sync")){
                 $this->info("processing...");
-                SendStockLevelNotifications::dispatchNow();
+                SendStockLevelNotifications::dispatchSync();
                 $this->info("Synchronously sent notification!");
             } else {
                 SendStockLevelNotifications::dispatch()->onQueue('notifications');
@@ -104,7 +104,7 @@ class InventoryServiceProvider extends AbstractSeatPlugin
 
             if ($this->option("sync")){
                 $this->info("processing...");
-                UpdateStockLevels::dispatchNow($location_id,$workspace_id, true);
+                UpdateStockLevels::dispatchSync($location_id,$workspace_id, true);
                 $this->info("Synchronously processed stock level updates!");
             } else {
                 UpdateStockLevels::dispatch($location_id, $workspace_id)->onQueue('default');
@@ -123,7 +123,7 @@ class InventoryServiceProvider extends AbstractSeatPlugin
         Artisan::command('inventory:categories {--sync}', function () {
             if ($this->option("sync")){
                 $this->info("processing...");
-                UpdateCategoryMembers::dispatchNow();
+                UpdateCategoryMembers::dispatchSync();
                 $this->info("Synchronously processed stock level updates!");
             } else {
                 UpdateCategoryMembers::dispatch()->onQueue('default');
