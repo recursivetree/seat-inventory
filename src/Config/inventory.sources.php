@@ -21,6 +21,11 @@ return [
         'virtual'=>false,
         'name'=>'Fitted Ships (Hangar)'
     ],
+    'market' => [
+        'pooled'=>true,
+        'virtual'=>false,
+        'name'=>'Market Sell Orders'
+    ],
     //just for the ui
     'item_pool' => [
         'pooled'=>true,
