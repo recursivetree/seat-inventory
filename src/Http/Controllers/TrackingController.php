@@ -7,8 +7,10 @@ use Illuminate\Support\Facades\DB;
 use RecursiveTree\Seat\Inventory\Helpers\LocationHelper;
 use RecursiveTree\Seat\Inventory\Helpers\StockHelper;
 use RecursiveTree\Seat\Inventory\Jobs\UpdateInventory;
+use RecursiveTree\Seat\Inventory\Models\Location;
 use RecursiveTree\Seat\Inventory\Models\TrackedAlliance;
 use RecursiveTree\Seat\Inventory\Models\TrackedCorporation;
+use RecursiveTree\Seat\Inventory\Models\TrackedMarket;
 use RecursiveTree\Seat\Inventory\Models\Workspace;
 use Seat\Eveapi\Models\Alliances\Alliance;
 use Seat\Eveapi\Models\Corporation\CorporationInfo;
@@ -220,6 +222,71 @@ class TrackingController extends Controller
         $corporations = TrackedAlliance::with("alliance")->where("workspace_id",$request->workspace)->get();
 
         return response()->json($corporations);
+    }
+
+    public function listMarkets(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $request->validate([
+            "workspace"=>"required|integer"
+        ]);
+
+        $corporations = TrackedMarket::with("location")->where("workspace_id",$request->workspace)->get();
+
+        return response()->json($corporations);
+    }
+
+    public function addMarket(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $request->validate([
+            "location_id"=>"required|integer",
+            "workspace"=>"required|integer"
+        ]);
+
+        if(!Workspace::where("id",$request->workspace)->exists()){
+            return response()->json(["message"=>"workspace doesn't exist"],400);
+        }
+
+        if(!Location::where("id",$request->location_id)->exists()){
+            return response()->json(["message"=>"market doesn't exist"],400);
+        }
+
+        if(TrackedMarket::where("location_id",$request->location_id)
+            ->where("workspace_id",$request->workspace)
+            ->exists()
+        ){
+            return response()->json(["message"=>"locations already tracked"],40);
+        }
+
+        $market = new TrackedMarket();
+        $market->location_id = $request->location_id;
+        $market->workspace_id = $request->workspace;
+        $market->character_id = 0;
+        $market->save();
+
+        //config changed -> update items
+        UpdateInventory::dispatch()->onQueue('default');
+
+        return response()->json([]);
+    }
+
+    public function removeMarket(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $request->validate([
+            "tracking_id"=>"required|integer"
+        ]);
+
+        $market = TrackedMarket::find($request->tracking_id);
+
+        if($market === null){
+            return response()->json(["message"=>"market doesn't exist"],400);
+        }
+
+        $market->delete();
+
+        //config changed -> update items
+        UpdateInventory::dispatch()->onQueue('default');
+
+        return response()->json([]);
     }
 
     public function addAllianceMembers(Request $request){

@@ -211,6 +211,25 @@ Route::group([
         'middleware' => 'can:inventory.edit_inventory'
     ]);
 
+    // market settings
+    Route::get('/settings/markets/list', [
+        'as'   => 'inventory.listMarkets',
+        'uses' => 'TrackingController@listMarkets',
+        'middleware' => 'can:inventory.view_inventory'
+    ]);
+
+    Route::post('/settings/markets/add', [
+        'as'   => 'inventory.addMarket',
+        'uses' => 'TrackingController@addMarket',
+        'middleware' => 'can:inventory.edit_inventory'
+    ]);
+
+    Route::post('/settings/markets/remove', [
+        'as'   => 'inventory.removeMarket',
+        'uses' => 'TrackingController@removeMarket',
+        'middleware' => 'can:inventory.edit_inventory'
+    ]);
+
 
     //Delivery Routes
     Route::post('/deliveries/add', [
