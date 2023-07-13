@@ -4,11 +4,11 @@ namespace RecursiveTree\Seat\Inventory\Notifications;
 
 use Seat\Notifications\Notifications\AbstractNotification;
 use Illuminate\Notifications\Messages\SlackMessage;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Seat\Notifications\Notifications\AbstractSlackNotification;
 
-class StockLevelNotification extends AbstractNotification implements ShouldQueue
+class StockLevelNotificationSlack extends AbstractSlackNotification implements ShouldQueue
 {
     use SerializesModels;
 
@@ -18,42 +18,12 @@ class StockLevelNotification extends AbstractNotification implements ShouldQueue
         $this->stocks = $stocks;
     }
 
-    public function via($notifiable)
-    {
-        return ['mail','slack'];
-    }
-
-    public function toMail($notifiable)
-    {
-
-        $message = (new MailMessage)
-            ->success()
-            ->subject("EVE: Your stocks are running low")
-            ->greeting("Hello Stock Manager");
-
-        $message->line("(available/threshold/max)");
-
-        foreach ($this->stocks as $stock){
-            $name = $stock->name;
-            $location = $stock->location->name;
-            $amount = $stock->available;
-            $threshold = $stock->warning_threshold;
-            $max = $stock->amount;
-            $message->line("$name @$location: $amount/$threshold/$max");
-        }
-
-        $message->salutation("Regards, the seat-inventory plugin")
-            ->action("View on SeAT", route("inventory.dashboard"));
-
-        return $message;
-    }
-
-    public function toSlack(){
+    public function populateMessage(SlackMessage $message, $notifiable){
         $stocks = $this->stocks;
 
         $date = now();
 
-        return (new SlackMessage)
+        return $message
             ->success()
             ->content("Some stocks are running low! Updated at: $date")
             ->from('SeAT Inventory Manager')
