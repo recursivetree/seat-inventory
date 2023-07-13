@@ -439,6 +439,9 @@
                                         selection: state.marketSelector,
                                         id: W2.getID("addMarket")
                                     }),
+                                    W2.html("small")
+                                        .class("text-muted")
+                                        .content("Your main character will be used to pull data from ESI. Please make sure that your main character has access to the market on this structure. Currently only citadels work.")
                                 ).contentIf(state.marketSelector !== null,
                                 W2.html("button")
                                     .class("btn btn-primary btn-block mt-2")

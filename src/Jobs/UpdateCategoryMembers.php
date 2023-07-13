@@ -30,7 +30,6 @@ class UpdateCategoryMembers implements ShouldQueue
         //get stocks
         $stocks = Stock::all();
         foreach ($categories as $category){
-            $x=0;
             $category->updateMembers($stocks);
         }
     }

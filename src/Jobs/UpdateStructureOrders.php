@@ -2,15 +2,15 @@
 
 namespace RecursiveTree\Seat\Inventory\Jobs;
 
+use Illuminate\Queue\Middleware\WithoutOverlapping;
+use Illuminate\Support\Facades\DB;
 use RecursiveTree\Seat\Inventory\Models\InventoryItem;
 use RecursiveTree\Seat\Inventory\Models\InventorySource;
 use RecursiveTree\Seat\Inventory\Models\Location;
 use RecursiveTree\Seat\Inventory\Models\Workspace;
 use RecursiveTree\Seat\TreeLib\Items\EveItem;
-use RecursiveTree\Seat\TreeLib\Models\MarketOrder;
 use Seat\Eveapi\Jobs\AbstractAuthCharacterJob;
 use Seat\Eveapi\Models\RefreshToken;
-use Seat\Eveapi\Models\Universe\UniverseStructure;
 
 /**
  * Class Orders.
@@ -43,7 +43,7 @@ class UpdateStructureOrders extends AbstractAuthCharacterJob
     /**
      * @var array
      */
-    protected $tags = ['market', 'structure'];
+    protected $tags = ['market', 'structure', 'seat-inventory', 'sources'];
 
     /**
      * @var Location The structure ID to which this job is related.
@@ -59,12 +59,30 @@ class UpdateStructureOrders extends AbstractAuthCharacterJob
         parent::__construct($token);
     }
 
+    public function middleware(): array
+    {
+        return array_merge(
+            parent::middleware(),
+            [
+                (new WithoutOverlapping($this->workspace->id))->releaseAfter(60),
+            ]
+        );
+    }
+
     /**
      * Execute the job.
      *
      * @throws \Throwable
      */
     public function handle()
+    {
+        DB::transaction(function (){
+           $this->updateData();
+        });
+    }
+
+
+    public function updateData(): void
     {
         if($this->location->structure_id === null) return;
         $item_list = [];

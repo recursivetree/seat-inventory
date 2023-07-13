@@ -6,6 +6,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\Middleware\WithoutOverlapping;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
@@ -36,6 +37,14 @@ class UpdateStockLevels implements ShouldQueue
         $this->workspace_id = $workspace;
     }
 
+    public function middleware(): array
+    {
+        return array_merge(
+            [
+                (new WithoutOverlapping($this->workspace_id))->releaseAfter(60),
+            ]
+        );
+    }
 
     public function handle()
     {

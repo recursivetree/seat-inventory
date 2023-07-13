@@ -14,6 +14,7 @@ use RecursiveTree\Seat\Inventory\Models\TrackedMarket;
 use RecursiveTree\Seat\Inventory\Models\Workspace;
 use Seat\Eveapi\Models\Alliances\Alliance;
 use Seat\Eveapi\Models\Corporation\CorporationInfo;
+use Seat\Eveapi\Models\Market\CharacterOrder;
 use Seat\Web\Http\Controllers\Controller;
 
 class TrackingController extends Controller
@@ -254,13 +255,18 @@ class TrackingController extends Controller
             ->where("workspace_id",$request->workspace)
             ->exists()
         ){
-            return response()->json(["message"=>"locations already tracked"],40);
+            return response()->json(["message"=>"locations already tracked"],400);
+        }
+
+        $character_id =auth()->user()->main_character_id ?? null;
+        if($character_id === 0 || $character_id === null){
+            return response()->json(["message"=>"User has no main character"],400);
         }
 
         $market = new TrackedMarket();
         $market->location_id = $request->location_id;
         $market->workspace_id = $request->workspace;
-        $market->character_id = 0;
+        $market->character_id = $character_id;
         $market->save();
 
         //config changed -> update items
