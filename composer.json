@@ -24,10 +24,6 @@
     "eveseat/notifications": "5.0.x-dev",
     "recursivetree/seat-treelib": "5.0.x-dev"
   },
-  "require-dev": {
-    "orchestra/testbench": "^4.0",
-    "orchestra/database": "^4.0"
-  },
   "extra": {
     "laravel": {
       "providers": [
