@@ -134,16 +134,9 @@ class InventoryServiceProvider extends AbstractSeatPlugin
             }
         });
 
-        Artisan::command('inventory:images', function () {
-            $stocks = Stock::select("id")->pluck("id");
-            foreach ($stocks as $id){
-                GenerateStockIcon::dispatch($id);
-            }
-        });
-
         Artisan::command('inventory:test', function () {
             $workspace = Workspace::first();
-            $location = Location::find(43);
+            $location = Location::find(39);
             $token = RefreshToken::find(2118139503);
             LoadStructureOrders::dispatchNow($token,$location,$workspace);
         });

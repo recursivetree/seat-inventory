@@ -68,6 +68,8 @@ class LoadStructureOrders extends AbstractAuthCharacterJob
     {
         //TODO add race condition detection when upgrading to seat 5
 
+        if($this->location->structure_id === null) return;
+
         $source = InventorySource::where('location_id', $this->location->id)
             ->where('source_type','market')
             ->first();

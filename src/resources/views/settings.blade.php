@@ -425,7 +425,7 @@
                                         select2: {
                                             placeholder: "Select a market",
                                             ajax: {
-                                                url: "{{ route("inventory.locationLookup") }}"
+                                                url: "{{ route("inventory.locationLookup",['stations'=>'false']) }}"
                                             },
                                             allowClear: true,
                                         },

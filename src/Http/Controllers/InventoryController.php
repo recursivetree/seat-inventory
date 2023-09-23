@@ -44,10 +44,20 @@ class InventoryController extends Controller
     public function locationLookup(Request $request){
         $request->validate([
             "term"=>"nullable|string",
-            "id"=>"nullable|integer"
+            "id"=>"nullable|integer",
+            'stations'=>'nullable|in:true,false',
+            'structures'=>'nullable|in:true,false'
         ]);
 
         $query = Location::query();
+        
+        if($request->stations === 'false'){
+            $query->where('station_id',null);
+        }
+
+        if($request->structures ===  'false'){
+            $query->where('structure_id',null);
+        }
 
         if($request->term){
             $query = $query->where("name","like","%$request->term%");
