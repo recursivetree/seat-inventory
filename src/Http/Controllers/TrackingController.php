@@ -130,6 +130,19 @@ class TrackingController extends Controller
         return response()->json();
     }
 
+    public function removeMarket(Request $request){
+        $request->validate([
+            "tracking_id"=>"required|integer"
+        ]);
+
+        TrackedMarket::destroy($request->tracking_id);
+
+        //-1 corporation, less assets -> we need to update
+        UpdateInventory::dispatch()->onQueue('default');
+
+        return response()->json();
+    }
+
     public function corporationLookup(Request $request){
         $request->validate([
             "term"=>"nullable|string",
@@ -289,6 +302,16 @@ class TrackingController extends Controller
         $corporations = TrackedAlliance::with("alliance")->where("workspace_id",$request->workspace)->get();
 
         return response()->json($corporations);
+    }
+
+    public function listMarkets(Request $request){
+        $request->validate([
+            "workspace"=>"required|integer"
+        ]);
+
+        $markets = TrackedMarket::with("location","character")->where("workspace_id",$request->workspace)->get();
+
+        return response()->json($markets);
     }
 
     public function addAllianceMembers(Request $request){

@@ -66,6 +66,7 @@
         const appState = {
             corporations: [],
             alliances: [],
+            markets: [],
             corporationSelector: null,
             allianceSelector: null,
             marketLocationSelector: null,
@@ -83,6 +84,8 @@
                 appState.corporations = await response.json()
                 response = await fetch(`{{ route("inventory.listAlliances") }}?workspace=${workspaceId}`)
                 appState.alliances = await response.json()
+                response = await fetch(`{{ route("inventory.listMarkets") }}?workspace=${workspaceId}`)
+                appState.markets = await response.json()
             }
         }
 
@@ -491,22 +494,22 @@
                                 .class("list-group")
                                 .content(
                                     (container) => {
-                                        for (const corporation of appState.corporations) {
+                                        for (const market of appState.markets) {
                                             container.content(
                                                 W2.html("li")
                                                     .class("list-group-item d-flex flex-row justify-content-between align-items-baseline")
                                                     .content(
                                                         W2.html("span")
-                                                            .content(corporation.corporation.name),
+                                                            .content(`${market.location.name} | ${market.character.name}`),
                                                         confirmButtonComponent("Remove", async () => {
-                                                            const response = await jsonPostAction("{{ route("inventory.removeCorporation") }}", {
-                                                                tracking_id: corporation.id
+                                                            const response = await jsonPostAction("{{ route("inventory.removeMarket") }}", {
+                                                                tracking_id: market.id
                                                             })
 
                                                             if (response.ok) {
-                                                                BoostrapToast.open("Success", `Successfully removed ${corporation.corporation.name}`)
+                                                                BoostrapToast.open("Success", `Successfully removed ${market.location.name}`)
                                                             } else {
-                                                                BoostrapToast.open("Error", `Failed to remove ${corporation.corporation.name}`)
+                                                                BoostrapToast.open("Error", `Failed to remove ${market.location.name}`)
                                                             }
 
                                                             await fetchData()

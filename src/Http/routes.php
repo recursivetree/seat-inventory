@@ -165,6 +165,12 @@ Route::group([
         'middleware' => 'can:inventory.view_inventory'
     ]);
 
+    Route::get('/settings/markets/list', [
+        'as'   => 'inventory.listMarkets',
+        'uses' => 'TrackingController@listMarkets',
+        'middleware' => 'can:inventory.view_inventory'
+    ]);
+
     Route::post('/settings/corporations/add', [
         'as'   => 'inventory.addCorporation',
         'uses' => 'TrackingController@addCorporation',
@@ -180,6 +186,12 @@ Route::group([
     Route::post('/settings/corporations/remove', [
         'as'   => 'inventory.removeCorporation',
         'uses' => 'TrackingController@removeCorporation',
+        'middleware' => 'can:inventory.edit_inventory'
+    ]);
+
+    Route::post('/settings/markets/remove', [
+        'as'   => 'inventory.removeMarket',
+        'uses' => 'TrackingController@removeMarket',
         'middleware' => 'can:inventory.edit_inventory'
     ]);
 
