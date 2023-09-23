@@ -7,10 +7,13 @@ use Illuminate\Support\Facades\DB;
 use RecursiveTree\Seat\Inventory\Helpers\LocationHelper;
 use RecursiveTree\Seat\Inventory\Helpers\StockHelper;
 use RecursiveTree\Seat\Inventory\Jobs\UpdateInventory;
+use RecursiveTree\Seat\Inventory\Models\Location;
 use RecursiveTree\Seat\Inventory\Models\TrackedAlliance;
 use RecursiveTree\Seat\Inventory\Models\TrackedCorporation;
+use RecursiveTree\Seat\Inventory\Models\TrackedMarket;
 use RecursiveTree\Seat\Inventory\Models\Workspace;
 use Seat\Eveapi\Models\Alliances\Alliance;
+use Seat\Eveapi\Models\Character\CharacterInfo;
 use Seat\Eveapi\Models\Corporation\CorporationInfo;
 use Seat\Web\Http\Controllers\Controller;
 
@@ -28,6 +31,41 @@ class TrackingController extends Controller
         $corporations = TrackedCorporation::with(["corporation","alliance"])->where("workspace_id",$request->workspace)->get();
 
         return response()->json($corporations);
+    }
+
+    public function addMarket(Request $request){
+        $request->validate([
+            "structure_id"=>"required|integer",
+            "character_id"=>"required|integer",
+            "workspace"=>"required|integer"
+        ]);
+
+        if(!Workspace::where("id",$request->workspace)->exists()){
+            return response()->json(["message"=>"workspace doesn't exist"],400);
+        }
+
+        if(!CharacterInfo::where("character_id",$request->character_id)->exists()){
+            return response()->json(["message"=>"character doesn't exist"],400);
+        }
+
+        if(!Location::where("id",$request->structure_id)->exists()){
+            return response()->json(["message"=>"location doesn't exist"],400);
+        }
+
+        $market = TrackedMarket::where("workspace_id",$request->workspace)
+            ->where('location_id',$request->structure_id)
+            ->first() ?? new TrackedMarket();
+
+        $market->workspace_id = $request->workspace;
+        $market->character_id = $request->character_id;
+        $market->location_id = $request->structure_id;
+
+        $market->save();
+
+        //new market, new assets -> we need to update
+        UpdateInventory::dispatch()->onQueue('default');
+
+        return response()->json();
     }
 
     public function addCorporation(Request $request){
@@ -115,6 +153,37 @@ class TrackingController extends Controller
                 return [
                     'id' => $corporation->corporation_id,
                     'text' => "$corporation->name"
+                ];
+            });
+
+        return response()->json([
+            'results'=>$suggestions
+        ]);
+    }
+
+    public function characterLookup(Request $request){
+        $request->validate([
+            "term"=>"nullable|string",
+            "id"=>"nullable|integer"
+        ]);
+
+        $query = CharacterInfo::query();
+
+        if($request->term){
+            $query = $query->where("name","like","%$request->term%");
+        }
+
+        if($request->id){
+            $query = $query->where("id",$request->id);
+        }
+
+        $suggestions = $query->get();
+
+        $suggestions = $suggestions
+            ->map(function ($character){
+                return [
+                    'id' => $character->character_id,
+                    'text' => "$character->name"
                 ];
             });
 

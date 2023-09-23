@@ -57,6 +57,14 @@ Route::group([
         'middleware' => 'can:inventory.view_inventory'
     ]);
 
+    //character
+    //this route is hard coded, due not change url
+    Route::get('/character/lookup', [
+        'as'   => 'inventory.characterLookup',
+        'uses' => 'TrackingController@characterLookup',
+        'middleware' => 'can:inventory.view_inventory'
+    ]);
+
     //items
     //this route is hard coded, due not change url
     Route::get('/item/lookup', [
@@ -160,6 +168,12 @@ Route::group([
     Route::post('/settings/corporations/add', [
         'as'   => 'inventory.addCorporation',
         'uses' => 'TrackingController@addCorporation',
+        'middleware' => 'can:inventory.edit_inventory'
+    ]);
+
+    Route::post('/settings/market/add', [
+        'as'   => 'inventory.addMarket',
+        'uses' => 'TrackingController@addMarket',
         'middleware' => 'can:inventory.edit_inventory'
     ]);
 
