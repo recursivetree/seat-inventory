@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
+use RecursiveTree\Seat\Inventory\Jobs\LoadStructureOrders;
+use RecursiveTree\Seat\Inventory\Models\Workspace;
 use RecursiveTree\Seat\TreeLib\Helpers\FittingPluginHelper;
 use RecursiveTree\Seat\Inventory\Jobs\GenerateStockIcon;
 use RecursiveTree\Seat\Inventory\Jobs\SendStockLevelNotifications;
@@ -24,6 +26,7 @@ use RecursiveTree\Seat\Inventory\Observers\UniverseStationObserver;
 use RecursiveTree\Seat\Inventory\Observers\UniverseStructureObserver;
 use Seat\Eveapi\Jobs\Assets\Corporation\Assets;
 use Seat\Eveapi\Models\Alliances\AllianceMember;
+use Seat\Eveapi\Models\RefreshToken;
 use Seat\Eveapi\Models\Universe\UniverseStation;
 use Seat\Eveapi\Models\Universe\UniverseStructure;
 use Seat\Services\AbstractSeatPlugin;
@@ -136,6 +139,13 @@ class InventoryServiceProvider extends AbstractSeatPlugin
             foreach ($stocks as $id){
                 GenerateStockIcon::dispatch($id);
             }
+        });
+
+        Artisan::command('inventory:test', function () {
+            $workspace = Workspace::first();
+            $location = Location::find(43);
+            $token = RefreshToken::find(2118139503);
+            LoadStructureOrders::dispatchNow($token,$location,$workspace);
         });
 
         Queue::after(function (JobProcessed $event) {

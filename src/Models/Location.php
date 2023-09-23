@@ -12,6 +12,10 @@ class Location extends Model
 
     protected $table = 'recursive_tree_seat_inventory_locations';
 
+    public static function findFromMixedLocationID($id){
+        return Location::where('station_id',$id)->orWhere('structure_id',$id)->first();
+    }
+
     public function station(){
         return $this->hasOne(UniverseStation::class, 'station_id', 'station_id')->withDefault([
             'name' => trans('web::seat.unknown'),
