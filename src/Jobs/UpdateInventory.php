@@ -17,7 +17,9 @@ use RecursiveTree\Seat\Inventory\Models\Location;
 use RecursiveTree\Seat\Inventory\Models\Stock;
 use RecursiveTree\Seat\Inventory\Models\TrackedAlliance;
 use RecursiveTree\Seat\Inventory\Models\TrackedCorporation;
+use RecursiveTree\Seat\Inventory\Models\TrackedMarket;
 use RecursiveTree\Seat\Inventory\Models\Workspace;
+use Seat\Eseye\Exceptions\RequestFailedException;
 use Seat\Eveapi\Models\Assets\CorporationAsset;
 use Seat\Eveapi\Models\Contracts\ContractDetail;
 use Seat\Eveapi\Models\Universe\UniverseStation;
@@ -66,7 +68,27 @@ class UpdateInventory implements ShouldQueue
     }
 
     private function handleMarketOrders($workspace){
+        $markets = TrackedMarket::where('workspace_id',$workspace->id)->get();
+        foreach ($markets as $market){
+            try {
+            //TODO change in seat 5
+            LoadStructureOrders::dispatchNow($market->refresh_token,$market->location,$workspace);
+            } catch (RequestFailedException $e){
+                //ignore
+                //TODO logging
+            }
+        }
 
+        //delete old markets
+        $allowed = TrackedMarket::where('workspace_id',$workspace->id)->pluck('location_id');
+        $sources = InventorySource::where('workspace_id', $workspace->id)
+            ->whereNotIn('location_id',$allowed)
+            ->where('source_type','market')
+            ->get();
+        foreach ($sources as $source){
+            $source->items()->delete();
+            $source->delete();
+        }
     }
 
     private function handleContracts($corporation_ids, $alliance_ids, $workspace_id)
