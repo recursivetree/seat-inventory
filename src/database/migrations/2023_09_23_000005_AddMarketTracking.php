@@ -6,15 +6,15 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 
-class MarketTracking extends Migration
+return new class extends Migration
 {
     public function up()
     {
         Schema::create('seat_inventory_tracked_markets', function (Blueprint $table) {
             $table->bigIncrements("id");
             $table->bigInteger("location_id")->unsigned();
-            $table->bigInteger("workspace_id");
-            $table->bigInteger("character_id");
+            $table->bigInteger("workspace_id")->unsigned();;
+            $table->bigInteger("character_id")->unsigned();;
 
             $table->index("workspace_id");
         });
@@ -24,5 +24,5 @@ class MarketTracking extends Migration
     {
         Schema::drop('seat_inventory_tracked_markets');
     }
-}
+};
 
