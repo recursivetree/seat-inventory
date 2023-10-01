@@ -10,7 +10,7 @@ class Location extends Model
 {
     public $timestamps = false;
 
-    protected $table = 'recursive_tree_seat_inventory_locations';
+    protected $table = 'seat_inventory_inventory_locations';
 
     public function station(){
         return $this->hasOne(UniverseStation::class, 'station_id', 'station_id')->withDefault([

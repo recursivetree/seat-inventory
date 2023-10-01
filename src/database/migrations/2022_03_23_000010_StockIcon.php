@@ -15,10 +15,6 @@ class StockIcon extends Migration
         Schema::table('recursive_tree_seat_inventory_stock_definitions',function (Blueprint $table){
             $table->mediumText("icon")->nullable();
         });
-
-        foreach (Stock::pluck("id") as $stock_id){
-            GenerateStockIcon::dispatchSync($stock_id,null);
-        }
     }
 
     public function down()

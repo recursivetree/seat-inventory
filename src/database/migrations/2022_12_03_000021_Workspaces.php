@@ -16,11 +16,12 @@ class Workspaces extends Migration
             $table->boolean("enable_notifications")->default(false);
         });
 
-        $default = new \RecursiveTree\Seat\Inventory\Models\Workspace();
-        $default->name = "Default Workspace";
-        $default->save();
+        DB::table('recursive_tree_seat_inventory_workspaces')
+            ->insert([
+               'name'=>'Default Wokspace'
+            ]);
 
-        $default_workspace_id = $default->id;
+        $default_workspace_id = DB::table('recursive_tree_seat_inventory_workspaces')->first()->id;
 
         //we can't use the corporation id as primary key anymore, because corporation might be added to multiple workspaces
         //because of DB weirdness, we have to do it in two steps

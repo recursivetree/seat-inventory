@@ -7,9 +7,11 @@ use Seat\Eveapi\Models\Sde\InvType;
 
 class StockItem extends Model implements ItemEntry
 {
+    public const TABLE = 'seat_inventory_stock_items';
+
     public $timestamps = false;
 
-    protected $table = 'recursive_tree_seat_inventory_stock_items';
+    protected $table = self::TABLE;
 
     public function stock(){
         return $this->hasOne(Stock::class, "id", "stock_id");

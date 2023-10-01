@@ -10,7 +10,7 @@ class Workspace extends Model
 {
     public $timestamps = false;
 
-    protected $table = 'recursive_tree_seat_inventory_workspaces';
+    protected $table = 'seat_inventory_workspaces';
 
     public function markets(){
         return $this->hasMany(TrackedMarket::class,"workspace_id","id");

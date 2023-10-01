@@ -447,8 +447,8 @@ class InventoryController extends Controller
         ]);
 
         $items = StockItem::whereIn("stock_id",$request->stocks)
-            ->select("recursive_tree_seat_inventory_stock_items.*",DB::raw("(recursive_tree_seat_inventory_stock_items.amount * recursive_tree_seat_inventory_stock_definitions.amount) as full_amount"))
-            ->join("recursive_tree_seat_inventory_stock_definitions","stock_id","=","recursive_tree_seat_inventory_stock_definitions.id")
+            ->select(sprintf("%s.*", StockItem::TABLE),DB::raw(sprintf("(%s.amount * %s.amount) as full_amount", StockItem::TABLE, Stock::TABLE)))
+            ->join(Stock::TABLE,"stock_id","=",sprintf("%s.id", Stock::TABLE))
             ->get();
 
         $item_list = ItemEntryList::fromItemEntries($items);

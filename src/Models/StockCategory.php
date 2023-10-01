@@ -8,7 +8,7 @@ class StockCategory extends Model
 {
     public $timestamps = false;
 
-    protected $table = 'recursive_tree_seat_inventory_stock_categories';
+    protected $table = 'seat_inventory_stock_categories';
 
     public function stocks(){
         return $this->belongsToMany(
@@ -27,7 +27,7 @@ class StockCategory extends Model
         $syncData = [];
 
         //ensure manually added stocks stay that way
-        $manually_added = $this->stocks()->wherePivot("manually_added",true)->pluck("recursive_tree_seat_inventory_stock_definitions.id");
+        $manually_added = $this->stocks()->wherePivot("manually_added",true)->pluck(sprintf('%s.id',Stock::TABLE));
         foreach ($manually_added as $stock){
             $syncData[$stock] = ["manually_added"=>true,"category_eligible"=>false];
         }

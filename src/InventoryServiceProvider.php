@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use RecursiveTree\Seat\Inventory\Jobs\UpdateStructureOrders;
+use RecursiveTree\Seat\Inventory\Models\StockItem;
 use RecursiveTree\Seat\Inventory\Models\Workspace;
 use RecursiveTree\Seat\TreeLib\Helpers\FittingPluginHelper;
 use RecursiveTree\Seat\Inventory\Jobs\GenerateStockIcon;
@@ -116,8 +117,8 @@ class InventoryServiceProvider extends AbstractSeatPlugin
         });
 
         Artisan::command('inventory:fix', function () {
-            DB::table("recursive_tree_seat_inventory_stock_items")
-                ->leftJoin("recursive_tree_seat_inventory_stock_definitions","stock_id","id")
+            DB::table(StockItem::TABLE)
+                ->leftJoin(Stock::TABLE,"stock_id","id")
                 ->where("id",null)
                 ->delete();
             $this->info("Deleted floating stock items!");

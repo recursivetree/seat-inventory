@@ -9,9 +9,11 @@ use RecursiveTree\Seat\Inventory\Jobs\GenerateStockIcon;
 
 class Stock extends Model
 {
+    public const TABLE = 'seat_inventory_stocks';
+
     public $timestamps = false;
 
-    protected $table = 'recursive_tree_seat_inventory_stock_definitions';
+    protected $table = self::TABLE;
 
     protected $hidden = ['icon'];
 

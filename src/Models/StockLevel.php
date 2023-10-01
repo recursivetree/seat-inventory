@@ -9,7 +9,7 @@ class StockLevel extends Model
 {
     public $timestamps = false;
 
-    protected $table = 'recursive_tree_seat_inventory_stock_levels';
+    protected $table = 'seat_inventory_stock_levels';
 
     public function stock(){
         return $this->hasOne(Stock::class, "id", "stock_id");
