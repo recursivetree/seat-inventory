@@ -11,7 +11,7 @@ return new class extends Migration
     public function up()
     {
         Schema::rename('recursive_tree_seat_inventory_inventory_item','seat_inventory_inventory_item');
-        Schema::rename('recursive_tree_seat_inventory_locations','seat_inventory_inventory_locations');
+        Schema::rename('recursive_tree_seat_inventory_locations','seat_inventory_locations');
         Schema::rename('recursive_tree_seat_inventory_stock_categories','seat_inventory_stock_categories');
         Schema::rename('recursive_tree_seat_inventory_stock_definitions','seat_inventory_stocks');
         Schema::rename('recursive_tree_seat_inventory_stock_items','seat_inventory_stock_items');
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down()
     {
         Schema::rename('seat_inventory_inventory_item','recursive_tree_seat_inventory_inventory_item');
-        Schema::rename('seat_inventory_inventory_locations','recursive_tree_seat_inventory_locations');
+        Schema::rename('seat_inventory_locations','recursive_tree_seat_inventory_locations');
         Schema::rename('seat_inventory_stock_categories','recursive_tree_seat_inventory_stock_categories');
         Schema::rename('seat_inventory_stocks','recursive_tree_seat_inventory_stock_definitions');
         Schema::rename('seat_inventory_stock_items','recursive_tree_seat_inventory_stock_items');

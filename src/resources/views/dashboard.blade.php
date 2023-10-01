@@ -618,8 +618,6 @@
                                         if (state.name && state.name.length > 0) {
                                             //name field is not empty, save the category
 
-                                            popup.close()
-
                                             //filters
                                             const filters = []
                                             //location filter
@@ -656,6 +654,7 @@
                                                 BoostrapToast.open("Group", "Failed to save the group")
                                             } else {
                                                 BoostrapToast.open("Group", "Successfully saved group")
+                                                popup.close()
                                             }
 
                                             app.categoryList.state.loadData()

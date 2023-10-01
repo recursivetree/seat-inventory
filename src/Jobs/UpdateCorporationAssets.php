@@ -85,23 +85,23 @@ class UpdateCorporationAssets implements ShouldQueue
         $locations = DB::table("corporation_assets")
             ->select(
                 "corporation_assets.location_id as game_location_id",
-                "recursive_tree_seat_inventory_locations.id as inventory_location_id",
+                "seat_inventory_locations.id as inventory_location_id",
                 "seat_inventory_inventory_source.id as source_id"
             )
             ->whereIn("location_flag", ["OfficeFolder", "CorpDeliveries"])
             ->whereIn("corporation_id", $corporation_ids)
-            ->leftJoin("recursive_tree_seat_inventory_locations", function ($join) {
+            ->leftJoin("seat_inventory_locations", function ($join) {
                 $join
-                    ->on('corporation_assets.location_id', '=', 'recursive_tree_seat_inventory_locations.structure_id')
-                    ->orOn('corporation_assets.location_id', '=', 'recursive_tree_seat_inventory_locations.station_id');
+                    ->on('corporation_assets.location_id', '=', 'seat_inventory_locations.structure_id')
+                    ->orOn('corporation_assets.location_id', '=', 'seat_inventory_locations.station_id');
             })
             ->leftJoin("seat_inventory_inventory_source", function ($join) use ($workspace_id) {
                 $join
-                    ->on("recursive_tree_seat_inventory_locations.id", "=", "seat_inventory_inventory_source.location_id")
+                    ->on("seat_inventory_locations.id", "=", "seat_inventory_inventory_source.location_id")
                     ->where("workspace_id",$workspace_id) // only consider it if the workspace is also correct
                     ->where("source_type","corporation_hangar");
             })
-            ->groupBy("corporation_assets.location_id", "recursive_tree_seat_inventory_locations.id", "seat_inventory_inventory_source.id")
+            ->groupBy("corporation_assets.location_id", "seat_inventory_locations.id", "seat_inventory_inventory_source.id")
             ->get();
 
         //create a Location object if it doesn't already exist
