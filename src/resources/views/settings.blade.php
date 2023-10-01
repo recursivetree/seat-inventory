@@ -145,7 +145,7 @@
                                 .class("form-group")
                                 .content(
                                     W2.html("button")
-                                        .class("btn btn-primary")
+                                        .class("btn btn-primary mr-1")
                                         .content("Save")
                                         .event("click", async () => {
                                             const data = {
@@ -164,7 +164,25 @@
 
                                             //I'm too lazy
                                             location.reload()
-                                        })
+                                        }),
+                                    confirmButtonComponent('Delete Workspace',async function () {
+                                        const data = {
+                                            workspace: appState.currentWorkspace.id,
+                                        }
+
+                                        const response = await jsonPostAction("{{route("inventory.deleteWorkspace")}}", data)
+
+                                        if (response.ok) {
+                                            BoostrapToast.open("Success", "Successfully deleted workspace!")
+                                        } else {
+                                            BoostrapToast.open("Error", "Failed to deleted workspace!")
+                                        }
+
+                                        appState.currentWorkspace = null;
+
+                                        //I'm too lazy
+                                        location.reload()
+                                    })
                                 )
                         )
                 )

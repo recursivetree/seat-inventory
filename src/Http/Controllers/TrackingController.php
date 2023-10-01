@@ -368,6 +368,14 @@ class TrackingController extends Controller
         $workspace->save();
     }
 
+    public function deleteWorkspace(Request $request){
+        $request->validate([
+           'workspace'=>'required|integer'
+        ]);
+        Workspace::destroy($request->workspace);
+        return response()->json();
+    }
+
     public function editWorkspace(Request $request){
 
         $request->validate([

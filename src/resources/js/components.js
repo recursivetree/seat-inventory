@@ -20,7 +20,7 @@ function workspaceCreatorPopup(...updatedCallbacks) {
                 ),
             W2.html("button")
                 .class("btn btn-primary")
-                .content("Create (You currently can't delete workspaces!)")
+                .content("Create")
                 .event("click", async () => {
                     if (state.name.length > 0) {
                         const response = await jsonPostAction("/inventory/workspaces/create", {
@@ -52,14 +52,7 @@ function workspaceSelector(...callbacks) {
     async function loadWorkspaces() {
         const response = await fetch("/inventory/workspaces/list")
         if (response.ok) {
-            const data = await response.json()
-            state.workspaces = data
-
-            if (state.currentWorkspace === null) {
-                if (data.length > 0) {
-                    //state.currentWorkspace = data[0]
-                }
-            }
+            state.workspaces = await response.json()
         } else {
             BoostrapToast.open("Error", "Failed to load workspaces")
         }
@@ -102,6 +95,26 @@ function workspaceSelector(...callbacks) {
                             W2.html("ul")
                                 .class("list-group")
                                 .content((container) => {
+                                    if(state.workspaces.length === 0){
+                                        container.content(
+                                            W2.html('li')
+                                                .class("list-group-item d-flex flex-column align-items-center")
+                                                .content(
+                                                    W2.html('h4')
+                                                        .class('mb-3')
+                                                        .content('There are no workspaces.'),
+                                                    W2.html("button")
+                                                        .class("btn btn-success")
+                                                        .content("How about creating a new workspace?")
+                                                        .event("click", () => {
+                                                            workspaceCreatorPopup(async ()=>{
+                                                                await loadWorkspaces()
+                                                                mount.update()
+                                                            })
+                                                        })
+                                                )
+                                        )
+                                    }
                                     for (const workspace of state.workspaces) {
                                         container.content(
                                             W2.html("btn")

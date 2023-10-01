@@ -34,6 +34,12 @@ Route::group([
         'middleware' => 'can:inventory.edit_inventory'
     ]);
 
+    Route::post('/workspaces/delete', [
+        'as'   => 'inventory.deleteWorkspace',
+        'uses' => 'TrackingController@deleteWorkspace',
+        'middleware' => 'can:inventory.edit_inventory'
+    ]);
+
     //ui routes
 
     Route::get('/dashboard', [
