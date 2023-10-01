@@ -13,7 +13,7 @@ class StockCategory extends Model
     public function stocks(){
         return $this->belongsToMany(
             Stock::class,
-            "recursive_tree_seat_inventory_stock_category_mapping",
+            "seat_inventory_stock_category_mapping",
             "category_id",
             "stock_id"
         )->withPivot('manually_added','category_eligible');

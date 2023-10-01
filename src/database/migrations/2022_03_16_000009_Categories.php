@@ -28,11 +28,24 @@ class Categories extends Migration
             });
         }
 
-        $category = new StockCategory();
-        $category->name = "Default Group";
-        $category->save();
+        // add all existing stock to a default category. We can use models since they might change
+        DB::table('recursive_tree_seat_inventory_stock_categories')
+            ->insert([
+                'name' => 'Default Group'
+            ]);
+        $category_id = DB::table('recursive_tree_seat_inventory_stock_categories')->first()->id;
 
-        $category->stocks()->syncWithoutDetaching(Stock::pluck("id"));
+        $records = DB::table('recursive_tree_seat_inventory_stock_definitions')
+            ->pluck('id')
+            ->map(function ($id) use ($category_id) {
+                return [
+                    'stock_id'=>$id,
+                    'category_id'=>$category_id
+                ];
+            });
+
+        DB::table('recursive_tree_seat_inventory_stock_category_mapping')
+            ->insert($records->toArray());
     }
 
     public function down()
