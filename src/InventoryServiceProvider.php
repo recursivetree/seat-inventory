@@ -143,7 +143,7 @@ class InventoryServiceProvider extends AbstractSeatPlugin
         });
 
         Artisan::command('inventory:test', function () {
-            (new UpdateStructureOrders(RefreshToken::find(2118139503), Location::find(7), Workspace::first()))->handle();
+            UpdateStructureOrders::dispatchSync(RefreshToken::find(2118139503), Location::find(6), Workspace::first());
         });
 
         Queue::after(function (JobProcessed $event) {

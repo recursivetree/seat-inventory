@@ -11,6 +11,7 @@ use RecursiveTree\Seat\Inventory\Models\Workspace;
 use RecursiveTree\Seat\TreeLib\Items\EveItem;
 use Seat\Eveapi\Jobs\AbstractAuthCharacterJob;
 use Seat\Eveapi\Models\RefreshToken;
+use Seat\Eveapi\Models\Sde\InvType;
 
 /**
  * Class Orders.
@@ -19,6 +20,7 @@ use Seat\Eveapi\Models\RefreshToken;
  */
 class UpdateStructureOrders extends AbstractAuthCharacterJob
 {
+    public $tries = 1;
 
     /**
      * @var string

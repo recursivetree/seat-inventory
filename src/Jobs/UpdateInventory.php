@@ -48,5 +48,14 @@ class UpdateInventory implements ShouldQueue
         foreach ($workspace->markets as $market) {
             UpdateStructureOrders::dispatch($market->character->refresh_token, $market->location,$workspace);
         }
+        $allowed = $workspace->markets->pluck('location_id');
+        $sources = InventorySource::where('workspace_id', $workspace->id)
+            ->whereNotIn('location_id',$allowed)
+            ->where('source_type','market')
+            ->get();
+        foreach ($sources as $source){
+            $source->items()->delete();
+            $source->delete();
+        }
     }
 }
