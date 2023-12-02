@@ -2,12 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use RecursiveTree\Seat\Inventory\Jobs\UpdateInventory;
-use RecursiveTree\Seat\Inventory\Observers\UniverseStationObserver;
-use RecursiveTree\Seat\Inventory\Observers\UniverseStructureObserver;
-use Seat\Eveapi\Models\Universe\UniverseStation;
-use Seat\Eveapi\Models\Universe\UniverseStructure;
 
 class AddTables extends Migration
 {
@@ -68,19 +64,21 @@ class AddTables extends Migration
             });
         }
 
-        $stations = UniverseStation::all();
-        $observer = new UniverseStationObserver();
+        $stations = DB::table('universe_stations')->get();
         foreach ($stations as $station){
-            $observer->saved($station);
+            DB::table('recursive_tree_seat_inventory_locations')->insert([
+                'station_id'=>$station->station_id,
+                'name'=>$station->name,
+            ]);
         }
 
-        $structures = UniverseStructure::all();
-        $observer = new UniverseStructureObserver();
+        $structures = DB::table('universe_structures')->get();
         foreach ($structures as $structure){
-            $observer->saved($structure);
+            DB::table('recursive_tree_seat_inventory_locations')->insert([
+                'structure_id'=>$structure->structure_id,
+                'name'=>$structure->name,
+            ]);
         }
-
-        UpdateInventory::dispatch()->onQueue('default');
     }
 
     /**
