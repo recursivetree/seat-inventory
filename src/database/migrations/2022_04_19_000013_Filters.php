@@ -17,7 +17,7 @@ class Filters extends Migration
     public function down()
     {
         Schema::table('recursive_tree_seat_inventory_stock_categories', function (Blueprint $table) {
-            $table->dropColumns('filters');
+            $table->dropColumn('filters');
         });
     }
 }

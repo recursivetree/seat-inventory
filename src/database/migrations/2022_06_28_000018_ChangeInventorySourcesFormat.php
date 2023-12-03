@@ -4,8 +4,6 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use RecursiveTree\Seat\Inventory\Models\InventorySource;
-use Seat\Services\Models\Schedule;
 
 class ChangeInventorySourcesFormat extends Migration
 {
@@ -33,7 +31,7 @@ class ChangeInventorySourcesFormat extends Migration
     public function down()
     {
         //remove invalid sources
-        InventorySource::whereNotIn("source_type",['corporation_hangar', 'contract', 'in_transport','fitted_ship'])->delete();
+        DB::table('recursive_tree_seat_inventory_inventory_source')->whereNotIn("source_type",['corporation_hangar', 'contract', 'in_transport','fitted_ship'])->delete();
         //change it back to an enum
         DB::statement("ALTER TABLE `recursive_tree_seat_inventory_inventory_source` CHANGE COLUMN `source_type` `source_type` ENUM('corporation_hangar', 'contract', 'in_transport','fitted_ship');");
 

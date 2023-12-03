@@ -26,7 +26,15 @@ class AddprimaryKeys extends Migration
 
     public function down()
     {
-        //don't remove the primary, it's better to have one
+        Schema::table('seat_inventory_tracked_alliances', function (Blueprint $table) {
+            $table->dropPrimary("alliance_id_primary");
+        });
+        Schema::rename('seat_inventory_tracked_alliances', 'recursive_tree_seat_inventory_tracked_alliances');
+
+        Schema::table('seat_inventory_tracked_corporations', function (Blueprint $table) {
+            $table->dropPrimary("corporation_id_primary");
+        });
+        Schema::rename('seat_inventory_tracked_corporations', 'recursive_tree_seat_inventory_tracked_corporations');
     }
 }
 
