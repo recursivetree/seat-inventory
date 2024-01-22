@@ -1,9 +1,9 @@
 <?php
 
 return [
-    'about_title' => 'About',
+    'about_title' => 'À propos',
 
-    'about_desc' => ' I hope you enjoy working with seat-inventory. To support the development, have you considered donating <br /> something? Donations are always welcome and motivate me to put more effort into this project, although <br />they are by no means required. If you end up using this module a lot, I\'d appreciate a donation. <br />You can give ISK, PLEX or Ships to \'recursivetree\'.',
+    'about_desc' => ' J\'espère que vous apprécierez travailler avec seat-invetory. Pour soutenir le développement, avez-vous pensé à faire un don <br /> quelque chose? Les dons sont toujours les bienvenus et me motivent à consacrer davantage d\'efforts à ce projet, même si <br />they are by no means required. If you end up using this module a lot, I\'d appreciate a donation. <br />You can give ISK, PLEX or Ships to \'recursivetree\'.',
     'about_third_party' => 'This plugin uses the following third-party components',
 
     'error_inventory_loading_failed' => 'Failed to load name',
