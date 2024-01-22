@@ -1,10 +1,10 @@
 <?php
 
 return [
-    'item_browser_title' => 'Item Browser',
+    'item_browser_title' => 'Navigateur d\'articles',
 
-    'item_label' => 'Item',
-    'all_items_label' => 'All Items',
+    'item_label' => 'Article',
+    'all_items_label' => 'Tous les articles',
 
 
 ];
