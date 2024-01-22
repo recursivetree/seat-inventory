@@ -428,7 +428,7 @@
                         .content(
                             W2.html("h3")
                                 .class("cart-title")
-                                .content("{{trans('inventory::settings.markets_title'}}")
+                                .content("{{trans('inventory::settings.markets_title')}}")
                         ),
                     //card body
                     W2.html("div")
@@ -439,10 +439,10 @@
                                 .content(
                                     W2.html("label")
                                         .attribute("for", W2.getID("addMarket", true))
-                                        .content("{{trans('inventory::settings.add_market_btn'}}"),
+                                        .content("{{trans('inventory::settings.add_market_btn')}}"),
                                     select2Component({
                                         select2: {
-                                            placeholder: "{{trans('inventory::common.location_select_message'}}",
+                                            placeholder: "{{trans('inventory::common.location_select_message')}}",
                                             ajax: {
                                                 url: "{{ route("inventory.locationLookup") }}"
                                             },
@@ -459,11 +459,11 @@
                                     }),
                                     W2.html("small")
                                         .class("text-muted")
-                                        .content("{{trans('inventory::settings.add_market_tooltip'}}")
+                                        .content("{{trans('inventory::settings.add_market_tooltip')}}")
                                 ).contentIf(state.marketSelector !== null,
                                 W2.html("button")
                                     .class("btn btn-primary btn-block mt-2")
-                                    .content("{{trans('inventory::common.add_btn'}}")
+                                    .content("{{trans('inventory::common.add_btn')}}")
                                     .event("click", async () => {
                                         const response = await jsonPostAction("{{ route("inventory.addMarket") }}", {
                                             location_id: state.marketSelector.id,
@@ -471,9 +471,9 @@
                                         })
 
                                         if (response.ok) {
-                                            BoostrapToast.open("{{trans('inventory::common.success_label'}}", `{{trans('inventory::common.add_object_success'}} ${state.marketSelector.text}`)
+                                            BoostrapToast.open("{{trans('inventory::common.success_label')}}", `{{trans('inventory::common.add_object_success')}} ${state.marketSelector.text}`)
                                         } else {
-                                            BoostrapToast.open("{{trans('inventory::common.error_label'}}", `{{trans('inventory::common.error_adding_object'}} ${state.marketSelector.text}`)
+                                            BoostrapToast.open("{{trans('inventory::common.error_label')}}", `{{trans('inventory::common.error_adding_object')}} ${state.marketSelector.text}`)
                                         }
 
                                         await fetchData()
@@ -495,16 +495,16 @@
                                                             .content(
                                                                 W2.html("button")
                                                                     .class("btn btn-secondary mx-1")
-                                                                    .content("{{trans('inventory::settings.remove_market_btn'}}")
+                                                                    .content("{{trans('inventory::settings.remove_market_btn')}}")
                                                                     .event("click", async () => {
                                                                         const response = await jsonPostAction("{{ route("inventory.removeMarket") }}", {
                                                                             tracking_id: market.id
                                                                         })
 
                                                                         if (response.ok) {
-                                                                            BoostrapToast.open("{{trans('inventory::common.success_label'}}", `{{trans('inventory::settings.remove_market_success'}} ${market.location.name}`)
+                                                                            BoostrapToast.open("{{trans('inventory::common.success_label')}}", `{{trans('inventory::settings.remove_market_success')}} ${market.location.name}`)
                                                                         } else {
-                                                                            BoostrapToast.open("{{trans('inventory::common.error_label'}}", `{{trans('inventory::settings.error_removing_markets'}} ${market.location.name}`)
+                                                                            BoostrapToast.open("{{trans('inventory::common.error_label')}}", `{{trans('inventory::settings.error_removing_markets')}} ${market.location.name}`)
                                                                         }
 
                                                                         await fetchData()
@@ -526,7 +526,19 @@
 
         const rootMount = W2.mount((container, m) => {
             //workspace selection
-            container.content(workspaceSelector(async (selectedWorkspace) => {
+            const messages = {
+                'success_label': "{{trans('inventory::common.success_label')}}",
+                'error_label': "{{trans('inventory::common.error_label')}}",
+                'error_load_workspace': "{{trans('inventory::workspace.error_load_workspace')}}",
+                'select_workspace_title': "{{trans('inventory::workspace.select_workspace_title')}}",
+                'empty_workspace_message': "{{trans('inventory::workspace.empty_workspace_message')}}",
+                'create_new_workspace_hint': "{{trans('inventory::workspace.create_new_workspace_hint')}}",
+                'workspace_creation_success': "{{trans('inventory::workspace.workspace_creation_success')}}",
+                'workspace_creation_error': "{{trans('inventory::workspace.workspace_creation_error')}}",
+                'workspace_create_btn': "{{trans('inventory::workspace.workspace_create_btn')}}",
+            };
+
+            container.content(workspaceSelector(messages, async (selectedWorkspace) => {
                 appState.currentWorkspace = selectedWorkspace
                 appState.newWorkspaceName = null
                 appState.newEnableNotifications = null

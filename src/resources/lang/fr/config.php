@@ -12,7 +12,7 @@ return [
     'permissions_create_workspace_label' => 'Créer un espace de travail',
     'permissions_create_workspace_desc' => 'Vous permet de créer des espaces de travail.',
 
-    'menu_label' => 'Gestion des stocks',
+    'menu_label' => 'Stocks',
     'menu_dashboard_label' => 'Tableau de bord',
     'menu_items_label' => 'Navigateur d\'articles',
     'menu_settings_label' => 'Paramètres',

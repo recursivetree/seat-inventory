@@ -173,8 +173,20 @@
             mount.update()
         })
 
+        const messages = {
+            'success_label': "{{trans('inventory::common.success_label')}}",
+            'error_label': "{{trans('inventory::common.error_label')}}",
+            'error_load_workspace': "{{trans('inventory::workspace.error_load_workspace')}}",
+            'select_workspace_title': "{{trans('inventory::workspace.select_workspace_title')}}",
+            'empty_workspace_message': "{{trans('inventory::workspace.empty_workspace_message')}}",
+            'create_new_workspace_hint': "{{trans('inventory::workspace.create_new_workspace_hint')}}",
+            'workspace_creation_success': "{{trans('inventory::workspace.workspace_creation_success')}}",
+            'workspace_creation_error': "{{trans('inventory::workspace.workspace_creation_error')}}",
+            'workspace_create_btn': "{{trans('inventory::workspace.workspace_create_btn')}}",
+        };
+
         W2.emptyHtml()
-            .content(workspaceSelector(async (workspace) => {
+            .content(workspaceSelector(messages, async (workspace) => {
                 appState.workspace = workspace
                 await fetchData(appState.locationFilter?appState.locationFilter.id:null,appState.itemFilter?appState.itemFilter.id:null, true)
                 mount.update()
