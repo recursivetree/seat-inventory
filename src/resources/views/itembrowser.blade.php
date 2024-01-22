@@ -1,7 +1,7 @@
 @extends('web::layouts.grids.12')
 
-@section('title', "Item Browser")
-@section('page_header', "Item Browser")
+@section('title', trans('inventory::items.item_browser_title'))
+@section('page_header', trans('inventory::items.item_browser_title'))
 
 
 @section('full')
@@ -28,13 +28,13 @@
             workspace: null
         }
 
-        async function fetchData(location, item, reset_page=true) {
+        async function fetchData(location, item, reset_page = true) {
             if (reset_page) {
                 appState.next_page = 0
                 appState.items = []
             }
 
-            if(appState.workspace) {
+            if (appState.workspace) {
                 const data = await jsonPostAction("{{ route("inventory.itemBrowserData") }}", {
                     location,
                     item,
@@ -46,9 +46,9 @@
             }
         }
 
-        const mount = W2.mount(appState, (container, mount, state)=>{
+        const mount = W2.mount(appState, (container, mount, state) => {
             //card
-            container.contentIf(state.workspace,W2.html("div")
+            container.contentIf(state.workspace, W2.html("div")
                 .class("card")
                 .content(
                     //title header
@@ -57,7 +57,7 @@
                         .content(
                             W2.html("h3")
                                 .class("cart-title")
-                                .content("Item Browser")
+                                .content("{{trans('inventory::items.item_browser_title')}}")
                         ),
                     //card body
                     W2.html("div")
@@ -68,41 +68,41 @@
                                 .class("form-group d-flex flex-column")
                                 .content(
                                     W2.html("label")
-                                        .content("Location")
-                                        .attribute("for",W2.getID("filterLocation"))
+                                        .content("{{trans('inventory::common.location_field')}}")
+                                        .attribute("for", W2.getID("filterLocation"))
                                 ).content(
-                                    select2Component({
-                                        select2: {
-                                            placeholder: "All locations",
-                                            ajax: {
-                                                url: "{{ route("inventory.locationLookup") }}"
-                                            },
-                                            allowClear: true
+                                select2Component({
+                                    select2: {
+                                        placeholder: "{{trans('inventory::common.locations_all_field')}}",
+                                        ajax: {
+                                            url: "{{ route("inventory.locationLookup") }}"
                                         },
-                                        selectionListeners: [
-                                            async (selection) => {
-                                                state.locationFilter = selection
-                                                mount.update()
+                                        allowClear: true
+                                    },
+                                    selectionListeners: [
+                                        async (selection) => {
+                                            state.locationFilter = selection
+                                            mount.update()
 
-                                                await fetchData(state.locationFilter?state.locationFilter.id:null,state.itemFilter?state.itemFilter.id:null)
-                                                mount.update()
-                                            }
-                                        ],
-                                        id: W2.getID("filterLocation"),
-                                        selection: state.locationFilter
-                                    })
-                                ),
+                                            await fetchData(state.locationFilter ? state.locationFilter.id : null, state.itemFilter ? state.itemFilter.id : null)
+                                            mount.update()
+                                        }
+                                    ],
+                                    id: W2.getID("filterLocation"),
+                                    selection: state.locationFilter
+                                })
+                            ),
                             //item
                             W2.html("div")
                                 .class("form-group d-flex flex-column")
                                 .content(
                                     W2.html("label")
-                                        .content("Item")
-                                        .attribute("for",W2.getID("filterItem"))
+                                        .content("{{trans('inventory::items.item_label')}}")
+                                        .attribute("for", W2.getID("filterItem"))
                                 ).content(
                                 select2Component({
                                     select2: {
-                                        placeholder: "All Items",
+                                        placeholder: "{{trans('inventory::items.all_items_label')}}",
                                         ajax: {
                                             url: "{{ route("inventory.itemLookup") }}"
                                         },
@@ -158,7 +158,7 @@
                                     .content(
                                         W2.html("button")
                                             .class("btn btn-primary")
-                                            .content("Load More")
+                                            .content("{{trans('inventory::common.load_more_btn')}}")
                                             .event("click",async ()=>{
                                                 await fetchData(state.locationFilter?state.locationFilter.id:null,state.itemFilter?state.itemFilter.id:null,false)
                                                 mount.update()

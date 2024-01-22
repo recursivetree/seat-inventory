@@ -1,32 +1,37 @@
 <?php
 return [
     'inventory' => [
-        'name'          => 'Inventory Managment',
-        'icon'          => 'fas fa-box-open',
+        'label' => 'inventory::config.menu_label',
+        'name' => 'Inventory Managment',
+        'icon' => 'fas fa-box-open',
         'route_segment' => 'inventory',
         'permission' => 'inventory.view_inventory',
-        'entries'       => [
+        'entries' => [
             [
-                'name'  => 'Dashboard',
-                'icon'  => 'fas fa-space-shuttle',
+                'label' => 'inventory::config.menu_dashboard_label',
+                'name' => 'Dashboard',
+                'icon' => 'fas fa-space-shuttle',
                 'route' => 'inventory.dashboard',
                 'permission' => 'inventory.view_inventory',
             ],
             [
-                'name'  => 'Item Browser',
-                'icon'  => 'fas fa-list',
+                'label' => 'inventory::config.menu_items_label',
+                'name' => 'Item Browser',
+                'icon' => 'fas fa-list',
                 'route' => 'inventory.itemBrowser',
                 'permission' => 'inventory.view_inventory',
             ],
             [
-                'name'  => 'Settings',
-                'icon'  => 'fas fa-cog',
+                'label' => 'inventory::config.menu_settings_label',
+                'name' => 'Settings',
+                'icon' => 'fas fa-cog',
                 'route' => 'inventory.settings',
                 'permission' => 'inventory.view_inventory',
             ],
             [
-                'name'  => 'About',
-                'icon'  => 'fas fa-info',
+                'label' => 'inventory::config.menu_about_label',
+                'name' => 'About',
+                'icon' => 'fas fa-info',
                 'route' => 'inventory.about',
                 'permission' => 'inventory.view_inventory',
             ],

@@ -1,7 +1,7 @@
 @extends('web::layouts.grids.12')
 
-@section('title', "Settings")
-@section('page_header', "Settings")
+@section('title', trans('inventory::settings.settings_title'))
+@section('page_header', trans('inventory::settings.settings_title'))
 
 
 @section('full')
@@ -42,7 +42,7 @@
                             .content(
                                 W2.html("button")
                                     .class("btn btn-primary")
-                                    .content("Cancel")
+                                    .content("{{trans('inventory::common.cancel_btn')}}")
                                     .event("click", () => {
                                         state.firstStep = true
                                         mount.update()
@@ -51,7 +51,7 @@
                             .content(
                                 W2.html("button")
                                     .class("btn btn-warning")
-                                    .content("Confirm")
+                                    .content("{{trans('inventory::common.confirm_btn')}}")
                                     .event("click", () => {
                                         callback()
                                         state.firstStep = true
@@ -101,7 +101,7 @@
                         .content(
                             W2.html("h3")
                                 .class("cart-title")
-                                .content("Workspace Settings")
+                                .content("{{trans('inventory::settings.workspace_settings_title')}}")
                         ),
                     //card body
                     W2.html("div")
@@ -113,12 +113,12 @@
                                 .content(
                                     W2.html("label")
                                         .attribute("for", W2.getID("editWSName", true))
-                                        .content("Name"),
+                                        .content("{{trans('inventory::settings.workspace_name_field')}}"),
                                     W2.html("input")
                                         .attribute("id", W2.getID("editWSName"))
                                         .class("form-control")
                                         .attribute("type", "text")
-                                        .attribute("placeholder", "Enter the workspace's name...")
+                                        .attribute("placeholder", "{{trans('inventory::settings.workspace_name_placeholder')}}")
                                         .attribute("value", appState.newWorkspaceName || (appState.currentWorkspace ? appState.currentWorkspace.name : ""))
                                         .event("change", (e) => {
                                             appState.newWorkspaceName = e.target.value
@@ -138,7 +138,7 @@
                                         }),
                                     W2.html("label")
                                         .attribute("for", W2.getID("editWSNotifications"))
-                                        .content("Notifications"),
+                                        .content("{{trans('inventory::settings.notifications_label')}}"),
                                 ),
                             //submit
                             W2.html("div")
@@ -146,7 +146,7 @@
                                 .content(
                                     W2.html("button")
                                         .class("btn btn-primary mr-1")
-                                        .content("Save")
+                                        .content("{{trans('inventory::common.save_btn')}}")
                                         .event("click", async () => {
                                             const data = {
                                                 workspace: appState.currentWorkspace.id,
@@ -157,15 +157,15 @@
                                             const response = await jsonPostAction("{{route("inventory.editWorkspace")}}", data)
 
                                             if (response.ok) {
-                                                BoostrapToast.open("Success", "Successfully changed the settings")
+                                                BoostrapToast.open("{{trans('inventory::common.success_label')}}", "{{trans('inventory::settings.settings_save_success')}}")
                                             } else {
-                                                BoostrapToast.open("Error", "Failed to change the settings")
+                                                BoostrapToast.open("{{trans('inventory::common.error_label')}}", "{{trans('inventory::settings.error_save_settings')}}")
                                             }
 
                                             //I'm too lazy
                                             location.reload()
                                         }),
-                                    confirmButtonComponent('Delete Workspace',async function () {
+                                    confirmButtonComponent('{{trans('inventory::settings.delete_workspace_btn')}}', async function () {
                                         const data = {
                                             workspace: appState.currentWorkspace.id,
                                         }
@@ -173,9 +173,9 @@
                                         const response = await jsonPostAction("{{route("inventory.deleteWorkspace")}}", data)
 
                                         if (response.ok) {
-                                            BoostrapToast.open("Success", "Successfully deleted workspace!")
+                                            BoostrapToast.open("{{trans('inventory::common.success_label')}}", "{{trans('inventory::settings.workspace_delete_success')}}")
                                         } else {
-                                            BoostrapToast.open("Error", "Failed to deleted workspace!")
+                                            BoostrapToast.open("{{trans('inventory::common.error_label')}}", "{{trans('inventory::settings.error_delete_workspace')}}")
                                         }
 
                                         appState.currentWorkspace = null;
@@ -198,7 +198,7 @@
                         .content(
                             W2.html("h3")
                                 .class("cart-title")
-                                .content("Alliances")
+                                .content("{{trans('inventory::settings.alliances_title')}}")
                         ),
                     //card body
                     W2.html("div")
@@ -209,10 +209,10 @@
                                 .content(
                                     W2.html("label")
                                         .attribute("for", W2.getID("addAlliance", true))
-                                        .content("Add alliances"),
+                                        .content("{{trans('inventory::settings.add_alliance_btn')}}"),
                                     select2Component({
                                         select2: {
-                                            placeholder: "Select an alliance",
+                                            placeholder: "{{trans('inventory::settings.select_alliance_placeholder')}}",
                                             ajax: {
                                                 url: "{{ route("inventory.allianceLookup") }}"
                                             },
@@ -230,7 +230,7 @@
                                 ).contentIf(state.allianceSelector !== null,
                                 W2.html("button")
                                     .class("btn btn-primary btn-block mt-2")
-                                    .content("Add")
+                                    .content("{{trans('inventory::common.add_btn')}}")
                                     .event("click", async () => {
                                         const response = await jsonPostAction("{{ route("inventory.addAlliance") }}", {
                                             alliance_id: state.allianceSelector.id,
@@ -238,9 +238,9 @@
                                         })
 
                                         if (response.ok) {
-                                            BoostrapToast.open("Success", `Successfully added ${state.allianceSelector.text}`)
+                                            BoostrapToast.open("{{trans('inventory::common.success_label')}}", `{{trans('inventory::settings.add_alliance_success')}} ${state.allianceSelector.text}`)
                                         } else {
-                                            BoostrapToast.open("Error", `Failed to add ${state.allianceSelector.text}`)
+                                            BoostrapToast.open("{{trans('inventory::common.error_label')}}", `{{trans('inventory::settings.error_adding_alliance')}} ${state.allianceSelector.text}`)
                                         }
 
                                         await fetchData()
@@ -263,42 +263,42 @@
                                                                 tooltipComponent(
                                                                     W2.html("button")
                                                                         .class("btn btn-secondary mx-1")
-                                                                        .content("Add Members")
+                                                                        .content("{{trans('inventory::settings.add_members_btn')}}")
                                                                         .event("click", async () => {
                                                                             const response = await jsonPostAction("{{ route("inventory.addAllianceMembers") }}", {
                                                                                 tracking_id: alliance.id
                                                                             })
 
                                                                             if (response.ok) {
-                                                                                BoostrapToast.open("Success", `Successfully added members of ${alliance.alliance.name}`)
+                                                                                BoostrapToast.open("{{trans('inventory::common.success_label')}}", `{{trans('inventory::settings.add_members_success')}} ${alliance.alliance.name}`)
                                                                             } else {
-                                                                                BoostrapToast.open("Error", `Failed to add members of ${alliance.alliance.name}`)
+                                                                                BoostrapToast.open("{{trans('inventory::common.error_label')}}", `{{trans('inventory::settings.error_adding_members')}} ${alliance.alliance.name}`)
                                                                             }
 
                                                                             await fetchData()
                                                                             mount.update()
                                                                         }),
-                                                                    "Existing and new alliance members will be added automatically.")
+                                                                    "{{trans('inventory::settings.add_members_tooltip')}}")
                                                             ).contentIf(alliance.manage_members,
                                                             tooltipComponent(
                                                                 W2.html("button")
                                                                     .class("btn btn-secondary mx-1")
-                                                                    .content("Remove Members")
+                                                                    .content("{{trans('inventory::settings.remove_members_btn')}}")
                                                                     .event("click", async () => {
                                                                         const response = await jsonPostAction("{{ route("inventory.removeAllianceMembers") }}", {
                                                                             tracking_id: alliance.id
                                                                         })
 
                                                                         if (response.ok) {
-                                                                            BoostrapToast.open("Success", `Successfully removed members of ${alliance.alliance.name}`)
+                                                                            BoostrapToast.open("{{trans('inventory::common.success_label')}}", `{{trans('inventory::settings.remove_members_success')}} ${alliance.alliance.name}`)
                                                                         } else {
-                                                                            BoostrapToast.open("Error", `Failed to add members of ${alliance.alliance.name}`)
+                                                                            BoostrapToast.open("{{trans('inventory::common.error_label')}}", `{{trans('inventory::settings.error_remove_members')}} ${alliance.alliance.name}`)
                                                                         }
 
                                                                         await fetchData()
                                                                         mount.update()
                                                                     }),
-                                                                "Automatically added corporations will be removed and no new corporations will be added in the future. Manually added corporations will stay.")
+                                                                "{{trans('inventory::settings.remove_members_tooltip')}}")
                                                         ).content(
                                                             confirmButtonComponent("Remove", async () => {
                                                                 const response = await jsonPostAction("{{ route("inventory.removeAlliance") }}", {
@@ -306,9 +306,9 @@
                                                                 })
 
                                                                 if (response.ok) {
-                                                                    BoostrapToast.open("Success", `Successfully removed ${alliance.alliance.name}`)
+                                                                    BoostrapToast.open("{{trans('inventory::common.success_label')}}", `{{trans('inventory::common.remove_object_success')}} ${alliance.alliance.name}`)
                                                                 } else {
-                                                                    BoostrapToast.open("Error", `Failed to remove ${alliance.alliance.name}`)
+                                                                    BoostrapToast.open("{{trans('inventory::common.error_label')}}", `{{trans('inventory::common.error_remove_object')}} ${alliance.alliance.name}`)
                                                                 }
 
                                                                 await fetchData()
@@ -334,7 +334,7 @@
                         .content(
                             W2.html("h3")
                                 .class("cart-title")
-                                .content("Corporations")
+                                .content("{{trans('inventory::settings.corporations_title')}}")
                         ),
                     //card body
                     W2.html("div")
@@ -345,10 +345,10 @@
                                 .content(
                                     W2.html("label")
                                         .attribute("for", W2.getID("addCorporation", true))
-                                        .content("Add corporations"),
+                                        .content("{{trans('inventory::settings.add_corporations_btn')}}"),
                                     select2Component({
                                         select2: {
-                                            placeholder: "Select a corporation",
+                                            placeholder: "{{trans('inventory::settings.select_corporation_placeholder')}}",
                                             ajax: {
                                                 url: "{{ route("inventory.corporationLookup") }}"
                                             },
@@ -366,7 +366,7 @@
                                 ).contentIf(state.corporationSelector !== null,
                                 W2.html("button")
                                     .class("btn btn-primary btn-block mt-2")
-                                    .content("Add")
+                                    .content("{{trans('inventory::common.add_btn')}}")
                                     .event("click", async () => {
                                         const response = await jsonPostAction("{{ route("inventory.addCorporation") }}", {
                                             corporation_id: state.corporationSelector.id,
@@ -374,9 +374,9 @@
                                         })
 
                                         if (response.ok) {
-                                            BoostrapToast.open("Success", `Successfully added ${state.corporationSelector.text}`)
+                                            BoostrapToast.open("{{trans('inventory::common.success_label')}}", `{{trans('inventory::settings.add_corporation_success')}} ${state.corporationSelector.text}`)
                                         } else {
-                                            BoostrapToast.open("Error", `Failed to add ${state.corporationSelector.text}`)
+                                            BoostrapToast.open("{{trans('inventory::common.error_label')}}", `{{trans('inventory::settings.error_adding_corporations')}} ${state.corporationSelector.text}`)
                                         }
 
                                         await fetchData()
@@ -394,15 +394,15 @@
                                                     .content(
                                                         W2.html("span")
                                                             .content(corporation.corporation.name),
-                                                        confirmButtonComponent("Remove", async () => {
+                                                        confirmButtonComponent("{{trans('inventory::common.remove_btn')}}", async () => {
                                                             const response = await jsonPostAction("{{ route("inventory.removeCorporation") }}", {
                                                                 tracking_id: corporation.id
                                                             })
 
                                                             if (response.ok) {
-                                                                BoostrapToast.open("Success", `Successfully removed ${corporation.corporation.name}`)
+                                                                BoostrapToast.open("{{trans('inventory::common.success_label')}}", `{{trans('inventory::common.remove_object_success')}} ${corporation.corporation.name}`)
                                                             } else {
-                                                                BoostrapToast.open("Error", `Failed to remove ${corporation.corporation.name}`)
+                                                                BoostrapToast.open("{{trans('inventory::common.error_label')}}", `{{trans('inventory::common.error_remove_object')}} ${corporation.corporation.name}`)
                                                             }
 
                                                             await fetchData()
@@ -428,7 +428,7 @@
                         .content(
                             W2.html("h3")
                                 .class("cart-title")
-                                .content("Markets")
+                                .content("{{trans('inventory::settings.markets_title'}}")
                         ),
                     //card body
                     W2.html("div")
@@ -439,10 +439,10 @@
                                 .content(
                                     W2.html("label")
                                         .attribute("for", W2.getID("addMarket", true))
-                                        .content("Add market"),
+                                        .content("{{trans('inventory::settings.add_market_btn'}}"),
                                     select2Component({
                                         select2: {
-                                            placeholder: "Select a location",
+                                            placeholder: "{{trans('inventory::common.location_select_message'}}",
                                             ajax: {
                                                 url: "{{ route("inventory.locationLookup") }}"
                                             },
@@ -459,11 +459,11 @@
                                     }),
                                     W2.html("small")
                                         .class("text-muted")
-                                        .content("Your main character will be used to pull data from ESI. Please make sure that your main character has access to the market on this structure. Currently only citadels work.")
+                                        .content("{{trans('inventory::settings.add_market_tooltip'}}")
                                 ).contentIf(state.marketSelector !== null,
                                 W2.html("button")
                                     .class("btn btn-primary btn-block mt-2")
-                                    .content("Add")
+                                    .content("{{trans('inventory::common.add_btn'}}")
                                     .event("click", async () => {
                                         const response = await jsonPostAction("{{ route("inventory.addMarket") }}", {
                                             location_id: state.marketSelector.id,
@@ -471,9 +471,9 @@
                                         })
 
                                         if (response.ok) {
-                                            BoostrapToast.open("Success", `Successfully added ${state.marketSelector.text}`)
+                                            BoostrapToast.open("{{trans('inventory::common.success_label'}}", `{{trans('inventory::common.add_object_success'}} ${state.marketSelector.text}`)
                                         } else {
-                                            BoostrapToast.open("Error", `Failed to add ${state.marketSelector.text}`)
+                                            BoostrapToast.open("{{trans('inventory::common.error_label'}}", `{{trans('inventory::common.error_adding_object'}} ${state.marketSelector.text}`)
                                         }
 
                                         await fetchData()
@@ -495,16 +495,16 @@
                                                             .content(
                                                                 W2.html("button")
                                                                     .class("btn btn-secondary mx-1")
-                                                                    .content("Remove Market")
+                                                                    .content("{{trans('inventory::settings.remove_market_btn'}}")
                                                                     .event("click", async () => {
                                                                         const response = await jsonPostAction("{{ route("inventory.removeMarket") }}", {
                                                                             tracking_id: market.id
                                                                         })
 
                                                                         if (response.ok) {
-                                                                            BoostrapToast.open("Success", `Successfully removed members of ${market.location.name}`)
+                                                                            BoostrapToast.open("{{trans('inventory::common.success_label'}}", `{{trans('inventory::settings.remove_market_success'}} ${market.location.name}`)
                                                                         } else {
-                                                                            BoostrapToast.open("Error", `Failed to add members of ${market.location.name}`)
+                                                                            BoostrapToast.open("{{trans('inventory::common.error_label'}}", `{{trans('inventory::settings.error_removing_markets'}} ${market.location.name}`)
                                                                         }
 
                                                                         await fetchData()

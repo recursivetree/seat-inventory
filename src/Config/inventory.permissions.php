@@ -2,15 +2,15 @@
 
 return [
     'edit_inventory' => [
-        'label' => 'Edit Inventory',
-        'description' => 'Allows you to edit settings and define stocks.',
+        'label' => 'inventory::config.permissions_edit_inventory_label',
+        'description' => 'inventory::config.permissions_edit_inventory_desc',
     ],
     'view_inventory' => [
-        'label' => 'View Inventory',
-        'description' => 'Allows you to view stocks and stock levels.',
+        'label' => 'inventory::config.permissions_view_inventory_label',
+        'description' => 'inventory::config.permissions_view_inventory_desc',
     ],
     'create_workspace' => [
-        'label' => 'Create Workspace',
-        'description' => 'Allows you to create workspaces.'
+        'label' => 'inventory::config.permissions_create_workspace_label',
+        'description' => 'inventory::config.permissions_create_workspace_desc'
     ]
 ];
