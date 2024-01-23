@@ -3,11 +3,11 @@
 return [
     'settings_title' => 'Paramètres',
 
-    'workspace_settings_title' => 'Paramètres de l\'espace de travail',
+    'workspace_settings_title' => "Paramètres",
 
     'workspace_name_field' => 'Nom',
-    'workspace_name_placeholder' => 'Entrez le nom de l\'espace de travail...',
-    'delete_workspace_btn' => 'Supprimer l\'espace de travail',
+    'workspace_name_placeholder' => "Entrez le nom...",
+    'delete_workspace_btn' => "Supprimer",
 
     'notifications_label' => 'Notifications',
 
@@ -18,7 +18,7 @@ return [
 
     'add_members_btn' => 'Ajouter des membres',
     'add_members_success' => 'Ajouté avec succès les membres de',
-    'add_members_tooltip' => 'Les membres existants et les nouveaux membres de l\'alliance seront ajoutés automatiquement..',
+    'add_members_tooltip' => "Les membres existants et les nouveaux membres de l'alliance seront ajoutés automatiquement..",
 
     'remove_members_btn' => 'Supprimer des membres',
     'remove_members_success' => 'Suppression réussie des membres de',
@@ -40,10 +40,10 @@ return [
     'remove_market_success' => 'Suppression réussie des membres de',
 
     'error_save_settings' => 'Échec de la modification des paramètres',
-    'error_delete_workspace' => 'Échec de la suppression de l\'espace de travail!',
-    'error_adding_alliance' => 'Échec de l\'ajout',
-    'error_adding_members' => 'Échec de l\'ajout des membres de',
-    'error_remove_members' => 'Échec de l\'ajout des membres de',
-    'error_adding_corporations' => 'Échec de l`\'ajout',
-    'error_removing_markets' => 'Échec de l\'ajout des membres de',
+    'error_delete_workspace' => "Échec de la suppression de l'espace de travail!",
+    'error_adding_alliance' => "Échec de l'ajout",
+    'error_adding_members' => "Échec de l'ajout des membres de",
+    'error_remove_members' => "Échec de l'ajout des membres de",
+    'error_adding_corporations' => "Échec de l'ajout",
+    'error_removing_markets' => "Échec de l'ajout des membres de",
 ];

@@ -18,7 +18,6 @@
 
 
     <script>
-
         //TODO: load them from the server
         let stockPriorities = null
 
@@ -2014,17 +2013,7 @@
 
         const app = new App();
 
-        const messages = {
-            'success_label': "{{trans('inventory::common.success_label')}}",
-            'error_label': "{{trans('inventory::common.error_label')}}",
-            'error_load_workspace': "{{trans('inventory::workspace.error_load_workspace')}}",
-            'select_workspace_title': "{{trans('inventory::workspace.select_workspace_title')}}",
-            'empty_workspace_message': "{{trans('inventory::workspace.empty_workspace_message')}}",
-            'create_new_workspace_hint': "{{trans('inventory::workspace.create_new_workspace_hint')}}",
-            'workspace_creation_success': "{{trans('inventory::workspace.workspace_creation_success')}}",
-            'workspace_creation_error': "{{trans('inventory::workspace.workspace_creation_error')}}",
-            'workspace_create_btn': "{{trans('inventory::workspace.workspace_create_btn')}}",
-        };
+        const messages = @json(\RecursiveTree\Seat\Inventory\Helpers\LocaleHelper::getWorkspaceMessages());
 
         W2.emptyHtml()
             .content(workspaceSelector(messages, (workspace) => {

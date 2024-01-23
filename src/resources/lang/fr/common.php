@@ -3,7 +3,7 @@
 return [
     'about_title' => 'À propos',
 
-    'about_desc' => ' J\'espère que vous apprécierez travailler avec seat-invetory. Pour soutenir le développement, avez-vous pensé à faire un don <br /> quelque chose? Les dons sont toujours les bienvenus et me motivent à consacrer davantage d\'efforts à ce projet, même si <br />ils ne sont en aucun cas obligatoires. Si vous utilisez beaucoup ce module, j\'apprécierais un don. <br />Vous pouvez donner des ISK, PLEX ou vaisseaux à \'recursivetree\'.',
+    'about_desc' => "J'espère que vous apprécierez travailler avec seat-invetory. Pour soutenir le développement, avez-vous pensé à faire un don <br /> quelque chose? Les dons sont toujours les bienvenus et me motivent à consacrer davantage d'efforts à ce projet, même si <br />ils ne sont en aucun cas obligatoires. Si vous utilisez beaucoup ce module, j'apprécierais un don. <br />Vous pouvez donner des ISK, PLEX ou vaisseaux à 'recursivetree'.",
     'about_third_party' => 'Ce plugin utilise les composants tiers suivants',
 
     'error_inventory_loading_failed' => 'Échec du chargement du nom',
@@ -48,7 +48,7 @@ return [
     'name_field' => 'Nom',
     'priority_field' => 'Priorité',
     'planned_field' => 'Prévu',
-    'warning_threshold_field' => 'Seuil d\'avertissement',
+    'warning_threshold_field' => "Seuil d'avertissement",
     'available_field' => 'Disponible',
     'last_updated_field' => 'Dernière mise à jour',
     'minimal_amount_fullfilled_field' => 'Montant minimum versé',
@@ -77,7 +77,7 @@ return [
 
     'error_server_response_error' => 'Le serveur a répondu avec une erreur!',
     'error_doctrine_not_found' => 'Impossible de trouver la doctrine demandée!',
-    'error_failed_to_parse_group_data' => 'Échec de l\'analyse des données complètes du groupe',
+    'error_failed_to_parse_group_data' => "Échec du décodage des données de groupe",
     'error_failed_to_delete_group' => 'Échec de la suppression du groupe',
     'error_failed_to_save_group' => 'Échec de la sauvegarde du groupe',
     'error_invalid_name_input' => 'Veuillez renseigner un nom valide!',
@@ -85,9 +85,9 @@ return [
     'error_failed_to_delete_stock' => 'Échec de la suppression du stock',
     'error_failed_to_save_stock' => 'Échec de la sauvegarde du stock',
     'error_failed_to_load_items' => 'Échec du chargement des éléments',
-    'error_failed_to_save_delivery' => 'Échec de l\'enregistrement de la livraison',
+    'error_failed_to_save_delivery' => "Échec de l'enregistrement de la livraison",
     'error_failed_to_delete_delivery' => 'Échec de la suppression de la livraison!',
     'error_failed_to_load_deliveries' => 'Échec du chargement des livraisons',
     'error_remove_object' => 'Échec de la suppression',
-    'error_adding_object' => 'Échec de l\'ajout',
+    'error_adding_object' => "Échec de l'ajout",
 ];
