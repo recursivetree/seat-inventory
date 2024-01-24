@@ -173,8 +173,10 @@
             mount.update()
         })
 
+        const messages = @json(\RecursiveTree\Seat\Inventory\Helpers\LocaleHelper::getWorkspaceMessages());
+
         W2.emptyHtml()
-            .content(workspaceSelector(async (workspace) => {
+            .content(workspaceSelector(messages, async (workspace) => {
                 appState.workspace = workspace
                 await fetchData(appState.locationFilter?appState.locationFilter.id:null,appState.itemFilter?appState.itemFilter.id:null, true)
                 mount.update()

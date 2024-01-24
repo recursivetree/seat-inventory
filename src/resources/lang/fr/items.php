@@ -1,10 +1,8 @@
 <?php
 
 return [
-    'item_browser_title' => 'Item Browser',
+    'item_browser_title' => "Objets",
 
-    'item_label' => 'Item',
-    'all_items_label' => 'All Items',
-
-
+    'item_label' => 'Objet',
+    'all_items_label' => 'Tous les Objets',
 ];

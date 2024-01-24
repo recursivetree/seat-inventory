@@ -1,26 +1,26 @@
-function workspaceCreatorPopup(...updatedCallbacks) {
+function workspaceCreatorPopup(messages, ...updatedCallbacks) {
     const state = {
         name: ""
     }
 
-    BootstrapPopUp.open("Create Workspace", function (container, popup) {
+    BootstrapPopUp.open(messages['create_workspace_dialog_title'], function (container, popup) {
         container.content(
             W2.html("div")
                 .class("form-group")
                 .content(
                     W2.html("label")
-                        .content("Name"),
+                        .content(messages['workspace_name_field']),
                     W2.html("input")
                         .attribute("type", "text")
                         .class("form-control")
-                        .attribute("placeholder", "Enter the workspace's name..")
+                        .attribute("placeholder", messages['workspace_name_placeholder'])
                         .event("change", (e) => {
                             state.name = e.target.value
                         })
                 ),
             W2.html("button")
                 .class("btn btn-primary")
-                .content("Create")
+                .content(messages['workspace_create_btn'])
                 .event("click", async () => {
                     if (state.name.length > 0) {
                         const response = await jsonPostAction("/inventory/workspaces/create", {
@@ -28,10 +28,10 @@ function workspaceCreatorPopup(...updatedCallbacks) {
                         })
 
                         if (response.ok) {
-                            BoostrapToast.open("Success", `Successfully created workspace!`)
+                            BoostrapToast.open(messages['success_label'], messages['workspace_creation_success'])
                             popup.close()
                         } else {
-                            BoostrapToast.open("Error", `Failed to create workspace!`)
+                            BoostrapToast.open(messages['error_label'], messages['workspace_creation_error'])
                         }
 
                         for (const updatedCallback of updatedCallbacks) {
@@ -43,7 +43,7 @@ function workspaceCreatorPopup(...updatedCallbacks) {
     })
 }
 
-function workspaceSelector(...callbacks) {
+function workspaceSelector(messages, ...callbacks) {
     const state = {
         workspaces: [],
         currentWorkspace: null
@@ -54,12 +54,12 @@ function workspaceSelector(...callbacks) {
         if (response.ok) {
             state.workspaces = await response.json()
         } else {
-            BoostrapToast.open("Error", "Failed to load workspaces")
+            BoostrapToast.open("Error", messages['error_load_workspace'])
         }
     }
 
     const changeWorkspace = (workspace) => {
-        window.sessionStorage.setItem("selectedWorkspace",workspace.id)
+        window.sessionStorage.setItem("selectedWorkspace", workspace.id)
         state.currentWorkspace = workspace
         for (const callback of callbacks) {
             callback(workspace)
@@ -76,14 +76,14 @@ function workspaceSelector(...callbacks) {
                         .content(
                             W2.html("h3")
                                 .class("cart-title")
-                                .content(`Select Workspace (${state.currentWorkspace ? state.currentWorkspace.name : ""})`),
+                                .content(`${messages['select_workspace_title']} (${state.currentWorkspace ? state.currentWorkspace.name : ""})`),
                             W2.html("button")
                                 .class("btn btn-success ml-auto")
                                 .content(
                                     W2.html("i").class("fas fa-plus")
                                 )
                                 .event("click", () => {
-                                    workspaceCreatorPopup(async ()=>{
+                                    workspaceCreatorPopup(messages, async () => {
                                         await loadWorkspaces()
                                         mount.update()
                                     })
@@ -95,19 +95,19 @@ function workspaceSelector(...callbacks) {
                             W2.html("ul")
                                 .class("list-group")
                                 .content((container) => {
-                                    if(state.workspaces.length === 0){
+                                    if (state.workspaces.length === 0) {
                                         container.content(
                                             W2.html('li')
                                                 .class("list-group-item d-flex flex-column align-items-center")
                                                 .content(
                                                     W2.html('h4')
                                                         .class('mb-3')
-                                                        .content('There are no workspaces.'),
+                                                        .content(messages['empty_workspace_message']),
                                                     W2.html("button")
                                                         .class("btn btn-success")
-                                                        .content("How about creating a new workspace?")
+                                                        .content(messages['create_new_workspace_hint'])
                                                         .event("click", () => {
-                                                            workspaceCreatorPopup(async ()=>{
+                                                            workspaceCreatorPopup(messages,async () => {
                                                                 await loadWorkspaces()
                                                                 mount.update()
                                                             })
@@ -133,12 +133,12 @@ function workspaceSelector(...callbacks) {
         )
     })
 
-    loadWorkspaces().then(()=>{
+    loadWorkspaces().then(() => {
         let selectedWorkspaceID = window.sessionStorage.getItem("selectedWorkspace")
-        if(selectedWorkspaceID){
+        if (selectedWorkspaceID) {
             selectedWorkspaceID = parseInt(selectedWorkspaceID)
             for (const workspace of state.workspaces) {
-                if(workspace.id === selectedWorkspaceID){
+                if (workspace.id === selectedWorkspaceID) {
                     changeWorkspace(workspace)
                 }
             }

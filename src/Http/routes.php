@@ -1,8 +1,10 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
+
 Route::group([
     'namespace'  => 'RecursiveTree\Seat\Inventory\Http\Controllers',
-    'middleware' => ['web', 'auth'],
+    'middleware' => ['web', 'auth', 'locale'],
     'prefix' => 'inventory',
 ], function () {
 

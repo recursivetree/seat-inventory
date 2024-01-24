@@ -1,49 +1,49 @@
 <?php
 
 return [
-    'settings_title' => 'Settings',
+    'settings_title' => 'Paramètres',
 
-    'workspace_settings_title' => 'Workspace Settings',
+    'workspace_settings_title' => "Paramètres",
 
-    'workspace_name_field' => 'Name',
-    'workspace_name_placeholder' => 'Enter the workspace\'s name...',
-    'delete_workspace_btn' => 'Delete Workspace',
+    'workspace_name_field' => 'Nom',
+    'workspace_name_placeholder' => "Entrez le nom...",
+    'delete_workspace_btn' => "Supprimer",
 
     'notifications_label' => 'Notifications',
 
     'alliances_title' => 'Alliances',
-    'add_alliance_btn' => 'Add Alliances',
-    'select_alliance_placeholder' => 'Select an alliance',
-    'add_alliance_success' => 'Successfully added',
+    'add_alliance_btn' => 'Ajouter des Alliances',
+    'select_alliance_placeholder' => 'Sélectionnez une alliance',
+    'add_alliance_success' => 'Ajouté avec succès',
 
-    'add_members_btn' => 'Add Members',
-    'add_members_success' => 'Successfully added members of',
-    'add_members_tooltip' => 'Existing and new alliance members will be added automatically.',
+    'add_members_btn' => 'Ajouter des membres',
+    'add_members_success' => 'Ajouté avec succès les membres de',
+    'add_members_tooltip' => "Les membres existants et les nouveaux membres de l'alliance seront ajoutés automatiquement..",
 
-    'remove_members_btn' => 'Remove Members',
-    'remove_members_success' => 'Successfully removed members of',
-    'remove_members_tooltip' => 'Automatically added corporations will be removed and no new corporations will be added in the future. Manually added corporations will stay.',
+    'remove_members_btn' => 'Supprimer des membres',
+    'remove_members_success' => 'Suppression réussie des membres de',
+    'remove_members_tooltip' => 'Les corporations ajoutées automatiquement seront supprimées et aucune nouvelle corporation ne sera ajoutée à l\'avenir. Les corporations ajoutées manuellement resteront.',
 
-    'settings_save_success' => 'Successfully changed the settings',
-    'workspace_delete_success' => 'Successfully deleted workspace!',
+    'settings_save_success' => 'Les paramètres ont été modifiés avec succès',
+    'workspace_delete_success' => 'Espace de travail supprimé avec succès!',
 
     'corporations_title' => 'Corporations',
-    'add_corporations_btn' => 'Add corporations',
-    'select_corporation_placeholder' => 'Select a corporation',
-    'add_corporation_success' => 'Successfully added',
+    'add_corporations_btn' => 'Ajouter corporations',
+    'select_corporation_placeholder' => 'Choisir une corporation',
+    'add_corporation_success' => 'Ajouté avec succès',
 
-    'markets_title' => 'Markets',
-    'add_market_btn' => 'Add Market',
-    'add_market_tooltip' => 'Your main character will be used to pull data from ESI. Please make sure that your main character has access to the market on this structure. Currently only citadels work.',
-    'remove_market_btn' => 'Remove Market',
+    'markets_title' => 'Marchés',
+    'add_market_btn' => 'Ajouter un marché',
+    'add_market_tooltip' => 'Votre personnage principal sera utilisé pour extraire des données d’ESI. Veuillez vous assurer que votre personnage principal a accès au marché sur cette structure. Actuellement seules les citadelles fonctionnent.',
+    'remove_market_btn' => 'Supprimer le marché',
 
-    'remove_market_success' => 'Successfully removed members of',
+    'remove_market_success' => 'Suppression réussie des membres de',
 
-    'error_save_settings' => 'Failed to change the settings',
-    'error_delete_workspace' => 'Failed to deleted workspace!',
-    'error_adding_alliance' => 'Failed to add',
-    'error_adding_members' => 'Failed to add members of',
-    'error_remove_members' => 'Failed to add members of',
-    'error_adding_corporations' => 'Failed to add',
-    'error_removing_markets' => 'Failed to add members of',
+    'error_save_settings' => 'Échec de la modification des paramètres',
+    'error_delete_workspace' => "Échec de la suppression de l'espace de travail!",
+    'error_adding_alliance' => "Échec de l'ajout",
+    'error_adding_members' => "Échec de l'ajout des membres de",
+    'error_remove_members' => "Échec de l'ajout des membres de",
+    'error_adding_corporations' => "Échec de l'ajout",
+    'error_removing_markets' => "Échec de l'ajout des membres de",
 ];

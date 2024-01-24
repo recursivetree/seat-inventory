@@ -18,7 +18,6 @@
 
 
     <script>
-
         //TODO: load them from the server
         let stockPriorities = null
 
@@ -2012,9 +2011,12 @@
             }
         }
 
-        const app = new App()
+        const app = new App();
+
+        const messages = @json(\RecursiveTree\Seat\Inventory\Helpers\LocaleHelper::getWorkspaceMessages());
+
         W2.emptyHtml()
-            .content(workspaceSelector((workspace) => {
+            .content(workspaceSelector(messages, (workspace) => {
                 app.workspace = workspace
                 app.mount.update()
             }))
