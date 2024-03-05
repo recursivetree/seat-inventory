@@ -128,7 +128,7 @@
                             .content(
                                 select2Component({
                                     select2: {
-                                        placeholder: "{{trans('inventory::inv.inventory_all_locations')}}",
+                                        placeholder: {!!json_encode(trans('inventory::inv.inventory_all_locations'))!!},
                                         ajax: {
                                             url: "{{ route("inventory.locationLookup") }}"
                                         },
@@ -143,7 +143,7 @@
                             .content(
                                 W2.html("small")
                                     .class("text-muted")
-                                    .content("{{trans('inventory::inv.inventory_only_show_categories_with_stock')}}")
+                                    .content({!!json_encode(trans('inventory::inv.inventory_only_show_categories_with_stock'))!!})
                             )
                     )
 
@@ -213,13 +213,13 @@
         }
 
         function editCategoryPopUp(app, category) {
-            BootstrapPopUp.open(category.id ? "{{trans('inventory::inv.inventory_edit_group')}}" : "{{trans('inventory::inv.inventory_create_group')}}", (container, popup) => {
+            BootstrapPopUp.open(category.id ? {!!json_encode(trans('inventory::inv.inventory_edit_group'))!!} : {!!json_encode(trans('inventory::inv.inventory_create_group'))!!}, (container, popup) => {
                 let filters = category.filters || ""
                 try {
                     filters = JSON.parse(filters)
                 } catch (e) {
                     filters = []
-                    BoostrapToast.open("Category", "{{trans('inventory::common.error_failed_to_parse_group_data')}}")
+                    BoostrapToast.open("Category", {!!json_encode(trans('inventory::common.error_failed_to_parse_group_data'))!!})
                 }
                 const filterLocations = []
                 const filterDoctrines = []
@@ -227,7 +227,7 @@
                     if (filter.type === "location") {
                         const data = {
                             id: filter.id,
-                            text: "{{trans('inventory::inv.inventory_loading_name')}}"
+                            text: {!!json_encode(trans('inventory::inv.inventory_loading_name'))!!}
                         }
 
                         filterLocations.push(data)
@@ -235,12 +235,12 @@
                         lookupName(filter.id, "{{ route("inventory.locationLookup") }}").then((name) => {
                             data.text = name
                         }).catch((e) => {
-                            data.text = "{{trans('inventory::common.error_inventory_loading_failed')}}"
+                            data.text = {!!json_encode(trans('inventory::common.error_inventory_loading_failed'))!!}
                         })
                     } else if (filter.type === "doctrine") {
                         const data = {
                             id: filter.id,
-                            text: "{{trans('inventory::inv.inventory_loading_name')}}"
+                            text: {!!json_encode(trans('inventory::inv.inventory_loading_name'))!!}
                         }
 
                         filterDoctrines.push(data)
@@ -248,7 +248,7 @@
                         lookupName(filter.id, "{{ route("inventory.doctrineLookup") }}").then((name) => {
                             data.text = name
                         }).catch((e) => {
-                            data.text = "{{trans('inventory::common.error_inventory_loading_failed')}}"
+                            data.text = {!!json_encode(trans('inventory::common.error_inventory_loading_failed'))!!}
                         })
                     }
                 }
@@ -289,11 +289,11 @@
                                                 .class("d-flex align-items-baseline")
                                                 .content(
                                                     W2.html("h6")
-                                                        .content("{{trans('inventory::common.general_header')}}"),
+                                                        .content({!!json_encode(trans('inventory::common.general_header'))!!}),
                                                     W2.html("button")
                                                         .class("btn btn-primary ml-auto")
-                                                        .contentIf(state.generalExpanded, "{{trans('inventory::common.collapse_btn')}}")
-                                                        .contentIf(!state.generalExpanded, "{{trans('inventory::common.expand_btn')}}")
+                                                        .contentIf(state.generalExpanded, {!!json_encode(trans('inventory::common.collapse_btn'))!!})
+                                                        .contentIf(!state.generalExpanded, {!!json_encode(trans('inventory::common.expand_btn'))!!})
                                                         .event("click", () => {
                                                             state.generalExpanded = !state.generalExpanded
                                                             mount.update()
@@ -304,12 +304,12 @@
                                         .contentIf(state.generalExpanded,
                                             W2.html("label")
                                                 .attribute("for", W2.getID("editCategoryNameLabel", true))
-                                                .content("{{trans('inventory::inv.inventory_group_name_label')}}"),
+                                                .content({!!json_encode(trans('inventory::inv.inventory_group_name_label'))!!}),
                                             W2.html("input")
                                                 .class("form-control")
                                                 .attribute("type", "text")
                                                 .id(W2.getID("editCategoryNameLabel"))
-                                                .attribute("placeholder", "{{trans('inventory::inv.inventory_group_name_hint')}}")
+                                                .attribute("placeholder", {!!json_encode(trans('inventory::inv.inventory_group_name_hint'))!!})
                                                 .attribute("value", state.name)
                                                 .event("change", (e) => {
                                                     state.name = e.target.value
@@ -337,11 +337,11 @@
                                             .class("d-flex align-items-baseline")
                                             .content(
                                                 W2.html("h6")
-                                                    .content("{{trans('inventory::inv.inventory_stocks_label')}}"),
+                                                    .content({!!json_encode(trans('inventory::inv.inventory_stocks_label'))!!}),
                                                 W2.html("button")
                                                     .class("btn btn-primary ml-auto")
-                                                    .contentIf(state.stocksExpanded, "{{trans('inventory::common.collapse_btn')}}")
-                                                    .contentIf(!state.stocksExpanded, "{{trans('inventory::common.expand_btn')}}")
+                                                    .contentIf(state.stocksExpanded, {!!json_encode(trans('inventory::common.collapse_btn'))!!})
+                                                    .contentIf(!state.stocksExpanded, {!!json_encode(trans('inventory::common.expand_btn'))!!})
                                                     .event("click", () => {
                                                         state.stocksExpanded = !state.stocksExpanded
                                                         mount.update()
@@ -355,7 +355,7 @@
                                         //manual addition select2
                                         select2Component({
                                             select2: {
-                                                placeholder: "{{trans('inventory::inv.inventory_manually_add_stock_btn')}}",
+                                                placeholder: {!!json_encode(trans('inventory::inv.inventory_manually_add_stock_btn'))!!},
                                                 ajax: {
                                                     url: "{{ route("inventory.stockSuggestion") }}",
                                                     data: function (params) {
@@ -425,7 +425,7 @@
                                                                         .contentIf(stock.manually_added,
                                                                             W2.html("button")
                                                                                 .class("btn btn-outline-danger")
-                                                                                .content("{{trans('inventory::common.remove_btn')}}")
+                                                                                .content({!!json_encode(trans('inventory::common.remove_btn'))!!})
                                                                                 .event("click", () => {
                                                                                     //TODO reset to automtic
                                                                                     state.stocks = state.stocks.filter((e) => {
@@ -449,7 +449,7 @@
                                                                         .contentIf(!stock.manually_added,
                                                                             W2.html("button")
                                                                                 .class("btn btn-outline-secondary")
-                                                                                .content("{{trans('inventory::common.make_permanent_btn')}}")
+                                                                                .content({!!json_encode(trans('inventory::common.make_permanent_btn'))!!})
                                                                                 .event("click", () => {
                                                                                     stock.manually_added = true
                                                                                     mount.update()
@@ -463,7 +463,7 @@
                                                 container.content(
                                                     W2.html("p")
                                                         .class("mt-3")
-                                                        .content("{{trans('inventory::inv.inventory_empty_stock_or_filters_not_applied')}}")
+                                                        .content({!!json_encode(trans('inventory::inv.inventory_empty_stock_or_filters_not_applied'))!!})
                                                 )
                                             }
                                         }
@@ -483,11 +483,11 @@
                                             .class("d-flex align-items-baseline")
                                             .content(
                                                 W2.html("h6")
-                                                    .content("{{trans('inventory::common.filters_btn')}}"),
+                                                    .content({!!json_encode(trans('inventory::common.filters_btn'))!!}),
                                                 W2.html("button")
                                                     .class("btn btn-primary ml-auto")
-                                                    .contentIf(state.filtersExpanded, "{{trans('inventory::common.collapse_btn')}}")
-                                                    .contentIf(!state.filtersExpanded, "{{trans('inventory::common.expand_btn')}}")
+                                                    .contentIf(state.filtersExpanded, {!!json_encode(trans('inventory::common.collapse_btn'))!!})
+                                                    .contentIf(!state.filtersExpanded, {!!json_encode(trans('inventory::common.expand_btn'))!!})
                                                     .event("click", () => {
                                                         state.filtersExpanded = !state.filtersExpanded
                                                         mount.update()
@@ -497,10 +497,10 @@
                                     .contentIf(state.filtersExpanded,
                                         //location filter
                                         W2.html("label")
-                                            .content("{{trans('inventory::common.locations_header')}}"),
+                                            .content({!!json_encode(trans('inventory::common.locations_header'))!!}),
                                         select2Component({
                                             select2: {
-                                                placeholder: "{{trans('inventory::common.locations_select_btn')}}",
+                                                placeholder: {!!json_encode(trans('inventory::common.locations_select_btn'))!!},
                                                 ajax: {
                                                     url: "{{ route("inventory.locationLookup") }}"
                                                 },
@@ -584,7 +584,7 @@
                                     //delete button
                                     if (category.id) {
                                         container.content(
-                                            confirmButtonComponent("{{trans('inventory::common.delete_btn')}}", async () => {
+                                            confirmButtonComponent({!!json_encode(trans('inventory::common.delete_btn'))!!}, async () => {
                                                 popup.close()
 
                                                 const response = await jsonPostAction("{{ route("inventory.deleteCategory") }}", {
@@ -592,9 +592,9 @@
                                                 })
 
                                                 if (!response.ok) {
-                                                    BoostrapToast.open("{{trans('inventory::inv.inventory_group_label')}}", "{{trans('inventory::common.error_failed_to_delete_group')}}")
+                                                    BoostrapToast.open({!!json_encode(trans('inventory::inv.inventory_group_label'))!!}, {!!json_encode(trans('inventory::common.error_failed_to_delete_group'))!!})
                                                 } else {
-                                                    BoostrapToast.open("{{trans('inventory::inv.inventory_group_label')}}", "{{trans('inventory::common.delete_group_success')}}")
+                                                    BoostrapToast.open({!!json_encode(trans('inventory::inv.inventory_group_label'))!!}, {!!json_encode(trans('inventory::common.delete_group_success'))!!})
                                                 }
 
                                                 app.categoryList.state.loadData()
@@ -607,14 +607,14 @@
                                 //close button
                                 W2.html("button")
                                     .class("btn btn-secondary mr-1 ml-auto")
-                                    .content("{{trans('inventory::common.close_btn')}}")
+                                    .content({!!json_encode(trans('inventory::common.close_btn'))!!})
                                     .event("click", () => popup.close())
                             )
                             .content(
                                 //save button
                                 W2.html("button")
                                     .class("btn btn-primary")
-                                    .content("{{trans('inventory::common.save_btn')}}")
+                                    .content({!!json_encode(trans('inventory::common.save_btn'))!!})
                                     .event("click", async () => {
                                         if (state.name && state.name.length > 0) {
                                             //name field is not empty, save the category
@@ -652,9 +652,9 @@
                                             const response = await jsonPostAction("{{ route("inventory.saveCategory") }}", data)
 
                                             if (!response.ok) {
-                                                BoostrapToast.open("{{trans('inventory::inv.inventory_group_label')}}", "{{trans('inventory::common.error_failed_to_save_group')}}")
+                                                BoostrapToast.open({!!json_encode(trans('inventory::inv.inventory_group_label'))!!}, {!!json_encode(trans('inventory::common.error_failed_to_save_group'))!!})
                                             } else {
-                                                BoostrapToast.open("{{trans('inventory::inv.inventory_group_label')}}", "{{trans('inventory::common.save_group_success')}}")
+                                                BoostrapToast.open({!!json_encode(trans('inventory::inv.inventory_group_label'))!!}, {!!json_encode(trans('inventory::common.save_group_success'))!!})
                                                 popup.close()
                                             }
 
@@ -662,7 +662,7 @@
 
                                         } else {
                                             //name field is empty
-                                            state.message = "{{trans('inventory::common.error_invalid_name_input')}}"
+                                            state.message = {!!json_encode(trans('inventory::common.error_invalid_name_input'))!!}
                                             mount.update()
                                         }
                                     })
@@ -753,11 +753,11 @@
                 .content(
                     W2.html("ul")
                         .class("list-group list-group-flush")
-                        .content(stockCardPropertyEntry("{{trans('inventory::common.location_field')}}", stock.location.name))
-                        .content(stockCardPropertyEntry("{{trans('inventory::common.priority_field')}}", getStockPriorityName(stock.priority)))
-                        .content(stockCardPropertyEntry("{{trans('inventory::common.planned_field')}}", stock.amount))
-                        .content(stockCardPropertyEntry("{{trans('inventory::common.warning_threshold_field')}}", stock.warning_threshold))
-                        .content(stockCardPropertyEntry("{{trans('inventory::common.available_field')}}", available, availabilityColor))
+                        .content(stockCardPropertyEntry({!!json_encode(trans('inventory::common.location_field'))!!}, stock.location.name))
+                        .content(stockCardPropertyEntry({!!json_encode(trans('inventory::common.priority_field'))!!}, getStockPriorityName(stock.priority)))
+                        .content(stockCardPropertyEntry({!!json_encode(trans('inventory::common.planned_field'))!!}, stock.amount))
+                        .content(stockCardPropertyEntry({!!json_encode(trans('inventory::common.warning_threshold_field'))!!}, stock.warning_threshold))
+                        .content(stockCardPropertyEntry({!!json_encode(trans('inventory::common.available_field'))!!}, available, availabilityColor))
                         .content((container) => {
                             const sorted = stock.levels.sort((a, b) => b.amount - a.amount)
 
@@ -773,7 +773,7 @@
                             if (sorted.length > 3) {
                                 addEntry(0)
                                 addEntry(1)
-                                container.content(stockCardPropertyEntry("{{trans('inventory::common.locations_other_header')}}", sorted.slice(2).reduce((p, c) => p + c.amount, 0)))
+                                container.content(stockCardPropertyEntry({!!json_encode(trans('inventory::common.locations_other_header'))!!}, sorted.slice(2).reduce((p, c) => p + c.amount, 0)))
                             } else {
                                 addEntry(0)
                                 addEntry(1)
@@ -818,7 +818,7 @@
                                     toggleCollapse,//only show expand button if expanding is supported
                                     W2.html("button")
                                         .class("btn btn-primary")
-                                        .content(collapsed ? "{{trans('inventory::common.expand_btn')}}" : "{{trans('inventory::common.collapse_btn')}}")
+                                        .content(collapsed ? {!!json_encode(trans('inventory::common.expand_btn'))!!} : {!!json_encode(trans('inventory::common.collapse_btn'))!!})
                                         .event("click", (e) => {
                                             e.preventDefault()
                                             toggleCollapse(category.id)
@@ -832,7 +832,7 @@
                                 .class("d-flex flex-wrap")
                                 .content((container) => {
                                     if (category.stocks.length < 1) {
-                                        container.content(W2.html("span").content("{{trans('inventory::inv.inventory_empty_stock')}}"))
+                                        container.content(W2.html("span").content({!!json_encode(trans('inventory::inv.inventory_empty_stock'))!!}))
                                     }
                                     for (const stock of category.stocks) {
                                         container.content(stockCardComponent(app, stock, location))
@@ -898,7 +898,7 @@
 
                     const response = await fetch(url)
                     if (!response.ok) {
-                        BoostrapToast.open("{{trans('inventory::inv.inventory_groups_label')}}", "{{trans('inventory::common.error_failed_to_load_group_data')}}")
+                        BoostrapToast.open({!!json_encode(trans('inventory::inv.inventory_groups_label'))!!}, {!!json_encode(trans('inventory::common.error_failed_to_load_group_data'))!!})
                         this.categoryData = null
                     }
 
@@ -924,7 +924,7 @@
                         )
                     }
                 } else {
-                    container.content("{{trans('inventory::inv.inventory_loading')}}")
+                    container.content({!!json_encode(trans('inventory::inv.inventory_loading'))!!})
                 }
             })
         }
@@ -945,7 +945,7 @@
             const fit_placeholder = "[Pacifier, 2022 Scanner]\n\nCo-Processor II\nCo-Processor II\nType-D Restrained Inertial Stabilizers\nInertial Stabilizers II"
 
             //create popup
-            BootstrapPopUp.open(stock.name || "{{trans('inventory::inv.inventory_new_stock_title')}}", (container, popup) => {
+            BootstrapPopUp.open(stock.name || {!!json_encode(trans('inventory::inv.inventory_new_stock_title'))!!}, (container, popup) => {
 
                 let location = null
                 //convert the location to a select2 compatible object
@@ -989,21 +989,21 @@
                             .content(
                                 W2.html("label")
                                     .attribute("for", W2.getID("editStockSelectType", true))
-                                    .content("{{trans('inventory::inv.inventory_stock_type_label')}}"),
+                                    .content({!!json_encode(trans('inventory::inv.inventory_stock_type_label'))!!}),
                                 W2.html("select")
                                     .class("form-control")
                                     .content(
                                         //add type options
                                         W2.html("option")
-                                            .content("{{trans('inventory::inv.inventory_type_multibuy_label')}}")
+                                            .content({!!json_encode(trans('inventory::inv.inventory_type_multibuy_label'))!!})
                                             .attribute("value", "multibuy")
                                             .attributeIf(state.type === "multibuy", "selected", true),
                                         W2.html("option")
-                                            .content("{{trans('inventory::inv.inventory_type_fit_label')}}")
+                                            .content({!!json_encode(trans('inventory::inv.inventory_type_fit_label'))!!})
                                             .attribute("value", "fit")
                                             .attributeIf(state.type === "fit", "selected", true),
                                         W2.html("option")
-                                            .content("{{trans('inventory::inv.inventory_type_fitting_plugin_label')}}")
+                                            .content({!!json_encode(trans('inventory::inv.inventory_type_fitting_plugin_label'))!!})
                                             .attribute("value", "plugin")
                                             .attributeIf(state.type === "plugin", "selected", true)
                                     )
@@ -1025,7 +1025,7 @@
                                 .content(
                                     W2.html("label")
                                         .attribute("for", W2.getID("editStockMultibuy", true))
-                                        .content("{{trans('inventory::inv.inventory_type_multibuy_label')}}"),
+                                        .content({!!json_encode(trans('inventory::inv.inventory_type_multibuy_label'))!!}),
                                     W2.html(
                                         W2.html("textarea")
                                             .class("form-control")
@@ -1045,14 +1045,14 @@
                                 .content(
                                     W2.html("label")
                                         .attribute("for", W2.getID("editStockName", true))
-                                        .content("{{trans('inventory::inv.inventory_stock_name_label')}}"),
+                                        .content({!!json_encode(trans('inventory::inv.inventory_stock_name_label'))!!}),
                                     W2.html(
                                         W2.html("input")
                                             .class("form-control")
                                             .classIf(state.invalidName, "is-invalid")
                                             .id(W2.getID("editStockName"))
                                             .attribute("type", "text")
-                                            .attribute("placeholder", "{{trans('inventory::inv.inventory_stock_name_placeholder')}}")
+                                            .attribute("placeholder", {!!json_encode(trans('inventory::inv.inventory_stock_name_placeholder'))!!})
                                             .attribute("value", state.name)
                                             .event("change", (e) => {
                                                 state.name = e.target.value
@@ -1074,7 +1074,7 @@
                                 .content(
                                     W2.html("label")
                                         .attribute("for", W2.getID("editStockFit", true))
-                                        .content("{{trans('inventory::inv.inventory_type_fit_label')}}"),
+                                        .content({!!json_encode(trans('inventory::inv.inventory_type_fit_label'))!!}),
                                     W2.html(
                                         W2.html("textarea")
                                             .class("form-control")
@@ -1104,7 +1104,7 @@
                                 .content(
                                     W2.html("label")
                                         .attribute("for", W2.getID("editStockPlugin", true))
-                                        .content("{{trans('inventory::inv.inventory_type_fitting_plugin_label_short')}}"),
+                                        .content({!!json_encode(trans('inventory::inv.inventory_type_fitting_plugin_label_short'))!!}),
                                     select2Component({
                                         select2: {
                                             placeholder: "Select a fit",
@@ -1128,7 +1128,7 @@
                                 .contentIf(state.invalidPluginFit,
                                     W2.html("small")
                                         .class("text-danger")
-                                        .content("{{trans('inventory::inv.inventory_stock_select_fit_label')}}")
+                                        .content({!!json_encode(trans('inventory::inv.inventory_stock_select_fit_label'))!!})
                                 )
                         )
                     }
@@ -1141,7 +1141,7 @@
                             .content(
                                 W2.html("label")
                                     .attribute("for", W2.getID("editStockAmount", true))
-                                    .content("{{trans('inventory::inv.inventory_stock_amount_label')}}"),
+                                    .content({!!json_encode(trans('inventory::inv.inventory_stock_amount_label'))!!}),
                                 W2.html("input")
                                     .class("form-control")
                                     .id(W2.getID("editStockAmount"))
@@ -1162,7 +1162,7 @@
                             .content(
                                 W2.html("label")
                                     .attribute("for", W2.getID("editStockWarningThreshold", true))
-                                    .content("{{trans('inventory::common.warning_threshold_field')}}"),
+                                    .content({!!json_encode(trans('inventory::common.warning_threshold_field'))!!}),
                                 W2.html("input")
                                     .class("form-control")
                                     .id(W2.getID("editStockWarningThreshold"))
@@ -1184,12 +1184,12 @@
                                 //label
                                 W2.html("label")
                                     .attribute("for", W2.getID("editStockLocation", true))
-                                    .content("{{trans('inventory::common.location_field')}}"),
+                                    .content({!!json_encode(trans('inventory::common.location_field'))!!}),
                             )
                             .content(
                                 select2Component({
                                     select2: {
-                                        placeholder: "{{trans('inventory::common.locations_all_field')}}",
+                                        placeholder: {!!json_encode(trans('inventory::common.locations_all_field'))!!},
                                         ajax: {
                                             url: "{{ route("inventory.locationLookup") }}"
                                         },
@@ -1215,7 +1215,7 @@
                             .contentIf(state.invalidLocation,
                                 W2.html("small")
                                     .class("text-danger")
-                                    .content("{{trans('inventory::common.location_select_message')}}")
+                                    .content({!!json_encode(trans('inventory::common.location_select_message'))!!})
                             )
                     )
                     //priority
@@ -1225,7 +1225,7 @@
                             .content(
                                 W2.html("label")
                                     .attribute("for", W2.getID("editStockPriority", true))
-                                    .content("{{trans('inventory::common.priority_field')}}"),
+                                    .content({!!json_encode(trans('inventory::common.priority_field'))!!}),
                                 W2.html("select")
                                     .class("form-control")
                                     .id(W2.getID("editStockPriority"))
@@ -1259,7 +1259,7 @@
                             //delete button
                             //only show the stock delete button if we edit one
                             .contentIf(stock.id,
-                                confirmButtonComponent("{{trans('inventory::common.delete_btn')}}", async () => {
+                                confirmButtonComponent({!!json_encode(trans('inventory::common.delete_btn'))!!}, async () => {
 
                                     //make deletion request
                                     const response = await jsonPostAction("{{ route("inventory.deleteStock") }}", {
@@ -1268,10 +1268,10 @@
 
                                     //check response status
                                     if (response.ok) {
-                                        BoostrapToast.open("{{trans('inventory::inv.inventory_stock_label')}}", "{{trans('inventory::inv.inventory_stock_delete_success')}}")
+                                        BoostrapToast.open({!!json_encode(trans('inventory::inv.inventory_stock_label'))!!}, {!!json_encode(trans('inventory::inv.inventory_stock_delete_success'))!!})
                                         popup.close()
                                     } else {
-                                        BoostrapToast.open("{{trans('inventory::inv.inventory_stock_label')}}", "{{trans('inventory::common.error_failed_to_delete_stock')}}")
+                                        BoostrapToast.open({!!json_encode(trans('inventory::inv.inventory_stock_label'))!!}, {!!json_encode(trans('inventory::common.error_failed_to_delete_stock'))!!})
                                     }
 
                                     //reload categories
@@ -1283,7 +1283,7 @@
                             .content(
                                 W2.html("button")
                                     .class("btn btn-secondary ml-auto")
-                                    .content("{{trans('inventory::common.close_btn')}}")
+                                    .content({!!json_encode(trans('inventory::common.close_btn'))!!})
                                     .event("click", () => {
                                         //close popup when close button is pressed
                                         popup.close()
@@ -1294,7 +1294,7 @@
                             .content(
                                 W2.html("button")
                                     .class("btn btn-primary ml-1")
-                                    .content("{{trans('inventory::common.save_btn')}}")
+                                    .content({!!json_encode(trans('inventory::common.save_btn'))!!})
                                     .event("click", async () => {
                                         //save the stock
 
@@ -1356,9 +1356,9 @@
 
                                         //check response status
                                         if (response.ok) {
-                                            BoostrapToast.open("{{trans('inventory::inv.inventory_stock_label')}}", "{{trans('inventory::inv.inventory_save_success')}}")
+                                            BoostrapToast.open({!!json_encode(trans('inventory::inv.inventory_stock_label'))!!}, {!!json_encode(trans('inventory::inv.inventory_save_success'))!!})
                                         } else {
-                                            BoostrapToast.open("{{trans('inventory::inv.inventory_stock_label')}}", "{{trans('inventory::common.error_failed_to_save_stock')}}")
+                                            BoostrapToast.open({!!json_encode(trans('inventory::inv.inventory_stock_label'))!!}, {!!json_encode(trans('inventory::common.error_failed_to_save_stock'))!!})
                                             const msg = await response.json()
                                             alert(msg);
                                         }
@@ -1383,7 +1383,7 @@
                     })
 
                     if (!response.ok) {
-                        BoostrapToast.open("{{trans('inventory::inv.inventory_stock_label')}}", "{{trans('inventory::common.error_failed_to_load_items')}}")
+                        BoostrapToast.open({!!json_encode(trans('inventory::inv.inventory_stock_label'))!!}, {!!json_encode(trans('inventory::common.error_failed_to_load_items'))!!})
                         return
                     }
 
@@ -1433,7 +1433,7 @@
                                         .classIf(!state.showMultibuy, "active")
                                         .content(
                                             W2.html("span")
-                                                .content("{{trans('inventory::inv.inventory_stock_list')}}")
+                                                .content({!!json_encode(trans('inventory::inv.inventory_stock_list'))!!})
                                         ).event("click", () => {
                                         state.showMultibuy = !state.showMultibuy
                                         mount.update()
@@ -1443,7 +1443,7 @@
                                         .classIf(state.showMultibuy, "active")
                                         .content(
                                             W2.html("span")
-                                                .content("{{trans('inventory::inv.inventory_type_multibuy_label')}}")
+                                                .content({!!json_encode(trans('inventory::inv.inventory_type_multibuy_label'))!!})
                                         ).event("click", () => {
                                         state.showMultibuy = !state.showMultibuy
                                         mount.update()
@@ -1458,7 +1458,7 @@
                                         .classIf(state.showTypeTriState === 0, "active")
                                         .content(
                                             W2.html("span")
-                                                .content("{{trans('inventory::inv.inventory_stock_missing')}}")
+                                                .content({!!json_encode(trans('inventory::inv.inventory_stock_missing'))!!})
                                         ).event("click", () => {
                                         state.showTypeTriState = 0
                                         mount.update()
@@ -1470,7 +1470,7 @@
                                         .classIf(state.showTypeTriState === 1, "active")
                                         .content(
                                             W2.html("span")
-                                                .content("{{trans('inventory::inv.inventory_stock_one')}}")
+                                                .content({!!json_encode(trans('inventory::inv.inventory_stock_one'))!!})
                                         ).event("click", () => {
                                         state.showTypeTriState = 1
                                         mount.update()
@@ -1480,7 +1480,7 @@
                                         .classIf(state.showTypeTriState === 2, "active")
                                         .content(
                                             W2.html("span")
-                                                .content("{{trans('inventory::inv.inventory_stock_all')}}")
+                                                .content({!!json_encode(trans('inventory::inv.inventory_stock_all'))!!})
                                         ).event("click", () => {
                                         state.showTypeTriState = 2
                                         mount.update()
@@ -1527,7 +1527,7 @@
                 ).contentIf(HAS_ALLIANCE_INDUSTRY_PLUGIN,
                     W2.html("button")
                         .class("btn btn-secondary btn-block mt-1")
-                        .content("{{trans('inventory::common.create_alliance_industry_order')}}")
+                        .content({!!json_encode(trans('inventory::common.create_alliance_industry_order'))!!})
                         .event("click", () => {
                             const data = {
                                 items: getItems(state).map((e) => {
@@ -1570,7 +1570,7 @@
                     stocks: stockIds
                 })
                 if (!request.ok) {
-                    BoostrapToast.open("{{trans('inventory::inv.inventory_stock_items')}}", "{{trans('inventory::common.error_failed_to_load_items')}}")
+                    BoostrapToast.open({!!json_encode(trans('inventory::inv.inventory_stock_items'))!!}, {!!json_encode(trans('inventory::common.error_failed_to_load_items'))!!})
                     return
                 }
                 const response = await request.json()
@@ -1616,7 +1616,7 @@
                                         .class("card-body")
                                         .content(
                                             W2.html("h5")
-                                                .content("{{trans('inventory::common.attributes_header')}}"),
+                                                .content({!!json_encode(trans('inventory::common.attributes_header'))!!}),
                                             W2.html("table")
                                                 .class("table table-striped")
                                                 .content(
@@ -1625,28 +1625,28 @@
                                                             W2.html("tr")
                                                                 .content(
                                                                     W2.html("th")
-                                                                        .content("{{trans('inventory::common.attribute_header')}}"),
+                                                                        .content({!!json_encode(trans('inventory::common.attribute_header'))!!}),
                                                                     W2.html("th")
-                                                                        .content("{{trans('inventory::common.value_header')}}"),
+                                                                        .content({!!json_encode(trans('inventory::common.value_header'))!!}),
                                                                 )
                                                         ),
                                                     W2.html("tbody")
                                                         .content(
-                                                            dataEntry("{{trans('inventory::common.name_field')}}", stock.name),
-                                                            dataEntry("{{trans('inventory::common.location_field')}}", stock.location.name),
-                                                            dataEntry("{{trans('inventory::common.last_updated_field')}}", stock.last_updated || "{{trans('inventory::common.never_value')}}"),
-                                                            dataEntry("{{trans('inventory::inv.inventory_stock_amount_label')}}", stock.amount),
-                                                            dataEntry("{{trans('inventory::common.warning_threshold_field')}}", stock.warning_threshold),
-                                                            dataEntry("{{trans('inventory::common.priority_field')}}", getStockPriorityName(stock.priority)),
-                                                            dataEntry("{{trans('inventory::common.available_field')}}", available),
+                                                            dataEntry({!!json_encode(trans('inventory::common.name_field'))!!}, stock.name),
+                                                            dataEntry({!!json_encode(trans('inventory::common.location_field'))!!}, stock.location.name),
+                                                            dataEntry({!!json_encode(trans('inventory::common.last_updated_field'))!!}, stock.last_updated || {!!json_encode(trans('inventory::common.never_value'))!!}),
+                                                            dataEntry({!!json_encode(trans('inventory::inv.inventory_stock_amount_label'))!!}, stock.amount),
+                                                            dataEntry({!!json_encode(trans('inventory::common.warning_threshold_field'))!!}, stock.warning_threshold),
+                                                            dataEntry({!!json_encode(trans('inventory::common.priority_field'))!!}, getStockPriorityName(stock.priority)),
+                                                            dataEntry({!!json_encode(trans('inventory::common.available_field'))!!}, available),
                                                             (container) => {
                                                                 for (const level of stock.levels) {
                                                                     container.content(dataEntry(SourceTypeHelper.getFullName(level.source_type), level.amount))
                                                                 }
                                                             },
-                                                            dataEntry("{{trans('inventory::common.minimal_amount_fullfilled_field')}}", booleanIcon(available < stock.warning_threshold)),
-                                                            dataEntry("{{trans('inventory::common.fitting_link_field')}}", booleanIcon(stock.fitting_plugin_fitting_id)),
-                                                            dataEntry("{{trans('inventory::inv.inventory_groups_label')}}", W2.emptyHtml().content((container) => {
+                                                            dataEntry({!!json_encode(trans('inventory::common.minimal_amount_fullfilled_field'))!!}, booleanIcon(available < stock.warning_threshold)),
+                                                            dataEntry({!!json_encode(trans('inventory::common.fitting_link_field'))!!}, booleanIcon(stock.fitting_plugin_fitting_id)),
+                                                            dataEntry({!!json_encode(trans('inventory::inv.inventory_groups_label'))!!}, W2.emptyHtml().content((container) => {
                                                                 for (const category of stock.categories) {
                                                                     container.content(
                                                                         W2.html("span")
@@ -1668,7 +1668,7 @@
                                         .class("card-body d-flex flex-column")
                                         .content(
                                             W2.html("h5")
-                                                .content("{{trans('inventory::inv.inventory_stock_items')}}"),
+                                                .content({!!json_encode(trans('inventory::inv.inventory_stock_items'))!!}),
                                             stockItemsComponent([stock.id], false, stock.location)
                                         )
                                 )
@@ -1679,7 +1679,7 @@
 
         //deliveries popup
         function deliveriesPopup(workspace) {
-            BootstrapPopUp.open("{{trans('inventory::common.deliveries_popup_title')}}", (container, popup) => {
+            BootstrapPopUp.open({!!json_encode(trans('inventory::common.deliveries_popup_title'))!!}, (container, popup) => {
                 const state = {
                     addPanel: true,
                     deliveryPreview: null,
@@ -1701,7 +1701,7 @@
                                         //button to add a new delivery
                                         W2.html("button")
                                             .class("btn btn-primary btn-block")
-                                            .content("{{trans('inventory::common.add_delivery_btn')}}")
+                                            .content({!!json_encode(trans('inventory::common.add_delivery_btn'))!!})
                                             .event("click", (e) => {
                                                 e.target.blur()
                                                 state.addPanel = true
@@ -1739,7 +1739,7 @@
                                                         .class("form-group w-100")
                                                         .content(
                                                             W2.html("label")
-                                                                .content("{{trans('inventory::inv.inventory_stock_items')}}"),
+                                                                .content({!!json_encode(trans('inventory::inv.inventory_stock_items'))!!}),
                                                             W2.html("textarea")
                                                                 .class("form-control w-100")
                                                                 .style("resize", "none")
@@ -1760,12 +1760,12 @@
                                                             //location selection label
                                                             W2.html("label")
                                                                 .attribute("for", W2.getID("deliveriesLocation", true))
-                                                                .content("{{trans('inventory::common.location_field')}}"),
+                                                                .content({!!json_encode(trans('inventory::common.location_field'))!!}),
                                                         )
                                                         .content(
                                                             select2Component({
                                                                 select2: {
-                                                                    placeholder: "{{trans('inventory::common.location_select_btn')}}",
+                                                                    placeholder: {!!json_encode(trans('inventory::common.location_select_btn'))!!},
                                                                     ajax: {
                                                                         url: "{{ route("inventory.locationLookup") }}"
                                                                     },
@@ -1792,16 +1792,16 @@
                                                     //submit button
                                                     W2.html("button")
                                                         .class("btn btn-primary btn-block")
-                                                        .content("{{trans('inventory::common.save_btn')}}")
+                                                        .content({!!json_encode(trans('inventory::common.save_btn'))!!})
                                                         .event("click", async () => {
                                                             if (state.location == null) {
-                                                                state.message = "{{trans('inventory::common.location_select_message')}}"
+                                                                state.message = {!!json_encode(trans('inventory::common.location_select_message'))!!}
                                                                 mount.update()
                                                                 return
 
                                                             }
                                                             if (state.items.length < 1) {
-                                                                state.message = "{{trans('inventory::inv.inventory_add_items_message')}}"
+                                                                state.message = {!!json_encode(trans('inventory::inv.inventory_add_items_message'))!!}
                                                                 mount.update()
                                                                 return
                                                             }
@@ -1819,17 +1819,17 @@
 
                                                             const response = await jsonPostAction("{{ route("inventory.addDeliveries") }}", data)
                                                             if (!response.ok) {
-                                                                state.message = "{{trans('inventory::common.error_failed_to_save_delivery')}}"
+                                                                state.message = {!!json_encode(trans('inventory::common.error_failed_to_save_delivery'))!!}
                                                                 mount.update()
                                                             } else {
-                                                                BoostrapToast.open("{{trans('inventory::common.delivery_title')}}", "{{trans('inventory::common.added_delivery_message')}}")
+                                                                BoostrapToast.open({!!json_encode(trans('inventory::common.delivery_title'))!!}, {!!json_encode(trans('inventory::common.added_delivery_message'))!!})
                                                                 await loadDeliveriesData()
                                                             }
 
                                                         })
                                                 )
                                             } else if (state.deliveryPreview === null) {
-                                                container.content("{{trans('inventory::common.select_delivery_message')}}")
+                                                container.content({!!json_encode(trans('inventory::common.select_delivery_message'))!!})
                                             } else {
 
                                                 //preview for a delivery
@@ -1849,15 +1849,15 @@
                                                                 }
                                                             }))
                                                         ),
-                                                    confirmButtonComponent("{{trans('inventory::common.delete_btn')}}", async () => {
+                                                    confirmButtonComponent({!!json_encode(trans('inventory::common.delete_btn'))!!}, async () => {
                                                         const response = await jsonPostAction("{{ route("inventory.deleteDeliveries") }}", {
                                                             id: state.deliveryPreview.id
                                                         })
 
                                                         if (!response.ok) {
-                                                            BoostrapToast.open("{{trans('inventory::common.deliveries_popup_title')}}", "{{trans('inventory::common.error_failed_to_delete_delivery')}}")
+                                                            BoostrapToast.open({!!json_encode(trans('inventory::common.deliveries_popup_title'))!!}, {!!json_encode(trans('inventory::common.error_failed_to_delete_delivery'))!!})
                                                         } else {
-                                                            BoostrapToast.open("{{trans('inventory::common.deliveries_popup_title')}}", "{{trans('inventory::common.delete_delivery_success')}}")
+                                                            BoostrapToast.open({!!json_encode(trans('inventory::common.deliveries_popup_title'))!!}, {!!json_encode(trans('inventory::common.delete_delivery_success'))!!})
                                                         }
 
                                                         await loadDeliveriesData()
@@ -1880,7 +1880,7 @@
                         workspace: workspace.id
                     })
                     if (!response.ok) {
-                        BoostrapToast.open("{{trans('inventory::common.deliveries_popup_title')}}", "{{trans('inventory::common.error_failed_to_load_deliveries')}}")
+                        BoostrapToast.open({!!json_encode(trans('inventory::common.deliveries_popup_title'))!!}, {!!json_encode(trans('inventory::common.error_failed_to_load_deliveries'))!!})
                         return
                     }
 
@@ -1899,7 +1899,7 @@
             BootstrapPopUp.open(category.name, (container, popup) => {
                 container.content(
                     W2.html("h5")
-                        .content("{{trans('inventory::inv.inventory_missing_items')}}")
+                        .content({!!json_encode(trans('inventory::inv.inventory_missing_items'))!!})
                 )
 
                 container.content(
@@ -1942,7 +1942,7 @@
                 .content(
                     W2.html("button")
                         .class("btn btn-secondary ml-1")
-                        .content("{{trans('inventory::common.collapse_all_btn')}}")
+                        .content({!!json_encode(trans('inventory::common.collapse_all_btn'))!!})
                         .event("click", () => {
                             app.categoryList.state.collapseAll()
                         })
@@ -1950,7 +1950,7 @@
                 .content(
                     W2.html("button")
                         .class("btn btn-secondary ml-1")
-                        .content("{{trans('inventory::common.expand_all_btn')}}")
+                        .content({!!json_encode(trans('inventory::common.expand_all_btn'))!!})
                         .event("click", () => {
                             app.categoryList.state.expandAll()
                         })

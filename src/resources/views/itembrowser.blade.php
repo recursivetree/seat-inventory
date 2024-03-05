@@ -57,7 +57,7 @@
                         .content(
                             W2.html("h3")
                                 .class("cart-title")
-                                .content("{{trans('inventory::items.item_browser_title')}}")
+                                .content({!!json_encode(trans('inventory::items.item_browser_title'))!!})
                         ),
                     //card body
                     W2.html("div")
@@ -68,12 +68,12 @@
                                 .class("form-group d-flex flex-column")
                                 .content(
                                     W2.html("label")
-                                        .content("{{trans('inventory::common.location_field')}}")
+                                        .content({!!json_encode(trans('inventory::common.location_field'))!!})
                                         .attribute("for", W2.getID("filterLocation"))
                                 ).content(
                                 select2Component({
                                     select2: {
-                                        placeholder: "{{trans('inventory::common.locations_all_field')}}",
+                                        placeholder: {!!json_encode(trans('inventory::common.locations_all_field'))!!},
                                         ajax: {
                                             url: "{{ route("inventory.locationLookup") }}"
                                         },
@@ -97,12 +97,12 @@
                                 .class("form-group d-flex flex-column")
                                 .content(
                                     W2.html("label")
-                                        .content("{{trans('inventory::items.item_label')}}")
+                                        .content({!!json_encode(trans('inventory::items.item_label'))!!})
                                         .attribute("for", W2.getID("filterItem"))
                                 ).content(
                                 select2Component({
                                     select2: {
-                                        placeholder: "{{trans('inventory::items.all_items_label')}}",
+                                        placeholder: {!!json_encode(trans('inventory::items.all_items_label'))!!},
                                         ajax: {
                                             url: "{{ route("inventory.itemLookup") }}"
                                         },
@@ -158,7 +158,7 @@
                                     .content(
                                         W2.html("button")
                                             .class("btn btn-primary")
-                                            .content("{{trans('inventory::common.load_more_btn')}}")
+                                            .content({!!json_encode(trans('inventory::common.load_more_btn'))!!})
                                             .event("click",async ()=>{
                                                 await fetchData(state.locationFilter?state.locationFilter.id:null,state.itemFilter?state.itemFilter.id:null,false)
                                                 mount.update()
