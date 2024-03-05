@@ -173,7 +173,7 @@
                             .content(
                                 W2.html("button")
                                     .class("btn btn-primary")
-                                    .content("{{trans('industry::common.cancel_btn')}}")
+                                    .content({!!json_encode(trans('inventory::common.cancel_btn'))!!})
                                     .event("click", () => {
                                         state.firstStep = true
                                         mount.update()
@@ -182,7 +182,7 @@
                             .content(
                                 W2.html("button")
                                     .class("btn btn-warning")
-                                    .content("{{trans('industry::common.confirm_btn')}}")
+                                    .content({!!json_encode(trans('inventory::common.confirm_btn'))!!})
                                     .event("click", () => {
                                         callback()
                                         state.firstStep = true
@@ -200,13 +200,13 @@
             })
 
             if (!response.ok) {
-                throw new Error("{{trans('industry::common.error_server_response_error')}}")
+                throw new Error({!!json_encode(trans('inventory::common.error_server_response_error'))!!})
             }
 
             const data = await response.json()
 
             if (data.results.length < 1) {
-                throw new Error("{{trans('industry::common.error_doctrine_not_found')}}")
+                throw new Error({!!json_encode(trans('inventory::common.error_doctrine_not_found'))!!})
             }
 
             return data.results[0].text
@@ -534,11 +534,11 @@
                                         }),
                                         //doctrine filter
                                         W2.html("label")
-                                            .content("{{trans('industry::common.doctrines_label')}}")
+                                            .content({!!json_encode(trans('inventory::common.doctrines_label'))!!})
                                             .class("mt-2"),
                                         select2Component({
                                             select2: {
-                                                placeholder: "{{trans('industry::common.doctrines_select_input_label')}}",
+                                                placeholder: {!!json_encode(trans('inventory::common.doctrines_select_input_label'))!!},
                                                 ajax: {
                                                     url: "{{ route("inventory.doctrineLookup") }}"
                                                 },
