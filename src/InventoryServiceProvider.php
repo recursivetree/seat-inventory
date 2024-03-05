@@ -166,7 +166,7 @@ class InventoryServiceProvider extends AbstractSeatPlugin
 
     public function getPackageRepositoryUrl(): string
     {
-        return 'https://github.com/hermesdj/seat-inventory';
+        return 'https://github.com/recursivetree/seat-inventory';
     }
 
     public function getPackagistPackageName(): string
@@ -176,6 +176,6 @@ class InventoryServiceProvider extends AbstractSeatPlugin
 
     public function getPackagistVendorName(): string
     {
-        return 'hermesdj';
+        return 'recursivetree';
     }
 }
