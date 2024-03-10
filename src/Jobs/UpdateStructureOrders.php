@@ -11,7 +11,6 @@ use RecursiveTree\Seat\Inventory\Models\Workspace;
 use RecursiveTree\Seat\TreeLib\Items\EveItem;
 use Seat\Eveapi\Jobs\AbstractAuthCharacterJob;
 use Seat\Eveapi\Models\RefreshToken;
-use Seat\Eveapi\Models\Sde\InvType;
 
 /**
  * Class Orders.
@@ -101,7 +100,7 @@ class UpdateStructureOrders extends AbstractAuthCharacterJob
                 ->chunk(100)
                 ->each(function ($chunk) use (&$item_list) {
                     foreach ($chunk as $order){
-                        if($order->is_buy_order === true){
+                        if($order->is_buy_order === false){
                             $item_list[] = EveItem::fromTypeID($order->type_id,['amount'=>$order->volume_remain]);
                         }
                     }
