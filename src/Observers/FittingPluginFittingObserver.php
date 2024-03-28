@@ -13,12 +13,12 @@ class FittingPluginFittingObserver
     public function saved($fitting){
         try {
             //search for linked stocks
-            $stocks = Stock::where("fitting_plugin_fitting_id", $fitting->id)->get();
+            $stocks = Stock::where("fitting_plugin_fitting_id", $fitting->fitting_id)->get();
 
             //change every stock
             foreach ($stocks as $stock) {
                 //parse the fit. specifically use the fit parser
-                $parser_result = FitParser::parseItems($fitting->eftfitting);
+                $parser_result = FitParser::parseItems($fitting->toEve());
                 if ($parser_result == null) {
                     //if parsing fails, use the name of the stock as a way to display the error
                     $stock->name = "[Out Of Sync] $stock->name | Failed to parse fit";
@@ -29,6 +29,8 @@ class FittingPluginFittingObserver
                 //after parsing the fit, simplify it
                 $items = $parser_result->items->simplifyItems();
                 $name = $parser_result->shipName ?? "A wild error's request to contact the developer";
+
+                //dd($items, $parser_result, $fitting->toEve());
 
                 //change the db
                 DB::transaction(function () use ($name, $stock, $items) {

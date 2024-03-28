@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 use Intervention\Image\Facades\Image;
 use RecursiveTree\Seat\TreeLib\Helpers\FittingPluginHelper;
 use RecursiveTree\Seat\Inventory\Jobs\GenerateStockIcon;
+use Seat\Services\Contracts\HasTypeID;
+use Seat\Services\Contracts\HasTypeIDWithAmount;
 
 class Stock extends Model
 {
@@ -58,7 +60,8 @@ class Stock extends Model
         return $this->available;
     }
 
-    public function isEligibleForCategory($filters){
+    public function isEligibleForCategory($filters): bool
+    {
         $filters = json_decode($filters);
 
         $has_location = false;
@@ -89,5 +92,22 @@ class Stock extends Model
             ($has_location || $has_doctrine) //only eligible if we have filters
             &&(!$has_location || $location_fulfilled) //location
             && (!$has_doctrine || $doctrine_fulfilled); //doctrine
+    }
+
+    public function saveItems($items): void {
+        // delete old items
+        $types = $items->map(function (HasTypeID $item){
+            return $item->getTypeID();
+        })->unique();
+        StockItem::destroy($this->items()->whereNotIn("type_id",$types)->pluck('id'));
+
+        $this->items()->upsert($items->map(function (HasTypeIDWithAmount $item){
+            return [
+                'type_id'=>$item->getTypeID(),
+                'amount'=>$item->getAmount(),
+                'stock_id'=>$this->id,
+                'missing_items'=>$item->getAmount()
+            ];
+        })->values()->toArray(),['type_id','stock_id'],['amount','missing_items']);
     }
 }

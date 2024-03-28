@@ -247,7 +247,7 @@ class InventoryController extends Controller
                 return response()->json(["message"=>"Fitting not found"],400);
             }
 
-            $items_text = $fitting->eftfitting;
+            $items_text = $fitting->toEve();
         }
 
         //parse items
@@ -387,19 +387,19 @@ class InventoryController extends Controller
         $query = FittingPluginHelper::$FITTING_PLUGIN_FITTING_MODEL::query();
 
         if($request->term){
-            $query = $query->where("fitname","like","%$request->term%");
+            $query = $query->where("name","like","%$request->term%");
         }
 
         if($request->id){
-            $query = $query->where("id",$request->id);
+            $query = $query->where("fitting_id",$request->id);
         }
 
         $suggestions = $query->get();
         $suggestions = $suggestions
             ->map(function ($fitting){
                 return [
-                    'id' => $fitting->id,
-                    'text' => "$fitting->fitname"
+                    'id' => $fitting->fitting_id,
+                    'text' => $fitting->name
                 ];
             });
 

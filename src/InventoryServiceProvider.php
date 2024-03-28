@@ -6,9 +6,11 @@ use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use RecursiveTree\Seat\Inventory\Jobs\UpdateStructureOrders;
+use RecursiveTree\Seat\Inventory\Listeners\FittingUpdatedListener;
 use RecursiveTree\Seat\Inventory\Models\StockItem;
 use RecursiveTree\Seat\Inventory\Models\Workspace;
 use RecursiveTree\Seat\TreeLib\Helpers\FittingPluginHelper;
@@ -152,6 +154,10 @@ class InventoryServiceProvider extends AbstractSeatPlugin
                 UpdateInventory::dispatch()->onQueue('default');
             }
         });
+
+        if(FittingPluginHelper::pluginIsAvailable()){
+            Event::listen(FittingPluginHelper::FITTING_PLUGIN_FITTING_UPDATED_EVENT,FittingUpdatedListener::class);
+        }
     }
 
     public function register(){

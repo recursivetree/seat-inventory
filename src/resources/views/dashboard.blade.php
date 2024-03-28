@@ -1358,9 +1358,8 @@
                                         if (response.ok) {
                                             BoostrapToast.open({!!json_encode(trans('inventory::inv.inventory_stock_label'))!!}, {!!json_encode(trans('inventory::inv.inventory_save_success'))!!})
                                         } else {
-                                            BoostrapToast.open({!!json_encode(trans('inventory::inv.inventory_stock_label'))!!}, {!!json_encode(trans('inventory::common.error_failed_to_save_stock'))!!})
-                                            const msg = await response.json()
-                                            alert(msg);
+                                            const msg = (await response.json()).message || "No reason provided"
+                                            BoostrapToast.open({!!json_encode(trans('inventory::inv.inventory_stock_label'))!!}, {!!json_encode(trans('inventory::common.error_failed_to_save_stock'))!!}+": "+msg)
                                         }
 
                                         //reload categories
