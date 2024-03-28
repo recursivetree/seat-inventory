@@ -30,18 +30,6 @@ class Stock extends Model
         return $this->hasMany(StockLevel::class,"stock_id","id");
     }
 
-    public static function fittingName($stock){
-        if (FittingPluginHelper::pluginIsAvailable()){
-            $fitting = FittingPluginHelper::$FITTING_PLUGIN_FITTING_MODEL::find($stock->fitting_plugin_fitting_id);
-            if($fitting!=null){
-                return $fitting->fitname;
-            } else {
-                return "could not find fitting";
-            }
-        }
-        return "could not get name";
-    }
-
     public function categories(){
         return $this->belongsToMany(
             StockCategory::class,
