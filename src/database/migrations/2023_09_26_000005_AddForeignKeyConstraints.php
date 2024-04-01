@@ -13,6 +13,11 @@ return new class extends Migration
         Schema::table('recursive_tree_seat_inventory_inventory_item', function (Blueprint $table) {
             $table->bigInteger('source_id')->unsigned()->change();
         });
+        // delete items that somehow lost their source
+        DB::table('recursive_tree_seat_inventory_inventory_item')
+            ->where(DB::raw('NOT EXISTS(select * from seat_inventory_inventory_source where seat_inventory_inventory_source.id=recursive_tree_seat_inventory_inventory_item.source_id)'))
+            ->delete();
+        // add constraints so that it doesn't happen anymore
         Schema::table('recursive_tree_seat_inventory_inventory_item', function (Blueprint $table) {
             $table->foreign('source_id')
                 ->references('id')
@@ -23,6 +28,11 @@ return new class extends Migration
         Schema::table('recursive_tree_seat_inventory_stock_items', function (Blueprint $table) {
             $table->bigInteger('stock_id')->unsigned()->change();
         });
+        // delete items that somehow lost their stock
+        DB::table('recursive_tree_seat_inventory_stock_items')
+            ->where(DB::raw('NOT EXISTS(select * from recursive_tree_seat_inventory_stock_definitions where recursive_tree_seat_inventory_stock_definitions.id=recursive_tree_seat_inventory_stock_items.stock_id)'))
+            ->delete();
+        // add constraints so that it doesn't happen anymore
         Schema::table('recursive_tree_seat_inventory_stock_items', function (Blueprint $table) {
             $table->foreign('stock_id')
                 ->references('id')
