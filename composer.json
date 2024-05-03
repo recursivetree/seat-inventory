@@ -20,7 +20,7 @@
     "laravel/framework": "^10.0",
     "eveseat/web": "^5.0.0",
     "eveseat/eveapi": "^5.0.1",
-    "eveseat/services": "^5.0.1",
+    "eveseat/services": "^5.0.6",
     "eveseat/notifications": "^5.0.1",
     "recursivetree/seat-treelib": "^2.0",
     "doctrine/dbal": "^3.6.7"

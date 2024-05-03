@@ -19,6 +19,16 @@ use Seat\Eveapi\Models\RefreshToken;
  */
 class UpdateStructureOrders extends AbstractAuthCharacterJob
 {
+    /**
+     * The page to retrieve.
+     *
+     * Jobs that expect paged responses should have
+     * this value set.
+     *
+     * @var int
+     */
+    protected $page = 1;
+
     public $tries = 1;
 
     /**
