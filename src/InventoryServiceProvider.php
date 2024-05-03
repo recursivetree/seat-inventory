@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use RecursiveTree\Seat\Inventory\Jobs\UpdateStructureOrders;
+use RecursiveTree\Seat\Inventory\Listeners\DoctrineUpdatedListener;
 use RecursiveTree\Seat\Inventory\Listeners\FittingUpdatedListener;
 use RecursiveTree\Seat\Inventory\Models\StockItem;
 use RecursiveTree\Seat\Inventory\Models\Workspace;
@@ -22,8 +23,6 @@ use RecursiveTree\Seat\Inventory\Jobs\UpdateStockLevels;
 use RecursiveTree\Seat\Inventory\Models\Location;
 use RecursiveTree\Seat\Inventory\Models\Stock;
 use RecursiveTree\Seat\Inventory\Observers\AllianceMemberObserver;
-use RecursiveTree\Seat\Inventory\Observers\FittingPluginDoctrineObserver;
-use RecursiveTree\Seat\Inventory\Observers\FittingPluginFittingObserver;
 use RecursiveTree\Seat\Inventory\Observers\StockObserver;
 use RecursiveTree\Seat\Inventory\Observers\UniverseStationObserver;
 use RecursiveTree\Seat\Inventory\Observers\UniverseStructureObserver;
@@ -65,11 +64,6 @@ class InventoryServiceProvider extends AbstractSeatPlugin
         Blade::directive('inventoryVersionedAsset', function($path) use ($version) {
             return "<?php echo asset({$path}) . '?v=$version'; ?>";
         });
-
-        if(FittingPluginHelper::pluginIsAvailable()) {
-            FittingPluginHelper::$FITTING_PLUGIN_FITTING_MODEL::observe(FittingPluginFittingObserver::class);
-            FittingPluginHelper::$FITTING_PLUGIN_DOCTRINE_MODEL::observe(FittingPluginDoctrineObserver::class);
-        }
 
         UniverseStructure::observe(UniverseStructureObserver::class);
         UniverseStation::observe(UniverseStationObserver::class);
@@ -157,6 +151,7 @@ class InventoryServiceProvider extends AbstractSeatPlugin
 
         if(FittingPluginHelper::pluginIsAvailable()){
             Event::listen(FittingPluginHelper::FITTING_PLUGIN_FITTING_UPDATED_EVENT,FittingUpdatedListener::class);
+            Event::listen(FittingPluginHelper::FITTING_PLUGIN_DOCTRINE_UPDATED_EVENT,DoctrineUpdatedListener::class);
         }
     }
 

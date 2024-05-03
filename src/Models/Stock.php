@@ -80,9 +80,9 @@ class Stock extends Model
                 if(!FittingPluginHelper::pluginIsAvailable()){
                     $doctrine_fulfilled = true;
                 } else {
-                    $fitting = FittingPluginHelper::$FITTING_PLUGIN_FITTING_MODEL::find($this->fitting_plugin_fitting_id);
-                    if ($fitting) {
-                        if ($fitting->doctrines()->where("id", $filter->id)->exists()) $doctrine_fulfilled = true;
+                    $doctrine = FittingPluginHelper::$FITTING_PLUGIN_DOCTRINE_MODEL::find($filter->id);
+                    if ($doctrine) {
+                        if ($doctrine->fittings()->where("crypta_tech_seat_fittings.fitting_id", $this->fitting_plugin_fitting_id)->exists()) $doctrine_fulfilled = true;
                     }
                 }
             }

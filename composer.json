@@ -25,6 +25,9 @@
     "recursivetree/seat-treelib": "^2.0",
     "doctrine/dbal": "^3.6.7"
   },
+  "conflict": {
+    "cryptatech/seat-fitting": "<5.0.7"
+  },
   "extra": {
     "laravel": {
       "providers": [

@@ -362,10 +362,10 @@ class InventoryController extends Controller
         $suggestions = $query->limit(100)->get();
 
         $suggestions = $suggestions
-            ->map(function ($doctrine){
+            ->map(function ($item){
                 return [
-                    'id' => $doctrine->typeID,
-                    'text' => "$doctrine->typeName"
+                    'id' => $item->typeID,
+                    'text' => "$item->typeName"
                 ];
             });
 
