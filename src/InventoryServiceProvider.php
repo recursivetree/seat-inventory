@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
+use RecursiveTree\Seat\Inventory\Jobs\UpdateCorporationAssets;
 use RecursiveTree\Seat\Inventory\Jobs\UpdateStructureOrders;
 use RecursiveTree\Seat\Inventory\Listeners\DoctrineUpdatedListener;
 use RecursiveTree\Seat\Inventory\Listeners\FittingUpdatedListener;
@@ -139,7 +140,7 @@ class InventoryServiceProvider extends AbstractSeatPlugin
         });
 
         Artisan::command('inventory:test', function () {
-            UpdateStructureOrders::dispatchSync(RefreshToken::find(2118139503), Location::find(6), Workspace::first());
+            UpdateCorporationAssets::dispatchSync(Workspace::first());
         });
 
         Queue::after(function (JobProcessed $event) {

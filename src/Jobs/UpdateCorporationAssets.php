@@ -146,6 +146,12 @@ class UpdateCorporationAssets implements ShouldQueue
         InventoryItem::whereIn("source_id", $deleteable_ids)->delete();
         InventorySource::whereIn("id", $deleteable_ids)->delete();
 
+        $corporation_trackings = TrackedCorporation::whereIn("corporation_id", $corporation_ids)
+            ->get()
+            ->mapWithKeys(function ($corporation) {
+                return [$corporation->corporation_id => $corporation];
+            });
+
         //go over each location
         foreach ($locations as $location) {
             $item_list = [];
@@ -155,7 +161,8 @@ class UpdateCorporationAssets implements ShouldQueue
                 ->where("location_id", $location->game_location_id)
                 ->get();
             foreach ($assets as $asset){
-                $this->handleAssetItem($asset, $item_list,$location->inventory_location_id, true, $workspace_id);
+                $include_fuel_bay = $corporation_trackings[$asset->corporation_id]->include_fuel_bay;
+                $this->handleAssetItem($asset, $item_list,$location->inventory_location_id, true, $workspace_id,$include_fuel_bay);
             }
 
             $item_list = ItemHelper::simplifyItemList($item_list);
@@ -170,19 +177,24 @@ class UpdateCorporationAssets implements ShouldQueue
         }
     }
 
-    private function handleAssetItem($item, &$list,$location, $handle_ship, $workspace_id): void
+    private function handleAssetItem($item, &$list,$location, $handle_ship, $workspace_id, bool $include_fuel_bay): void
     {
         //check for ships
         if($item->type->group->categoryID === 6 && $item->is_singleton && $handle_ship){
             //it is an assembled ship, handle it differently
             $this->handleAssembledShip($item,$location, $workspace_id);
         } else {
+            // when we are not including the fuel bay and this is a fuel bay, skip it
+            if(!$include_fuel_bay && $item->location_flag === "StructureFuel") return;
 
-            $list[] = new ItemHelper($item->type_id, $item->quantity);
+            // The black list contains the office itself since it is als represented as type id with content. However, still process it's contents
+            if(!in_array($item->types_id,self::$ITEM_BLACKLIST)) {
+                $list[] = new ItemHelper($item->type_id, $item->quantity);
+            }
 
             //chunking bugs it out, don't optimize it
             foreach ($item->content as $content) {
-                $this->handleAssetItem($content, $list, $location, true, $workspace_id);
+                $this->handleAssetItem($content, $list, $location, true, $workspace_id, $include_fuel_bay);
             }
         }
     }
@@ -197,7 +209,7 @@ class UpdateCorporationAssets implements ShouldQueue
         $source->save();
 
         $item_list = [];
-        $this->handleAssetItem($ship,$item_list,$location,false, $workspace_id);
+        $this->handleAssetItem($ship,$item_list,$location,false, $workspace_id, true);
         $item_list = ItemHelper::simplifyItemList($item_list);
         $bulk = ItemHelper::prepareBulkInsertionSourceItems($item_list,$source->id);
 

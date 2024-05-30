@@ -177,6 +177,12 @@ Route::group([
         'middleware' => 'can:inventory.edit_inventory'
     ]);
 
+    Route::post('/settings/corporations/edit', [
+        'as'   => 'inventory.editCorporation',
+        'uses' => 'TrackingController@editCorporationTracking',
+        'middleware' => 'can:inventory.edit_inventory'
+    ]);
+
     Route::get('/settings/corporations/lookup', [
         'as'   => 'inventory.corporationLookup',
         'uses' => 'TrackingController@corporationLookup',

@@ -397,4 +397,24 @@ class TrackingController extends Controller
 
         return response()->json([99]);
     }
+
+    public function editCorporationTracking(Request $request)
+    {
+        $request->validate([
+            'corporation_id'=>'required|integer',
+            "workspace_id"=>"required|integer",
+            "include_fuel_bay"=>"required|boolean"
+        ]);
+        $corporation = TrackedCorporation::where("corporation_id",$request->corporation_id)
+            ->where("workspace_id",$request->workspace_id)
+            ->first();
+
+        $corporation->include_fuel_bay = $request->include_fuel_bay;
+
+        $corporation->save();
+
+        UpdateInventory::dispatch();
+
+        return response()->json([]);
+    }
 }

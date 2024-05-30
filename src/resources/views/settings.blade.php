@@ -63,6 +63,54 @@
             })
         }
 
+        function editCorpTracking(corp) {
+            const state = {
+                include_fuel_bay: corp.include_fuel_bay > 0
+            }
+
+            BootstrapPopUp.open("Corporation Settings", (container, popup)=>{
+                container.content(
+                    W2.html("div")
+                        .class("form-group")
+                        .content(
+                        W2.html("div")
+                            .class("custom-control custom-switch")
+                            .content(
+                                W2.html("input")
+                                    .attribute("type","checkbox")
+                                    .id(W2.getID("editCorpTracking.fuelbay", true))
+                                    .class("custom-control-input")
+                                    .attributeIf(corp.include_fuel_bay,"checked","checked")
+                                    .event("change",()=>{
+                                        state.include_fuel_bay = !state.include_fuel_bay
+                                    }),
+                                W2.html("label")
+                                    .attribute("for", W2.getID("editCorpTracking.fuelbay"))
+                                    .class("custom-control-label")
+                                    .content("Include Citadel Fuel Bay")
+                            )
+                        ),
+                    W2.html("button")
+                        .class("btn btn-success")
+                        .content("Update")
+                        .event("click",async ()=>{
+                            const response = await jsonPostAction("{{ route("inventory.editCorporation") }}", {
+                                corporation_id: corp.corporation_id,
+                                workspace_id: appState.currentWorkspace.id,
+                                include_fuel_bay: state.include_fuel_bay,
+                            })
+                            if(!response.ok){
+                                BoostrapToast.open("Error","Failed to update corporation tracking")
+                            } else {
+                                popup.close()
+                                await fetchData()
+                                mount.update()
+                            }
+                        })
+                )
+            })
+        }
+
         const appState = {
             corporations: [],
             alliances: [],
@@ -393,7 +441,14 @@
                                                     .class("list-group-item d-flex flex-row justify-content-between align-items-baseline")
                                                     .content(
                                                         W2.html("span")
+                                                            .class("mr-auto")
                                                             .content(corporation.corporation.name),
+                                                        W2.html("i")
+                                                            .class("fas fa-pen text-primary mx-3")
+                                                            .style("cursor", "pointer")
+                                                            .event("click", () => {
+                                                                editCorpTracking(corporation)
+                                                            }),
                                                         confirmButtonComponent({!!json_encode(trans('inventory::common.remove_btn'))!!}, async () => {
                                                             const response = await jsonPostAction("{{ route("inventory.removeCorporation") }}", {
                                                                 tracking_id: corporation.id
