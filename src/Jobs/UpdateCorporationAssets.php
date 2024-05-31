@@ -47,7 +47,7 @@ class UpdateCorporationAssets implements ShouldQueue
     {
         return array_merge(
             [
-                //(new WithoutOverlapping($this->workspace->id))->releaseAfter(60),
+                (new WithoutOverlapping($this->workspace->id))->releaseAfter(60),
             ]
         );
     }
@@ -159,6 +159,7 @@ class UpdateCorporationAssets implements ShouldQueue
 
             //because laravel is weird once again, we eager load up to a depth of 3: hangar/container/item (infinite would be perfect)
             $assets = CorporationAsset::with("content.content.content")
+                ->whereIn("corporation_id", $corporation_ids)
                 ->where("location_id", $location->game_location_id)
                 ->get();
             foreach ($assets as $asset){
