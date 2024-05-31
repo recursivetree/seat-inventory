@@ -47,7 +47,7 @@ class UpdateCorporationAssets implements ShouldQueue
     {
         return array_merge(
             [
-                (new WithoutOverlapping($this->workspace->id))->releaseAfter(60),
+                (new WithoutOverlapping($this->workspace->id))->releaseAfter(60)->expireAfter(10*60),
             ]
         );
     }
