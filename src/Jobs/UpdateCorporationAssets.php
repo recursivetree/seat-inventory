@@ -47,7 +47,7 @@ class UpdateCorporationAssets implements ShouldQueue
     {
         return array_merge(
             [
-                (new WithoutOverlapping($this->workspace->id))->releaseAfter(60),
+                //(new WithoutOverlapping($this->workspace->id))->releaseAfter(60),
             ]
         );
     }
@@ -147,10 +147,11 @@ class UpdateCorporationAssets implements ShouldQueue
         InventorySource::whereIn("id", $deleteable_ids)->delete();
 
         $corporation_trackings = TrackedCorporation::whereIn("corporation_id", $corporation_ids)
+            ->where("workspace_id",$workspace_id)
             ->get()
             ->mapWithKeys(function ($corporation) {
                 return [$corporation->corporation_id => $corporation];
-            });
+            })->all();
 
         //go over each location
         foreach ($locations as $location) {
@@ -161,7 +162,13 @@ class UpdateCorporationAssets implements ShouldQueue
                 ->where("location_id", $location->game_location_id)
                 ->get();
             foreach ($assets as $asset){
+                if(!array_key_exists($asset->corporation_id, $corporation_trackings)){
+                    $corporation_trackings[$asset->corporation_id] = TrackedCorporation::where("corporation_id", $asset->corporation_id)->where("workspace_id",$workspace_id)->first();
+                    logger()->error("[seat-inventory] corporation tracking settings cache incomplete!");
+                }
+
                 $include_fuel_bay = $corporation_trackings[$asset->corporation_id]->include_fuel_bay;
+
                 $this->handleAssetItem($asset, $item_list,$location->inventory_location_id, true, $workspace_id,$include_fuel_bay);
             }
 
